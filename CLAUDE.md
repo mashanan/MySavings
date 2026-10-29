@@ -47,7 +47,8 @@ com.hanan.mysavings
 Dependency rule: `ui` → `domain` ← `data`. `domain` must not import Android or `data` classes.
 
 ## Code conventions
-- **Language**: all user-facing text in Bahasa Indonesia, defined in `res/values/strings.xml` (never hardcoded in composables). Code, identifiers, comments and commit messages in English.
+- **Language**: user-facing text lives in string resources, never hardcoded. English is the default (`res/values/strings.xml`) and Bahasa Indonesia the translation (`res/values-in/strings.xml`); **every new string goes into both** (lint `MissingTranslation` enforces it). Users pick the language in Settings (`ui/settings/AppLanguage.kt`); first launch is English. Code, identifiers, comments and commit messages in English.
+- **Dates and categories in UI**: format dates with a `Locale` (`currentLocale()` in composables), and show categories with `Category.displayName()` so built-in ones are translated. Rupiah always uses `formatRupiah` (Indonesian format in every language).
 - **Money** is `Long` in whole rupiah. Never use `Double`/`Float` for amounts. Format with a shared `formatRupiah()` helper (e.g. `Rp25.000`).
 - **Dates** use `java.time` (`LocalDate`, `YearMonth`). Entities store plain numbers (`LocalDate` as epoch day, `YearMonth` as `yyyyMM` Int, `Instant` as epoch millis), and conversion happens in `data/repository/Mappers.kt`. No Room TypeConverters.
 - **Time**: never call `LocalDate.now()` directly in logic; inject `java.time.Clock` so tests can fix "today".

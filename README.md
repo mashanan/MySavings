@@ -4,7 +4,7 @@
 
 Point the camera at a receipt and MySavings reads the store name, total, date and category on the phone itself, with no internet and no account. You review the result, save it, and the home screen shows how much of this month's budget is left.
 
-> The UI is in Bahasa Indonesia; code and documentation are in English.
+> The app is in English by default and fully translated into Bahasa Indonesia; users switch in Settings. Adding a language is one `values-xx/strings.xml` file.
 
 ## Screenshots
 
@@ -22,6 +22,7 @@ Point the camera at a receipt and MySavings reads the store name, total, date an
 - **Statistics**: six-month spending bars and a category donut, both drawn by hand on a Compose `Canvas`, with text descriptions for screen readers.
 - **Budget alerts**: a notification at 80% and when the budget is used up, at most once per level per month. Checked in the background with WorkManager after every save and once a day.
 - **PDF report**: export any month as a multi-page A4 PDF (summary, category table, every transaction) and share it to any app. Built with Android's own `PdfDocument`, shared through a `FileProvider`, no storage permission. [Sample report](docs/samples/contoh-laporan-60-transaksi.pdf) (test data, 2 pages).
+- **Languages**: English (default) and Bahasa Indonesia, switchable in-app without a restart via the per-app language API (on Android 13+ also in system settings). Built-in category names, dates, notifications and the PDF follow the chosen language.
 - **Manual entry** with a thousands-grouped amount field, a date picker that blocks future dates, and a category dropdown.
 - **Private by design**: no `INTERNET` permission; photos are processed in memory and never written to storage.
 
@@ -67,6 +68,7 @@ flowchart LR
 | Room AutoMigration with a migration test | Adding the alerts table bumped the schema to v2. Room generates the migration from the committed schema files, and `MigrationTest` upgrades a real v1 database to prove no user data is lost. |
 | Alert logic in the domain, WorkManager at the edge | `CheckBudgetAlertUseCase` decides (and is unit tested); the worker just runs it. Every reached level is recorded, so jumping from 50% to 120% sends one "used up" alert, never a late "nearly used". |
 | PDF pagination as pure Kotlin | `ReportLayout` computes page breaks from fixed row heights before anything is drawn, so "Halaman 2 dari 3" is known up front and edge cases (exactly full page, zero rows) are unit tested. |
+| Per-app language via AppCompat | `AppCompatDelegate.setApplicationLocales` is native on Android 13+ and back-ported to 10-12. Workers and the PDF writer have no Activity, so they get a context in the saved language explicitly. Bundle language splits are off so a language picked in-app is always installed. |
 | Injected `Clock` | "Today" and "this month" are testable, including crossing midnight at month end. |
 
 ## Project structure

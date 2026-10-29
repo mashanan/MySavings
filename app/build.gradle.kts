@@ -38,6 +38,18 @@ android {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
     }
+    bundle {
+        language {
+            // Keep every translation in the base APK. Play would otherwise only ship the phone's
+            // system language, and picking another language in the app would find no strings.
+            enableSplit = false
+        }
+    }
+    androidResources {
+        // Builds the list of supported languages from the values-xx folders, so Android 13+
+        // shows them under Settings > Apps > MySavings > Language. See res/resources.properties.
+        generateLocaleConfig = true
+    }
     buildFeatures {
         compose = true
     }
@@ -71,6 +83,8 @@ dependencies {
     implementation(libs.androidx.compose.ui.graphics)
     implementation(libs.androidx.compose.ui.tooling.preview)
     implementation(libs.androidx.core.ktx)
+    // Per-app language (AppCompatDelegate.setApplicationLocales), back-ported to Android 10-12.
+    implementation(libs.androidx.appcompat)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.lifecycle.runtime.compose)
     implementation(libs.androidx.lifecycle.viewmodel.compose)

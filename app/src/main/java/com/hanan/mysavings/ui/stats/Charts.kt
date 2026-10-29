@@ -30,6 +30,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.hanan.mysavings.domain.usecase.MonthTotal
+import com.hanan.mysavings.ui.util.currentLocale
 import com.hanan.mysavings.ui.util.formatMonthShort
 import java.time.YearMonth
 
@@ -50,6 +51,7 @@ fun TrendBarChart(
     val otherColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.3f)
     val baselineColor = MaterialTheme.colorScheme.outlineVariant
     val fractions = ChartGeometry.barFractions(trend.map { it.total })
+    val locale = currentLocale()
 
     Column(modifier) {
         Canvas(
@@ -83,7 +85,7 @@ fun TrendBarChart(
             trend.forEach { month ->
                 val isSelected = month.yearMonth == selectedMonth
                 Text(
-                    text = formatMonthShort(month.yearMonth),
+                    text = formatMonthShort(month.yearMonth, locale),
                     style = MaterialTheme.typography.labelMedium,
                     fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
                     color = if (isSelected) selectedColor else MaterialTheme.colorScheme.onSurfaceVariant,

@@ -53,6 +53,7 @@ import com.hanan.mysavings.ui.components.MySavingsTopBar
 import com.hanan.mysavings.ui.components.categoryColor
 import com.hanan.mysavings.ui.home.CategorySpendingRow
 import com.hanan.mysavings.ui.theme.MySavingsTheme
+import com.hanan.mysavings.ui.util.currentLocale
 import com.hanan.mysavings.ui.util.formatMonthShort
 import com.hanan.mysavings.ui.util.formatMonthYear
 import com.hanan.mysavings.ui.util.formatRupiah
@@ -167,6 +168,7 @@ private fun StatsContent(
     contentPadding: PaddingValues,
 ) {
     val summary = state.summary
+    val locale = currentLocale()
     LazyColumn(
         modifier = Modifier.fillMaxSize().padding(contentPadding),
         contentPadding = PaddingValues(16.dp),
@@ -197,7 +199,7 @@ private fun StatsContent(
                         onSelectMonth = onSelectMonth,
                         description = stringResource(
                             R.string.stats_trend_desc,
-                            state.trend.joinToString { "${formatMonthShort(it.yearMonth)} ${formatRupiahShort(it.total)}" },
+                            state.trend.joinToString { "${formatMonthShort(it.yearMonth, locale)} ${formatRupiahShort(it.total, locale)}" },
                         ),
                     )
                 }
@@ -225,7 +227,7 @@ private fun StatsContent(
                 Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
                     CategoryDonutChart(
                         slices = summary.spendingByCategory.map { DonutSlice(categoryColor(it.category), it.amount) },
-                        centerText = formatRupiahShort(summary.totalSpent),
+                        centerText = formatRupiahShort(summary.totalSpent, locale),
                         // The legend rows below already read out each category, so keep this short.
                         description = pluralStringResource(
                             R.plurals.stats_donut_desc,
@@ -254,7 +256,7 @@ private fun MonthSelector(
             Icon(painterResource(R.drawable.ic_chevron_left), stringResource(R.string.stats_previous_month))
         }
         Text(
-            text = formatMonthYear(month),
+            text = formatMonthYear(month, currentLocale()),
             style = MaterialTheme.typography.titleLarge,
             modifier = Modifier
                 .weight(1f)

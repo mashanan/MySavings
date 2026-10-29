@@ -66,6 +66,8 @@ import com.hanan.mysavings.ui.components.CategoryIcon
 import com.hanan.mysavings.ui.components.MySavingsTopBar
 import com.hanan.mysavings.ui.theme.MySavingsTheme
 import com.hanan.mysavings.ui.util.formatRupiah
+import com.hanan.mysavings.ui.components.displayName
+import com.hanan.mysavings.ui.util.currentLocale
 import com.hanan.mysavings.ui.util.formatShortDate
 import java.time.LocalDate
 
@@ -232,10 +234,10 @@ private fun ResultContent(
             Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 ResultRow(stringResource(R.string.confirm_merchant), draft.merchant, ReceiptField.MERCHANT in draft.missingFields)
                 ResultRow(stringResource(R.string.confirm_amount), draft.total?.let(::formatRupiah), ReceiptField.TOTAL in draft.missingFields)
-                ResultRow(stringResource(R.string.confirm_date), draft.date?.let(::formatShortDate), ReceiptField.DATE in draft.missingFields)
+                ResultRow(stringResource(R.string.confirm_date), draft.date?.let { formatShortDate(it, currentLocale()) }, ReceiptField.DATE in draft.missingFields)
                 ResultRow(
                     label = stringResource(R.string.confirm_category),
-                    value = draft.category?.name,
+                    value = draft.category?.displayName(),
                     needsCheck = ReceiptField.CATEGORY in draft.missingFields,
                     leading = draft.category?.let { { CategoryIcon(it, size = 24.dp) } },
                 )

@@ -1,5 +1,8 @@
 package com.hanan.mysavings.ui.util
 
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.ReadOnlyComposable
+import androidx.compose.ui.platform.LocalConfiguration
 import java.text.NumberFormat
 import java.time.LocalDate
 import java.time.YearMonth
@@ -7,17 +10,24 @@ import java.time.format.DateTimeFormatter
 import java.util.Locale
 import kotlin.math.abs
 
-private val indonesian: Locale = Locale.forLanguageTag("id-ID")
-private val shortDateFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("d MMM yyyy", indonesian)
-private val monthYearFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("MMMM yyyy", indonesian)
-private val shortMonthFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("MMM", indonesian)
+/**
+ * Rupiah keeps its Indonesian format in every UI language: "Rp25.000" is how the currency
+ * is written, just as "$25,000.00" stays American in a French app. Dates and words follow
+ * the user's language and take a [Locale].
+ */
+private val rupiahLocale: Locale = Locale.forLanguageTag("id-ID")
 
-/** Longest amount a user can type: 12 digits (up to Rp999 miliar), far below Long.MAX_VALUE. */
+/** Longest amount a user can type: 12 digits (up to Rp999 billion), far below Long.MAX_VALUE. */
 const val MAX_AMOUNT_DIGITS = 12
+
+/** The language the UI is currently shown in (follows the per-app language setting). */
+@Composable
+@ReadOnlyComposable
+fun currentLocale(): Locale = LocalConfiguration.current.locales[0]
 
 /** 25000 -> "Rp25.000", -50000 -> "-Rp50.000". */
 fun formatRupiah(amount: Long): String {
-    val digits = NumberFormat.getIntegerInstance(indonesian).format(abs(amount))
+    val digits = NumberFormat.getIntegerInstance(rupiahLocale).format(abs(amount))
     return if (amount < 0) "-Rp$digits" else "Rp$digits"
 }
 
@@ -32,25 +42,34 @@ fun sanitizeAmountInput(text: String): String =
 /** Digits-only text to an amount, or `null` when empty. */
 fun parseAmount(digits: String): Long? = digits.toLongOrNull()
 
-/** 2026-10-29 -> "29 Okt 2026". */
-fun formatShortDate(date: LocalDate): String = shortDateFormatter.format(date)
+/** 2026-10-29 -> "29 Oct 2026" (en) / "29 Okt 2026" (id). */
+fun formatShortDate(date: LocalDate, locale: Locale): String =
+    DateTimeFormatter.ofPattern("d MMM yyyy", locale).format(date)
 
-/** 2026-10 -> "Oktober 2026". */
-fun formatMonthYear(yearMonth: YearMonth): String = monthYearFormatter.format(yearMonth)
+/** 2026-10 -> "October 2026" (en) / "Oktober 2026" (id). */
+fun formatMonthYear(yearMonth: YearMonth, locale: Locale): String =
+    DateTimeFormatter.ofPattern("MMMM yyyy", locale).format(yearMonth)
 
-/** 2026-10 -> "Okt". */
-fun formatMonthShort(yearMonth: YearMonth): String = shortMonthFormatter.format(yearMonth)
+/** 2026-10 -> "Oct" (en) / "Okt" (id). */
+fun formatMonthShort(yearMonth: YearMonth, locale: Locale): String =
+    DateTimeFormatter.ofPattern("MMM", locale).format(yearMonth)
 
 /**
- * Compact amount for chart descriptions: "Rp500", "Rp250 rb", "Rp1,2 jt". Rounded to one
- * decimal, Indonesian style (comma as decimal separator, "rb" = ribu, "jt" = juta).
+ * Compact amount for charts: "Rp250K", "Rp1.2M" in English; "Rp250 rb", "Rp1,2 jt" in
+ * Indonesian (ribu, juta, miliar). One decimal at most, with the language's decimal mark.
  */
-fun formatRupiahShort(amount: Long): String = when {
-    amount < 1_000 -> formatRupiah(amount)
-    amount < 1_000_000 -> "Rp${oneDecimal(amount / 1_000.0)} rb"
-    amount < 1_000_000_000 -> "Rp${oneDecimal(amount / 1_000_000.0)} jt"
-    else -> "Rp${oneDecimal(amount / 1_000_000_000.0)} M"
+fun formatRupiahShort(amount: Long, locale: Locale): String {
+    val units = if (locale.isIndonesian()) listOf(" rb", " jt", " M") else listOf("K", "M", "B")
+    return when {
+        amount < 1_000 -> formatRupiah(amount)
+        amount < 1_000_000 -> "Rp${oneDecimal(amount / 1_000.0, locale)}${units[0]}"
+        amount < 1_000_000_000 -> "Rp${oneDecimal(amount / 1_000_000.0, locale)}${units[1]}"
+        else -> "Rp${oneDecimal(amount / 1_000_000_000.0, locale)}${units[2]}"
+    }
 }
 
-private fun oneDecimal(value: Double): String =
-    NumberFormat.getNumberInstance(indonesian).apply { maximumFractionDigits = 1 }.format(value)
+/** Java reports Indonesian as "in" (legacy code) or "id" depending on the version. */
+fun Locale.isIndonesian(): Boolean = language == "in" || language == "id"
+
+private fun oneDecimal(value: Double, locale: Locale): String =
+    NumberFormat.getNumberInstance(locale).apply { maximumFractionDigits = 1 }.format(value)

@@ -15,6 +15,8 @@ import com.hanan.mysavings.export.ReportLayout.MARGIN
 import com.hanan.mysavings.export.ReportLayout.PAGE_HEIGHT
 import com.hanan.mysavings.export.ReportLayout.PAGE_WIDTH
 import com.hanan.mysavings.export.ReportLayout.ROW
+import com.hanan.mysavings.ui.components.displayName
+import com.hanan.mysavings.ui.settings.AppCompatLanguageController
 import com.hanan.mysavings.ui.util.formatMonthYear
 import com.hanan.mysavings.ui.util.formatRupiah
 import com.hanan.mysavings.ui.util.formatShortDate
@@ -24,8 +26,11 @@ import kotlinx.coroutines.withContext
 import java.io.File
 import java.time.Clock
 import java.time.LocalDate
+import java.util.Locale
 import javax.inject.Inject
 import kotlin.math.roundToInt
+
+private const val REPORTS_DIR = "reports"
 
 /**
  * Writes a [MonthlyReport] as an A4 PDF with Android's built-in [PdfDocument]: no library,
@@ -33,23 +38,25 @@ import kotlin.math.roundToInt
  * pagination, so the page breaks computed up front match what is drawn.
  */
 class PdfReportExporter @Inject constructor(
-    @param:ApplicationContext private val context: Context,
+    @param:ApplicationContext private val appContext: Context,
     @param:IoDispatcher private val ioDispatcher: CoroutineDispatcher,
     private val clock: Clock,
 ) : ReportExporter {
 
     override suspend fun export(report: MonthlyReport): File = withContext(ioDispatcher) {
         // Cache, not app files: the PDF only exists to be shared, and Android may clear it.
-        val dir = File(context.cacheDir, REPORTS_DIR).apply { mkdirs() }
+        val dir = File(appContext.cacheDir, REPORTS_DIR).apply { mkdirs() }
         val file = File(dir, "MySavings-Report-${report.yearMonth}.pdf")
 
+        // Strings, dates and category names in the language the user picked in the app.
+        val renderer = ReportRenderer(AppCompatLanguageController.localizedContext(appContext), clock)
         val document = PdfDocument()
         try {
             val pages = ReportLayout.pages(report.spendingByCategory.size, report.transactions.size)
             pages.forEachIndexed { index, rows ->
                 val pageInfo = PdfDocument.PageInfo.Builder(PAGE_WIDTH, PAGE_HEIGHT, index + 1).create()
                 val page = document.startPage(pageInfo)
-                page.canvas.drawPage(report, index, pages.size, rows)
+                with(renderer) { page.canvas.drawPage(report, index, pages.size, rows) }
                 document.finishPage(page)
             }
             file.outputStream().use(document::writeTo)
@@ -58,8 +65,16 @@ class PdfReportExporter @Inject constructor(
         }
         file
     }
+}
 
-    private fun Canvas.drawPage(report: MonthlyReport, pageIndex: Int, pageCount: Int, rows: IntRange) {
+/** Draws report pages. One instance per export, bound to a context in the chosen language. */
+private class ReportRenderer(
+    private val context: Context,
+    private val clock: Clock,
+) {
+    private val locale: Locale = context.resources.configuration.locales[0]
+
+    fun Canvas.drawPage(report: MonthlyReport, pageIndex: Int, pageCount: Int, rows: IntRange) {
         var y = MARGIN
         if (pageIndex == 0) {
             y = drawTitle(report, y)
@@ -68,7 +83,7 @@ class PdfReportExporter @Inject constructor(
             val count = report.transactions.size
             y = drawSectionTitle(context.resources.getQuantityString(R.plurals.report_transactions, count, count), y)
         } else {
-            drawText(context.getString(R.string.report_continued, formatMonthYear(report.yearMonth)), MARGIN, y + 20, heading)
+            drawText(context.getString(R.string.report_continued, formatMonthYear(report.yearMonth, locale)), MARGIN, y + 20, heading)
             y += ReportLayout.CONTINUATION_HEADER
         }
         y = drawTransactionHeader(y)
@@ -84,9 +99,9 @@ class PdfReportExporter @Inject constructor(
 
     private fun Canvas.drawTitle(report: MonthlyReport, top: Float): Float {
         drawText(context.getString(R.string.report_title), MARGIN, top + 20, title)
-        drawText(formatMonthYear(report.yearMonth), MARGIN, top + 40, heading)
+        drawText(formatMonthYear(report.yearMonth, locale), MARGIN, top + 40, heading)
         drawText(
-            context.getString(R.string.report_generated, formatShortDate(LocalDate.now(clock))),
+            context.getString(R.string.report_generated, formatShortDate(LocalDate.now(clock), locale)),
             MARGIN,
             top + 56,
             muted,
@@ -132,7 +147,7 @@ class PdfReportExporter @Inject constructor(
         }
         report.spendingByCategory.forEach { spending ->
             val share = if (report.totalSpent > 0) (spending.amount * 100.0 / report.totalSpent).roundToInt() else 0
-            drawText(body.fit(spending.category.name, amountRight - MARGIN - 100), MARGIN, y + BASELINE, body)
+            drawText(body.fit(spending.category.displayName(context), amountRight - MARGIN - 100), MARGIN, y + BASELINE, body)
             drawText(formatRupiah(spending.amount), amountRight, y + BASELINE, bodyRight)
             drawText("$share%", shareRight, y + BASELINE, bodyRight)
             y += ROW
@@ -158,9 +173,9 @@ class PdfReportExporter @Inject constructor(
         val baseline = top + BASELINE
         val transaction = item.transaction
         val description = transaction.merchant ?: transaction.note ?: "-"
-        drawText(formatShortDate(transaction.date), COL_DATE, baseline, body)
+        drawText(formatShortDate(transaction.date, locale), COL_DATE, baseline, body)
         drawText(body.fit(description, COL_CATEGORY - COL_MERCHANT - 8), COL_MERCHANT, baseline, body)
-        drawText(body.fit(item.category.name, COL_AMOUNT_RIGHT - COL_CATEGORY - 80), COL_CATEGORY, baseline, body)
+        drawText(body.fit(item.category.displayName(context), COL_AMOUNT_RIGHT - COL_CATEGORY - 80), COL_CATEGORY, baseline, body)
         drawText(formatRupiah(transaction.amount), COL_AMOUNT_RIGHT, baseline, bodyRight)
     }
 
@@ -204,8 +219,6 @@ class PdfReportExporter @Inject constructor(
         }
 
     private companion object {
-        const val REPORTS_DIR = "reports"
-
         /** Text baseline inside a [ROW]-high row. */
         const val BASELINE = 13f
 

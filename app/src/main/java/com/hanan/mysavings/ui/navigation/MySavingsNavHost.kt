@@ -13,6 +13,7 @@ import com.hanan.mysavings.ui.confirm.ConfirmPrefill
 import com.hanan.mysavings.ui.confirm.ConfirmRoute
 import com.hanan.mysavings.ui.home.HomeRoute
 import com.hanan.mysavings.ui.scan.ScanRoute
+import com.hanan.mysavings.ui.settings.SettingsRoute
 import com.hanan.mysavings.ui.stats.StatsRoute
 
 /** SavedStateHandle key Confirm sets on Home's back stack entry after a successful save. */
@@ -41,6 +42,7 @@ fun MySavingsNavHost(
                 onScanClick = { navController.navigate(Destination.Scan) },
                 onManualEntryClick = { navController.navigate(Destination.Confirm()) },
                 onStatsClick = { navController.navigate(Destination.Stats) },
+                onSettingsClick = { navController.navigate(Destination.Settings) },
                 showSavedMessage = transactionSaved,
                 onSavedMessageShown = { entry.savedStateHandle[KEY_TRANSACTION_SAVED] = false },
             )
@@ -60,6 +62,9 @@ fun MySavingsNavHost(
         }
         composable<Destination.Stats> {
             StatsRoute(onBack = { navController.popBackStack() })
+        }
+        composable<Destination.Settings> {
+            SettingsRoute(onBack = { navController.popBackStack() })
         }
         composable<Destination.Confirm>(typeMap = Destination.Confirm.typeMap) { entry ->
             val route = entry.toRoute<Destination.Confirm>()

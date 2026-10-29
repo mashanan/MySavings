@@ -114,3 +114,9 @@ Setiap fase dimulai dengan rencana singkat, menunggu persetujuan, lalu dikerjaka
 | **4. Scan struk** | CameraX (preview dan ImageCapture); alur izin kamera; `MlKitTextRecognizer` di data layer; `ReceiptParser` dan `CategoryClassifier` dengan unit test dari contoh teks struk Indonesia. | Foto struk menghasilkan `ReceiptDraft` yang benar untuk contoh-contoh uji. |
 | **5. Konfirmasi hasil scan & polish MVP** | Draft hasil scan mengisi form Konfirmasi; penanda field; validasi; empty dan error state; pengecekan aksesibilitas dasar (contentDescription, ukuran sentuh). | Alur lengkap Beranda → Scan → Konfirmasi → Beranda berjalan offline. **MVP selesai.** |
 | **6. Tahap lanjut** | Grafik bulanan, notifikasi anggaran (WorkManager), dan ekspor PDF. Bisa dipecah menjadi 6a/6b/6c. | Ketiga fitur berjalan dan logikanya punya unit test. |
+
+## 8. Bahasa (ditambahkan setelah fase 6)
+- Bahasa default: **English** untuk semua pengguna saat pertama kali membuka aplikasi.
+- Pilihan di **Pengaturan → Bahasa**: English, Bahasa Indonesia, atau Ikuti bahasa sistem. Berganti langsung tanpa restart.
+- Nama kategori bawaan, tanggal, notifikasi, dan laporan PDF ikut bahasa yang dipilih. Nominal tetap ditulis dalam format Rupiah (`Rp25.000`).
+- Menambah bahasa baru: satu file `values-xx/strings.xml` dan satu entri di `AppLanguage`.

@@ -1,15 +1,21 @@
 package com.hanan.mysavings.ui.util
 
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull
+import org.junit.Assert.assertTrue
 import org.junit.Test
 import java.time.LocalDate
 import java.time.YearMonth
+import java.util.Locale
 
 class FormattersTest {
 
+    private val english = Locale.ENGLISH
+    private val indonesian = Locale.forLanguageTag("id")
+
     @Test
-    fun `formatRupiah uses dots as thousands separator`() {
+    fun `formatRupiah uses dots as thousands separator in every language`() {
         assertEquals("Rp0", formatRupiah(0))
         assertEquals("Rp500", formatRupiah(500))
         assertEquals("Rp25.000", formatRupiah(25_000))
@@ -44,17 +50,40 @@ class FormattersTest {
     }
 
     @Test
-    fun `dates use Indonesian month names`() {
-        assertEquals("29 Okt 2026", formatShortDate(LocalDate.of(2026, 10, 29)))
-        assertEquals("Oktober 2026", formatMonthYear(YearMonth.of(2026, 10)))
+    fun `dates follow the UI language`() {
+        val date = LocalDate.of(2026, 10, 29)
+        val month = YearMonth.of(2026, 10)
+
+        assertEquals("29 Oct 2026", formatShortDate(date, english))
+        assertEquals("October 2026", formatMonthYear(month, english))
+        assertEquals("Oct", formatMonthShort(month, english))
+
+        assertEquals("29 Okt 2026", formatShortDate(date, indonesian))
+        assertEquals("Oktober 2026", formatMonthYear(month, indonesian))
+        assertEquals("Okt", formatMonthShort(month, indonesian))
     }
 
     @Test
-    fun `short month and compact amounts for charts`() {
-        assertEquals("Okt", formatMonthShort(YearMonth.of(2026, 10)))
-        assertEquals("Rp500", formatRupiahShort(500))
-        assertEquals("Rp250 rb", formatRupiahShort(250_000))
-        assertEquals("Rp1,2 jt", formatRupiahShort(1_234_567))
-        assertEquals("Rp15 jt", formatRupiahShort(15_000_000))
+    fun `compact amounts use English units and decimal point`() {
+        assertEquals("Rp500", formatRupiahShort(500, english))
+        assertEquals("Rp250K", formatRupiahShort(250_000, english))
+        assertEquals("Rp1.2M", formatRupiahShort(1_234_567, english))
+        assertEquals("Rp15M", formatRupiahShort(15_000_000, english))
+        assertEquals("Rp2.5B", formatRupiahShort(2_500_000_000, english))
+    }
+
+    @Test
+    fun `compact amounts use Indonesian units and decimal comma`() {
+        assertEquals("Rp250 rb", formatRupiahShort(250_000, indonesian))
+        assertEquals("Rp1,2 jt", formatRupiahShort(1_234_567, indonesian))
+        assertEquals("Rp15 jt", formatRupiahShort(15_000_000, indonesian))
+        assertEquals("Rp2,5 M", formatRupiahShort(2_500_000_000, indonesian))
+    }
+
+    @Test
+    fun `Indonesian is recognised by both its legacy and modern code`() {
+        assertTrue(Locale.forLanguageTag("id").isIndonesian())
+        assertTrue(Locale.forLanguageTag("in").isIndonesian())
+        assertFalse(english.isIndonesian())
     }
 }

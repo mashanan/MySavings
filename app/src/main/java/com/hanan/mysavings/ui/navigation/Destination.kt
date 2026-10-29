@@ -18,6 +18,9 @@ sealed interface Destination {
     @Serializable
     data object Stats : Destination
 
+    @Serializable
+    data object Settings : Destination
+
     /** Transaction form; [prefill] is empty for manual entry and holds the draft after a scan. */
     @Serializable
     data class Confirm(val prefill: ConfirmPrefill = ConfirmPrefill.Manual) : Destination {

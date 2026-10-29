@@ -58,6 +58,8 @@ import com.hanan.mysavings.ui.components.CategoryIcon
 import com.hanan.mysavings.ui.components.MySavingsTopBar
 import com.hanan.mysavings.ui.components.fieldSupportingText
 import com.hanan.mysavings.ui.theme.MySavingsTheme
+import com.hanan.mysavings.ui.components.displayName
+import com.hanan.mysavings.ui.util.currentLocale
 import com.hanan.mysavings.ui.util.formatShortDate
 import java.time.Instant
 import java.time.LocalDate
@@ -227,7 +229,7 @@ private fun DateField(date: LocalDate, isError: Boolean, hintText: String?, onCl
         interactionSource.interactions.collect { if (it is PressInteraction.Release) onClick() }
     }
     OutlinedTextField(
-        value = formatShortDate(date),
+        value = formatShortDate(date, currentLocale()),
         onValueChange = {},
         readOnly = true,
         label = { Text(stringResource(R.string.confirm_date)) },
@@ -258,7 +260,7 @@ private fun CategoryDropdown(
     var expanded by remember { mutableStateOf(false) }
     ExposedDropdownMenuBox(expanded = expanded, onExpandedChange = { expanded = it }) {
         OutlinedTextField(
-            value = selected?.name.orEmpty(),
+            value = selected?.displayName().orEmpty(),
             onValueChange = {},
             readOnly = true,
             label = { Text(stringResource(R.string.confirm_category)) },
@@ -277,7 +279,7 @@ private fun CategoryDropdown(
         ExposedDropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
             categories.forEach { category ->
                 DropdownMenuItem(
-                    text = { Text(category.name) },
+                    text = { Text(category.displayName()) },
                     leadingIcon = { CategoryIcon(category, size = 28.dp) },
                     onClick = {
                         onSelect(category.id)

@@ -33,6 +33,8 @@ import com.hanan.mysavings.domain.model.TransactionWithCategory
 import com.hanan.mysavings.ui.components.CategoryIcon
 import com.hanan.mysavings.ui.components.categoryColor
 import com.hanan.mysavings.ui.util.formatRupiah
+import com.hanan.mysavings.ui.components.displayName
+import com.hanan.mysavings.ui.util.currentLocale
 import com.hanan.mysavings.ui.util.formatShortDate
 import kotlin.math.roundToInt
 
@@ -123,7 +125,7 @@ fun CategorySpendingRow(
         Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(
-                    text = spending.category.name,
+                    text = spending.category.displayName(),
                     style = MaterialTheme.typography.bodyLarge,
                     modifier = Modifier.weight(1f),
                     maxLines = 1,
@@ -163,13 +165,13 @@ fun TransactionRow(
         Spacer(Modifier.width(12.dp))
         Column(Modifier.weight(1f)) {
             Text(
-                text = transaction.merchant ?: item.category.name,
+                text = transaction.merchant ?: item.category.displayName(),
                 style = MaterialTheme.typography.bodyLarge,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
             )
             Text(
-                text = "${formatShortDate(transaction.date)} · ${item.category.name}",
+                text = "${formatShortDate(transaction.date, currentLocale())} · ${item.category.displayName()}",
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )

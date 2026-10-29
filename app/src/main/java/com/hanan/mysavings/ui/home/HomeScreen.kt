@@ -63,6 +63,7 @@ fun HomeRoute(
     onScanClick: () -> Unit,
     onManualEntryClick: () -> Unit,
     onStatsClick: () -> Unit,
+    onSettingsClick: () -> Unit,
     showSavedMessage: Boolean,
     onSavedMessageShown: () -> Unit,
     viewModel: HomeViewModel = hiltViewModel(),
@@ -92,6 +93,7 @@ fun HomeRoute(
         onScanClick = onScanClick,
         onManualEntryClick = onManualEntryClick,
         onStatsClick = onStatsClick,
+        onSettingsClick = onSettingsClick,
         onSaveBudget = { limit ->
             viewModel.onSaveBudget(limit)
             requestNotificationPermission()
@@ -107,6 +109,7 @@ fun HomeScreen(
     onScanClick: () -> Unit,
     onManualEntryClick: () -> Unit,
     onStatsClick: () -> Unit,
+    onSettingsClick: () -> Unit,
     onSaveBudget: (Long) -> Unit,
     modifier: Modifier = Modifier,
     showSavedMessage: Boolean = false,
@@ -133,6 +136,9 @@ fun HomeScreen(
             MySavingsTopBar(title = stringResource(R.string.app_name)) {
                 IconButton(onClick = onStatsClick) {
                     Icon(painterResource(R.drawable.ic_chart), stringResource(R.string.stats_open))
+                }
+                IconButton(onClick = onSettingsClick) {
+                    Icon(painterResource(R.drawable.ic_settings), stringResource(R.string.settings_title))
                 }
             }
         },
@@ -271,7 +277,7 @@ private fun HomeScreenPreview() {
         ),
     )
     MySavingsTheme {
-        HomeScreen(uiState = HomeUiState.Content(summary), onScanClick = {}, onManualEntryClick = {}, onStatsClick = {}, onSaveBudget = {})
+        HomeScreen(uiState = HomeUiState.Content(summary), onScanClick = {}, onManualEntryClick = {}, onStatsClick = {}, onSettingsClick = {}, onSaveBudget = {})
     }
 }
 
@@ -280,6 +286,6 @@ private fun HomeScreenPreview() {
 private fun HomeScreenEmptyPreview() {
     val summary = MonthlySummary(YearMonth.of(2026, 10), 0, null, emptyList(), emptyList())
     MySavingsTheme {
-        HomeScreen(uiState = HomeUiState.Content(summary), onScanClick = {}, onManualEntryClick = {}, onStatsClick = {}, onSaveBudget = {})
+        HomeScreen(uiState = HomeUiState.Content(summary), onScanClick = {}, onManualEntryClick = {}, onStatsClick = {}, onSettingsClick = {}, onSaveBudget = {})
     }
 }

@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-
-    <style name="Theme.MySavings" parent="android:Theme.Material.Light.NoActionBar" />
+    <!-- AppCompat parent: required by AppCompatActivity, which provides per-app language on
+         Android 10-12. Colours come from the Compose theme; this only covers the window. -->
+    <style name="Theme.MySavings" parent="Theme.AppCompat.DayNight.NoActionBar" />
 </resources>

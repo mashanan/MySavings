@@ -14,6 +14,7 @@ import com.hanan.mysavings.MainActivity
 import com.hanan.mysavings.R
 import com.hanan.mysavings.domain.model.BudgetAlert
 import com.hanan.mysavings.domain.model.BudgetAlertLevel
+import com.hanan.mysavings.ui.settings.AppCompatLanguageController
 import com.hanan.mysavings.ui.util.formatRupiah
 import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
@@ -24,17 +25,19 @@ fun interface BudgetAlertNotifier {
 }
 
 class AndroidBudgetAlertNotifier @Inject constructor(
-    @param:ApplicationContext private val context: Context,
+    @param:ApplicationContext private val appContext: Context,
 ) : BudgetAlertNotifier {
 
     override fun show(alert: BudgetAlert) {
+        // Workers have no Activity, so take the language the user chose in the app explicitly.
+        val context = AppCompatLanguageController.localizedContext(appContext)
         // Android 13+ needs the runtime permission; without it the user chose no notifications.
         if (ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) !=
             PackageManager.PERMISSION_GRANTED
         ) {
             return
         }
-        ensureChannel()
+        ensureChannel(context)
 
         val (title, body) = when (alert.level) {
             BudgetAlertLevel.NEARLY_USED -> context.getString(R.string.notif_budget_nearly_title) to
@@ -69,7 +72,7 @@ class AndroidBudgetAlertNotifier @Inject constructor(
     }
 
     /** Creating an existing channel is a no-op, so this is safe to call every time. */
-    private fun ensureChannel() {
+    private fun ensureChannel(context: Context) {
         val channel = NotificationChannel(
             CHANNEL_ID,
             context.getString(R.string.notif_channel_budget),

@@ -32,6 +32,7 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import com.hanan.mysavings.R
 import com.hanan.mysavings.ui.components.AmountTextField
+import com.hanan.mysavings.ui.util.currentLocale
 import com.hanan.mysavings.ui.util.formatMonthYear
 import com.hanan.mysavings.ui.util.parseAmount
 import java.time.YearMonth
@@ -112,7 +113,7 @@ fun BudgetSheet(
             verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
             Text(
-                text = stringResource(R.string.budget_sheet_title, formatMonthYear(yearMonth)),
+                text = stringResource(R.string.budget_sheet_title, formatMonthYear(yearMonth, currentLocale())),
                 style = MaterialTheme.typography.titleMedium,
             )
             AmountTextField(

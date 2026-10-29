@@ -1,0 +1,137 @@
+<!-- Bahasa Indonesia. "in" is Android's resource code for Indonesian (it also matches "id"). -->
+<resources xmlns:tools="http://schemas.android.com/tools">
+
+    <!-- Common actions -->
+    <string name="action_back">Kembali</string>
+    <string name="action_add_transaction">Tambah transaksi</string>
+    <string name="action_scan_receipt">Scan struk</string>
+    <string name="action_manual_entry">Input manual</string>
+    <string name="action_capture">Ambil foto</string>
+    <string name="action_save">Simpan</string>
+    <string name="action_cancel">Batal</string>
+    <string name="action_ok">OK</string>
+
+    <!-- Home -->
+    <string name="home_budget_title">Sisa anggaran bulan ini</string>
+    <string name="home_budget_used">Terpakai %1$s dari %2$s</string>
+    <string name="home_budget_over">Melebihi anggaran %1$s</string>
+    <string name="home_budget_edit">Ubah anggaran</string>
+    <string name="home_budget_progress_desc">%1$d%% anggaran terpakai</string>
+    <string name="home_budget_empty_title">Anggaran belum diatur</string>
+    <string name="home_budget_empty_body">Pengeluaran bulan ini: %1$s</string>
+    <string name="home_budget_set">Atur anggaran</string>
+    <string name="home_by_category_title">Pengeluaran per kategori</string>
+    <string name="home_recent_title">Transaksi terbaru</string>
+    <string name="home_empty_month">Belum ada transaksi bulan ini</string>
+    <string name="home_empty_recent">Belum ada transaksi. Tekan + untuk menambahkan.</string>
+    <string name="home_transaction_saved">Transaksi tersimpan</string>
+    <string name="home_add_sheet_title">Tambah transaksi</string>
+    <string name="home_add_scan_desc">Foto struk, data terisi otomatis</string>
+    <string name="home_add_manual_desc">Isi sendiri nominal dan kategorinya</string>
+
+    <!-- Budget sheet -->
+    <string name="budget_sheet_title">Anggaran bulan %1$s</string>
+    <string name="budget_sheet_amount">Batas pengeluaran</string>
+    <string name="budget_sheet_error">Masukkan nominal lebih dari 0</string>
+
+    <!-- Scan -->
+    <string name="scan_title">Scan struk</string>
+    <string name="scan_hint">Posisikan struk di dalam bingkai</string>
+    <string name="scan_processing">Membaca struk…</string>
+    <string name="scan_permission_title">Izinkan akses kamera</string>
+    <string name="scan_permission_body">MySavings memakai kamera untuk memotret struk. Foto dibaca langsung di HP Anda dan tidak disimpan atau dikirim ke mana pun.</string>
+    <string name="scan_permission_denied">Akses kamera ditolak. Aktifkan izin Kamera di pengaturan aplikasi untuk memindai struk.</string>
+    <string name="scan_allow_camera">Izinkan kamera</string>
+    <string name="scan_open_settings">Buka pengaturan</string>
+    <string name="scan_fill_manually">Isi manual</string>
+    <string name="scan_failed_title">Struk tidak terbaca</string>
+    <string name="scan_failed_body">Pastikan struk terang, rata, dan memenuhi bingkai, lalu coba lagi.</string>
+    <string name="scan_retry">Coba lagi</string>
+    <string name="scan_result_title">Hasil scan</string>
+    <string name="scan_result_note">Anda bisa memperbaiki semua data di langkah berikutnya.</string>
+    <string name="scan_not_detected">Tidak terbaca</string>
+    <string name="scan_needs_check">Periksa kembali</string>
+    <string name="scan_retake">Foto ulang</string>
+    <string name="scan_continue">Lanjut</string>
+
+    <!-- Stats -->
+    <string name="stats_title">Statistik</string>
+    <string name="stats_open">Lihat statistik</string>
+    <string name="stats_previous_month">Bulan sebelumnya</string>
+    <string name="stats_next_month">Bulan berikutnya</string>
+    <string name="stats_month_total">Total pengeluaran</string>
+    <string name="stats_trend_title">6 bulan terakhir</string>
+    <string name="stats_trend_desc">Grafik pengeluaran 6 bulan: %1$s</string>
+    <string name="stats_by_category">Per kategori</string>
+    <!-- Indonesian nouns do not inflect for number, so "other" covers every count. -->
+    <plurals name="stats_donut_desc">
+        <item quantity="other">Grafik lingkaran pengeluaran untuk %1$d kategori</item>
+    </plurals>
+    <string name="stats_empty">Belum ada pengeluaran di bulan ini</string>
+
+    <!-- Confirm -->
+    <string name="confirm_title_manual">Tambah transaksi</string>
+    <string name="confirm_title_scan">Konfirmasi hasil scan</string>
+    <string name="confirm_discard_title">Buang perubahan?</string>
+    <string name="confirm_discard_body">Data yang sudah diisi belum disimpan dan akan hilang.</string>
+    <string name="confirm_discard_action">Buang</string>
+    <string name="confirm_keep_editing">Lanjut mengisi</string>
+    <string name="confirm_merchant">Nama toko</string>
+    <string name="confirm_amount">Total</string>
+    <string name="confirm_date">Tanggal</string>
+    <string name="confirm_pick_date">Pilih tanggal</string>
+    <string name="confirm_category">Kategori</string>
+    <string name="confirm_category_hint">Pilih kategori</string>
+    <string name="confirm_note">Catatan (opsional)</string>
+    <string name="confirm_error_amount">Total harus lebih dari 0</string>
+    <string name="confirm_error_category">Kategori wajib dipilih</string>
+    <string name="confirm_error_date">Tanggal tidak boleh di masa depan</string>
+
+    <!-- Default categories -->
+    <string name="category_food">Makan &amp; Minum</string>
+    <string name="category_groceries">Belanja Harian</string>
+    <string name="category_transport">Transportasi</string>
+    <string name="category_bills">Tagihan</string>
+    <string name="category_entertainment">Hiburan</string>
+    <string name="category_health">Kesehatan</string>
+    <string name="category_other">Lainnya</string>
+
+    <!-- Settings -->
+    <string name="settings_title">Pengaturan</string>
+    <string name="settings_language">Bahasa</string>
+    <string name="language_system">Ikuti bahasa sistem</string>
+
+    <!-- Notifications -->
+    <string name="notif_channel_budget">Anggaran</string>
+    <string name="notif_channel_budget_desc">Pemberitahuan saat anggaran bulanan hampir atau sudah habis</string>
+    <string name="notif_budget_nearly_title">Anggaran hampir habis</string>
+    <string name="notif_budget_nearly_body">%1$d%% anggaran bulan ini terpakai. Sisa %2$s.</string>
+    <string name="notif_budget_used_up_title">Anggaran bulan ini habis</string>
+    <string name="notif_budget_used_up_body">Pengeluaran sudah mencapai batas %1$s.</string>
+    <string name="notif_budget_over_body">Pengeluaran melebihi anggaran %1$s.</string>
+
+    <!-- PDF report -->
+    <string name="stats_export">Ekspor PDF</string>
+    <string name="stats_export_failed">Gagal membuat laporan</string>
+    <string name="stats_export_share">Bagikan laporan</string>
+    <string name="report_title">Laporan Pengeluaran</string>
+    <string name="report_generated">Dibuat %1$s dengan MySavings</string>
+    <string name="report_total">Total pengeluaran</string>
+    <string name="report_budget">Anggaran</string>
+    <string name="report_budget_none">Belum diatur</string>
+    <string name="report_remaining">Sisa anggaran</string>
+    <string name="report_over">Melebihi anggaran</string>
+    <string name="report_by_category">Pengeluaran per kategori</string>
+    <plurals name="report_transactions">
+        <item quantity="other">Daftar transaksi (%1$d)</item>
+    </plurals>
+    <string name="report_continued">Laporan Pengeluaran %1$s (lanjutan)</string>
+    <string name="report_no_transactions">Tidak ada transaksi</string>
+    <string name="report_col_category">Kategori</string>
+    <string name="report_col_amount">Jumlah</string>
+    <string name="report_col_share">Porsi</string>
+    <string name="report_col_date">Tanggal</string>
+    <string name="report_col_merchant">Toko / catatan</string>
+    <!-- "dari" means "of" here, not a counted noun, so this is not a plural. -->
+    <string name="report_page" tools:ignore="PluralsCandidate">Halaman %1$d dari %2$d</string>
+</resources>
