@@ -11,7 +11,9 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
 import com.hanan.mysavings.ui.confirm.ConfirmPrefill
 import com.hanan.mysavings.ui.confirm.ConfirmRoute
-import com.hanan.mysavings.ui.debts.DebtsScreen
+import com.hanan.mysavings.ui.debts.DebtDetailRoute
+import com.hanan.mysavings.ui.debts.DebtFormRoute
+import com.hanan.mysavings.ui.debts.DebtsRoute
 import com.hanan.mysavings.ui.home.HomeRoute
 import com.hanan.mysavings.ui.profile.ProfileRoute
 import com.hanan.mysavings.ui.savings.GoalDetailRoute
@@ -75,7 +77,26 @@ fun MySavingsNavHost(
             )
         }
         composable<Destination.Debts> {
-            DebtsScreen()
+            DebtsRoute(
+                onNewDebt = { navController.navigate(Destination.DebtForm()) },
+                onDebtClick = { navController.navigate(Destination.DebtDetail(it)) },
+            )
+        }
+        composable<Destination.DebtForm> { entry ->
+            DebtFormRoute(
+                debtId = entry.toRoute<Destination.DebtForm>().debtId,
+                onBack = { navController.popBackStack() },
+                // Back to wherever the form was opened from: the list for a new debt, the detail for an edit.
+                onSaved = { navController.popBackStack() },
+            )
+        }
+        composable<Destination.DebtDetail> { entry ->
+            val debtId = entry.toRoute<Destination.DebtDetail>().debtId
+            DebtDetailRoute(
+                debtId = debtId,
+                onBack = { navController.popBackStack() },
+                onEdit = { navController.navigate(Destination.DebtForm(debtId)) },
+            )
         }
         composable<Destination.Profile> {
             ProfileRoute(onSettingsClick = { navController.navigate(Destination.Settings) })

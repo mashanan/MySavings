@@ -71,6 +71,30 @@ class MigrationTest {
         db.close()
     }
 
+    @Test
+    fun migrate3To4KeepsSavingsAndAddsEmptyDebtTables() {
+        helper.createDatabase(TEST_DB, 3).apply {
+            execSQL("INSERT INTO savings_goals (id, name, targetAmount, categoryKey, targetDate, createdAt) VALUES (1, 'Laptop', 12000000, 'gadget', NULL, 0)")
+            execSQL("INSERT INTO savings_deposits (goalId, amount, date, note, createdAt) VALUES (1, 500000, 20390, NULL, 0)")
+            close()
+        }
+
+        // Validates the result against schema 4.json, including the debt foreign keys.
+        val db = helper.runMigrationsAndValidate(TEST_DB, 4, true)
+
+        db.query("SELECT SUM(amount) FROM savings_deposits WHERE goalId = 1").use { cursor ->
+            assertTrue(cursor.moveToFirst())
+            assertEquals(500_000L, cursor.getLong(0))
+        }
+        db.query(
+            "SELECT (SELECT COUNT(*) FROM debts) + (SELECT COUNT(*) FROM debt_payments) + (SELECT COUNT(*) FROM debt_reminders_sent)",
+        ).use { cursor ->
+            assertTrue(cursor.moveToFirst())
+            assertEquals(0, cursor.getInt(0))
+        }
+        db.close()
+    }
+
     private companion object {
         const val TEST_DB = "migration-test.db"
     }

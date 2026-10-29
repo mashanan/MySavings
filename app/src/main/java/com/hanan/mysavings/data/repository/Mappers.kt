@@ -2,11 +2,15 @@ package com.hanan.mysavings.data.repository
 
 import com.hanan.mysavings.data.local.entity.BudgetEntity
 import com.hanan.mysavings.data.local.entity.CategoryEntity
+import com.hanan.mysavings.data.local.entity.DebtEntity
+import com.hanan.mysavings.data.local.entity.DebtPaymentEntity
 import com.hanan.mysavings.data.local.entity.SavingsDepositEntity
 import com.hanan.mysavings.data.local.entity.SavingsGoalEntity
 import com.hanan.mysavings.data.local.entity.TransactionEntity
 import com.hanan.mysavings.domain.model.Budget
 import com.hanan.mysavings.domain.model.Category
+import com.hanan.mysavings.domain.model.Debt
+import com.hanan.mysavings.domain.model.DebtPayment
 import com.hanan.mysavings.domain.model.GoalCategory
 import com.hanan.mysavings.domain.model.SavingsDeposit
 import com.hanan.mysavings.domain.model.SavingsGoal
@@ -93,6 +97,44 @@ fun SavingsDepositEntity.toDomain() = SavingsDeposit(
 fun SavingsDeposit.toEntity() = SavingsDepositEntity(
     id = id,
     goalId = goalId,
+    amount = amount,
+    date = date.toEpochDay(),
+    note = note,
+    createdAt = createdAt.toEpochMilli(),
+)
+
+fun DebtEntity.toDomain() = Debt(
+    id = id,
+    creditor = creditor,
+    totalAmount = totalAmount,
+    firstDueDate = LocalDate.ofEpochDay(firstDueDate),
+    installmentCount = installmentCount,
+    note = note,
+    createdAt = Instant.ofEpochMilli(createdAt),
+)
+
+fun Debt.toEntity() = DebtEntity(
+    id = id,
+    creditor = creditor,
+    totalAmount = totalAmount,
+    firstDueDate = firstDueDate.toEpochDay(),
+    installmentCount = installmentCount,
+    note = note,
+    createdAt = createdAt.toEpochMilli(),
+)
+
+fun DebtPaymentEntity.toDomain() = DebtPayment(
+    id = id,
+    debtId = debtId,
+    amount = amount,
+    date = LocalDate.ofEpochDay(date),
+    note = note,
+    createdAt = Instant.ofEpochMilli(createdAt),
+)
+
+fun DebtPayment.toEntity() = DebtPaymentEntity(
+    id = id,
+    debtId = debtId,
     amount = amount,
     date = date.toEpochDay(),
     note = note,

@@ -14,4 +14,7 @@ abstract class NotificationModule {
 
     @Binds
     abstract fun bindBudgetAlertNotifier(impl: AndroidBudgetAlertNotifier): BudgetAlertNotifier
+
+    @Binds
+    abstract fun bindDebtReminderNotifier(impl: AndroidDebtReminderNotifier): DebtReminderNotifier
 }

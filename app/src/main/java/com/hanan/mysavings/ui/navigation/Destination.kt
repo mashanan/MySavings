@@ -26,6 +26,13 @@ sealed interface Destination {
     @Serializable
     data object Debts : Destination
 
+    /** Create a debt (`debtId == null`) or edit one. */
+    @Serializable
+    data class DebtForm(val debtId: Long? = null) : Destination
+
+    @Serializable
+    data class DebtDetail(val debtId: Long) : Destination
+
     @Serializable
     data object Profile : Destination
 

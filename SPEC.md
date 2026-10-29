@@ -52,6 +52,14 @@ State yang ditangani: memuat, bulan kosong (satu kartu ajakan untuk bulan berjal
 - **Detail target**: progress, sisa, saran per bulan (sisa ÷ jumlah bulan sampai bulan tenggat, dibulatkan ke atas), tombol Setor/Tarik (bottom sheet), riwayat. Ketuk riwayat untuk menghapus. Menu ubah dan hapus target.
 - Setoran tabungan **tidak** dihitung sebagai pengeluaran.
 
+### 3.5 Hutang (fase 9)
+- **Tab Hutang**: kartu sisa hutang dan jumlah tagihan telat; kalender bulanan (minggu mulai sesuai locale) dengan titik per tanggal jatuh tempo: merah = telat, oranye = ≤ 7 hari, biru = mendatang, abu-abu = lunas. Ketuk tanggal untuk melihat tagihannya. Di bawahnya "Jatuh tempo terdekat" (paling mendesak dulu) dan bagian "Lunas" yang bisa dilipat. FAB "Hutang baru".
+- **Form hutang**: kepada siapa, total, sekali bayar atau cicilan bulanan (1–360 bulan), jatuh tempo (pertama, boleh di masa lalu), catatan.
+- **Detail hutang**: sisa, progress, pembayaran berikutnya, tombol Bayar (terisi sisa cicilan berikutnya) dan Lunasi (terisi seluruh sisa), jadwal cicilan dengan status, riwayat pembayaran (ketuk untuk hapus), ubah/hapus.
+- **Jadwal**: total dibagi rata, sisa pembagian masuk cicilan terakhir; jatuh tempo dihitung dari tanggal pertama (tanggal 31 jatuh di hari terakhir bulan pendek). Pembayaran tidak terikat cicilan tertentu: dijumlahkan lalu mengisi cicilan berurutan.
+- **Pengingat**: notifikasi H-3 (atau hari berikutnya bila terlewat) dan pada hari jatuh tempo, masing-masing sekali per cicilan. Cicilan yang sudah telat tidak diingatkan lewat notifikasi, cukup tampil merah di aplikasi.
+- Pembayaran hutang **tidak** dihitung sebagai pengeluaran.
+
 ### Navigasi
 Bottom navbar dengan 4 tab: **Pengeluaran** (Beranda), **Tabungan**, **Hutang**, **Profil**. Navbar disembunyikan di layar detail (Scan, Konfirmasi, Statistik, Pengaturan). Back dari tab lain kembali ke Pengeluaran. Pengaturan dibuka dari tab Profil.
 
@@ -117,6 +125,30 @@ Constraint unik: (`yearMonth`, `categoryId`).
 | `createdAt` | Long | epoch millis |
 
 Saldo target = `SUM(amount)`. Saldo tidak boleh negatif: penarikan dibatasi saldo, dan menghapus setoran yang membuat saldo minus ditolak.
+
+### `debts` (versi 4, fase 9)
+| Kolom | Tipe | Keterangan |
+|---|---|---|
+| `id` | Long PK | auto-generate |
+| `creditor` | String | kepada siapa |
+| `totalAmount` | Long | rupiah, > 0 |
+| `firstDueDate` | Long | epoch day jatuh tempo (pertama) |
+| `installmentCount` | Int | 1 = sekali bayar, maks. 360 |
+| `note` | String? | opsional |
+| `createdAt` | Long | epoch millis |
+
+### `debt_payments` (versi 4, fase 9)
+| Kolom | Tipe | Keterangan |
+|---|---|---|
+| `id` | Long PK | auto-generate |
+| `debtId` | Long FK | ke `debts`, **CASCADE** |
+| `amount` | Long | rupiah, > 0, tidak melebihi sisa hutang |
+| `date` | Long | epoch day |
+| `note` | String? | opsional |
+| `createdAt` | Long | epoch millis |
+
+### `debt_reminders_sent` (versi 4, fase 9)
+PK (`debtId`, `installmentNumber`, `kind`), FK `debtId` **CASCADE**. `kind` = `soon` / `today`. Dikosongkan untuk hutang yang jadwalnya diubah.
 
 ## 5. Logika pembacaan struk
 Seluruh logika ini ada di `domain/parser` dan ditulis dalam Kotlin murni, sehingga bisa diuji dengan unit test.

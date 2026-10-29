@@ -2,6 +2,8 @@ package com.hanan.mysavings.data.repository
 
 import com.hanan.mysavings.data.local.entity.BudgetEntity
 import com.hanan.mysavings.data.local.entity.CategoryEntity
+import com.hanan.mysavings.domain.model.Debt
+import com.hanan.mysavings.domain.model.DebtPayment
 import com.hanan.mysavings.domain.model.GoalCategory
 import com.hanan.mysavings.domain.model.SavingsDeposit
 import com.hanan.mysavings.domain.model.SavingsGoal
@@ -68,5 +70,14 @@ class MappersTest {
         assertEquals("emergency", GoalCategory.EMERGENCY.key)
         assertEquals(GoalCategory.EMERGENCY, GoalCategory.fromKey("emergency"))
         assertEquals(GoalCategory.OTHER, GoalCategory.fromKey("crypto"))
+    }
+
+    @Test
+    fun `debt and payment survive a round trip through the entity`() {
+        val debt = Debt(2, "Leasing", 12_000_000, LocalDate.of(2026, 11, 5), 12, "Motor", Instant.ofEpochMilli(1_700_000_000_000))
+        val payment = DebtPayment(4, 2, 1_000_000, LocalDate.of(2026, 11, 4), null, Instant.ofEpochMilli(1_700_000_000_000))
+
+        assertEquals(debt, debt.toEntity().toDomain())
+        assertEquals(payment, payment.toEntity().toDomain())
     }
 }

@@ -6,6 +6,7 @@ import com.hanan.mysavings.data.local.MySavingsDatabase
 import com.hanan.mysavings.data.local.dao.BudgetAlertDao
 import com.hanan.mysavings.data.local.dao.BudgetDao
 import com.hanan.mysavings.data.local.dao.CategoryDao
+import com.hanan.mysavings.data.local.dao.DebtDao
 import com.hanan.mysavings.data.local.dao.SavingsDao
 import com.hanan.mysavings.data.local.dao.TransactionDao
 import dagger.Module
@@ -42,6 +43,9 @@ object DatabaseModule {
 
     @Provides
     fun provideSavingsDao(db: MySavingsDatabase): SavingsDao = db.savingsDao()
+
+    @Provides
+    fun provideDebtDao(db: MySavingsDatabase): DebtDao = db.debtDao()
 
     // Use cases read "now" through this Clock; tests pass a fixed one instead.
     @Provides

@@ -122,8 +122,6 @@
     <string name="tab_savings">Tabungan</string>
     <string name="tab_debts">Hutang</string>
     <string name="tab_profile">Profil</string>
-    <string name="coming_soon_title">Segera hadir</string>
-    <string name="debts_coming_soon_body">Catat hutangmu di kalender lengkap dengan tanggal jatuh tempo, dan lihat pembayaran mana yang paling dekat.</string>
     <string name="profile_settings_language">Bahasa: %1$s</string>
     <string name="profile_account">Akun dan sinkron</string>
     <string name="profile_account_soon">Segera hadir: masuk untuk memakai datamu di perangkat lain</string>
@@ -186,6 +184,78 @@
     <string name="deposit_delete_title">Hapus catatan ini?</string>
     <string name="deposit_delete_body">%1$s pada %2$s</string>
 
+    <!-- Debts -->
+    <string name="debts_new">Hutang baru</string>
+    <string name="debts_empty_title">Belum ada hutang</string>
+    <string name="debts_empty_body">Catat hutangmu beserta tanggal jatuh temponya. Kalender menampilkan semua jatuh tempo dan kamu diingatkan 3 hari sebelumnya.</string>
+    <string name="debts_total_title">Sisa hutang</string>
+    <plurals name="debts_overdue_count">
+        <item quantity="other">%1$d tagihan lewat jatuh tempo</item>
+    </plurals>
+    <string name="debts_none_overdue">Tidak ada tagihan yang telat</string>
+    <string name="debts_legend_overdue">Telat</string>
+    <string name="debts_legend_soon">≤ 7 hari</string>
+    <string name="debts_legend_upcoming">Mendatang</string>
+    <string name="debts_legend_paid">Lunas</string>
+    <string name="debts_due_on">Jatuh tempo %1$s</string>
+    <string name="debts_nothing_due">Tidak ada tagihan di tanggal ini</string>
+    <string name="debts_upcoming">Jatuh tempo terdekat</string>
+    <string name="debts_all_paid">Semua hutang sudah lunas 🎉</string>
+    <string name="debts_paid_off_show">Lunas (%1$d) ▾</string>
+    <string name="debts_paid_off_hide">Lunas (%1$d) ▴</string>
+    <string name="debt_calendar_day_has_payment">%1$s, ada tagihan</string>
+    <string name="debt_single_payment">Sekali bayar</string>
+    <string name="debt_installment_of">Cicilan %1$d dari %2$d</string>
+    <string name="debt_next_installment">Berikutnya: %1$s · %2$s</string>
+    <string name="debt_due">Jatuh tempo %1$s</string>
+    <string name="debt_paid_off">Lunas 🎉</string>
+    <string name="debt_installment_paid">Lunas</string>
+    <string name="debt_installment_overdue">Telat</string>
+    <string name="debt_installment_partly">Kurang %1$s</string>
+    <string name="debt_installment_open">Belum dibayar</string>
+    <string name="debt_form_title_new">Hutang baru</string>
+    <string name="debt_form_title_edit">Ubah hutang</string>
+    <string name="debt_form_creditor">Berhutang kepada siapa?</string>
+    <string name="debt_form_creditor_placeholder">misal: Bank, leasing, teman</string>
+    <string name="debt_form_amount">Total hutang</string>
+    <string name="debt_form_single">Sekali bayar</string>
+    <string name="debt_form_installments">Cicilan bulanan</string>
+    <string name="debt_form_due">Tanggal jatuh tempo</string>
+    <string name="debt_form_first_due">Jatuh tempo cicilan pertama</string>
+    <string name="debt_form_installment_count">Jumlah bulan</string>
+    <string name="debt_form_per_installment">Sekitar %1$s per bulan</string>
+    <string name="debt_form_note">Catatan (opsional)</string>
+    <string name="debt_error_creditor">Isi nama pemberi hutang</string>
+    <string name="debt_error_amount">Masukkan nominal lebih dari 0</string>
+    <string name="debt_error_below_paid">Total tidak boleh kurang dari yang sudah dibayar</string>
+    <string name="debt_error_installments">Isi jumlah bulan dari 1 sampai %1$d</string>
+    <string name="debt_error_not_found">Hutang ini sudah tidak ada</string>
+    <string name="debt_remaining_title">Sisa yang harus dibayar</string>
+    <string name="debt_paid_of_total">Sudah dibayar %1$s dari %2$s</string>
+    <string name="debt_next_payment">Bayar berikutnya: %1$s sebelum %2$s</string>
+    <string name="debt_pay">Bayar</string>
+    <string name="debt_pay_off">Lunasi</string>
+    <string name="debt_schedule">Jadwal cicilan</string>
+    <string name="debt_payments">Riwayat pembayaran</string>
+    <string name="debt_payments_empty">Belum ada pembayaran.</string>
+    <string name="debt_edit">Ubah hutang</string>
+    <string name="debt_delete">Hapus hutang</string>
+    <string name="debt_delete_title">Hapus hutang ini?</string>
+    <string name="debt_delete_body">Hutang beserta seluruh riwayat pembayarannya akan dihapus. Tindakan ini tidak bisa dibatalkan.</string>
+    <string name="payment_sheet_title">Bayar ke %1$s</string>
+    <string name="payment_sheet_title_pay_off">Lunasi hutang ke %1$s</string>
+    <string name="payment_amount">Nominal</string>
+    <string name="payment_date">Tanggal</string>
+    <string name="payment_note">Catatan (opsional)</string>
+    <string name="payment_error_amount">Masukkan nominal lebih dari 0</string>
+    <string name="payment_error_date">Tanggal tidak boleh di masa depan</string>
+    <string name="payment_error_exceeds">Sisa hutang tinggal %1$s</string>
+    <string name="payment_saved">Pembayaran tersimpan</string>
+    <string name="payment_paid_off">Lunas 🎉</string>
+    <string name="payment_deleted">Pembayaran dihapus</string>
+    <string name="payment_delete_title">Hapus pembayaran ini?</string>
+    <string name="payment_delete_body">%1$s pada %2$s</string>
+
     <!-- Settings -->
     <string name="settings_title">Pengaturan</string>
     <string name="settings_language">Bahasa</string>
@@ -199,6 +269,13 @@
     <string name="notif_budget_used_up_title">Anggaran bulan ini habis</string>
     <string name="notif_budget_used_up_body">Pengeluaran sudah mencapai batas %1$s.</string>
     <string name="notif_budget_over_body">Pengeluaran melebihi anggaran %1$s.</string>
+    <string name="notif_channel_debt">Pengingat hutang</string>
+    <string name="notif_channel_debt_desc">Pengingat 3 hari sebelum dan pada hari jatuh tempo pembayaran hutang</string>
+    <plurals name="notif_debt_soon_title">
+        <item quantity="other">Jatuh tempo %1$d hari lagi</item>
+    </plurals>
+    <string name="notif_debt_today_title">Jatuh tempo hari ini</string>
+    <string name="notif_debt_body">%1$s ke %2$s, jatuh tempo %3$s</string>
 
     <!-- PDF report -->
     <string name="stats_export">Ekspor PDF</string>

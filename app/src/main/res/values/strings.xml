@@ -128,8 +128,6 @@
     <string name="tab_savings">Savings</string>
     <string name="tab_debts">Debts</string>
     <string name="tab_profile">Profile</string>
-    <string name="coming_soon_title">Coming soon</string>
-    <string name="debts_coming_soon_body">Keep track of your debts on a calendar with due dates, and see which payments are coming up next.</string>
     <string name="profile_settings_language">Language: %1$s</string>
     <string name="profile_account">Account and sync</string>
     <string name="profile_account_soon">Coming soon: sign in to use your data on other devices</string>
@@ -192,6 +190,79 @@
     <string name="deposit_delete_title">Delete this entry?</string>
     <string name="deposit_delete_body">%1$s on %2$s</string>
 
+    <!-- Debts -->
+    <string name="debts_new">New debt</string>
+    <string name="debts_empty_title">No debts recorded</string>
+    <string name="debts_empty_body">Add what you owe and when it is due. The calendar shows every due date and you get a reminder 3 days before.</string>
+    <string name="debts_total_title">Debt left to pay</string>
+    <plurals name="debts_overdue_count">
+        <item quantity="one">%1$d payment overdue</item>
+        <item quantity="other">%1$d payments overdue</item>
+    </plurals>
+    <string name="debts_none_overdue">No overdue payments</string>
+    <string name="debts_legend_overdue">Overdue</string>
+    <string name="debts_legend_soon">Within 7 days</string>
+    <string name="debts_legend_upcoming">Upcoming</string>
+    <string name="debts_legend_paid">Paid</string>
+    <string name="debts_due_on">Due on %1$s</string>
+    <string name="debts_nothing_due">Nothing due on this day</string>
+    <string name="debts_upcoming">Coming up</string>
+    <string name="debts_all_paid">All debts are paid off 🎉</string>
+    <string name="debts_paid_off_show">Paid off (%1$d) ▾</string>
+    <string name="debts_paid_off_hide">Paid off (%1$d) ▴</string>
+    <string name="debt_calendar_day_has_payment">%1$s, payment due</string>
+    <string name="debt_single_payment">Single payment</string>
+    <string name="debt_installment_of">Installment %1$d of %2$d</string>
+    <string name="debt_next_installment">Next: %1$s · %2$s</string>
+    <string name="debt_due">Due %1$s</string>
+    <string name="debt_paid_off">Paid off 🎉</string>
+    <string name="debt_installment_paid">Paid</string>
+    <string name="debt_installment_overdue">Overdue</string>
+    <string name="debt_installment_partly">%1$s left</string>
+    <string name="debt_installment_open">Open</string>
+    <string name="debt_form_title_new">New debt</string>
+    <string name="debt_form_title_edit">Edit debt</string>
+    <string name="debt_form_creditor">Who do you owe?</string>
+    <string name="debt_form_creditor_placeholder">e.g. Bank, leasing, a friend</string>
+    <string name="debt_form_amount">Total amount</string>
+    <string name="debt_form_single">Pay at once</string>
+    <string name="debt_form_installments">Monthly installments</string>
+    <string name="debt_form_due">Due date</string>
+    <string name="debt_form_first_due">First installment due</string>
+    <string name="debt_form_installment_count">Number of months</string>
+    <string name="debt_form_per_installment">About %1$s a month</string>
+    <string name="debt_form_note">Note (optional)</string>
+    <string name="debt_error_creditor">Enter who you owe</string>
+    <string name="debt_error_amount">Enter an amount above 0</string>
+    <string name="debt_error_below_paid">The total cannot be less than what is already paid</string>
+    <string name="debt_error_installments">Enter a number of months from 1 to %1$d</string>
+    <string name="debt_error_not_found">This debt no longer exists</string>
+    <string name="debt_remaining_title">Left to pay</string>
+    <string name="debt_paid_of_total">%1$s of %2$s paid</string>
+    <string name="debt_next_payment">Next payment: %1$s by %2$s</string>
+    <string name="debt_pay">Pay</string>
+    <string name="debt_pay_off">Pay off</string>
+    <string name="debt_schedule">Schedule</string>
+    <string name="debt_payments">Payments</string>
+    <string name="debt_payments_empty">No payments yet.</string>
+    <string name="debt_edit">Edit debt</string>
+    <string name="debt_delete">Delete debt</string>
+    <string name="debt_delete_title">Delete this debt?</string>
+    <string name="debt_delete_body">The debt and all its payments will be removed. This cannot be undone.</string>
+    <string name="payment_sheet_title">Payment to %1$s</string>
+    <string name="payment_sheet_title_pay_off">Pay off %1$s</string>
+    <string name="payment_amount">Amount</string>
+    <string name="payment_date">Date</string>
+    <string name="payment_note">Note (optional)</string>
+    <string name="payment_error_amount">Enter an amount above 0</string>
+    <string name="payment_error_date">The date cannot be in the future</string>
+    <string name="payment_error_exceeds">Only %1$s is left to pay</string>
+    <string name="payment_saved">Payment saved</string>
+    <string name="payment_paid_off">Paid off 🎉</string>
+    <string name="payment_deleted">Payment deleted</string>
+    <string name="payment_delete_title">Delete this payment?</string>
+    <string name="payment_delete_body">%1$s on %2$s</string>
+
     <!-- Settings -->
     <string name="settings_title">Settings</string>
     <string name="settings_language">Language</string>
@@ -208,6 +279,14 @@
     <string name="notif_budget_used_up_title">This month\'s budget is used up</string>
     <string name="notif_budget_used_up_body">Spending has reached the %1$s limit.</string>
     <string name="notif_budget_over_body">Spending is %1$s over budget.</string>
+    <string name="notif_channel_debt">Debt reminders</string>
+    <string name="notif_channel_debt_desc">Reminders 3 days before and on the day a debt payment is due</string>
+    <plurals name="notif_debt_soon_title">
+        <item quantity="one">Payment due tomorrow</item>
+        <item quantity="other">Payment due in %1$d days</item>
+    </plurals>
+    <string name="notif_debt_today_title">Payment due today</string>
+    <string name="notif_debt_body">%1$s to %2$s, due %3$s</string>
 
     <!-- PDF report -->
     <string name="stats_export">Export PDF</string>
