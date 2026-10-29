@@ -38,6 +38,21 @@ android {
     buildFeatures {
         compose = true
     }
+
+    // ML Kit's OCR engine is a ~7-11 MB native library per CPU type, and a phone only needs
+    // its own. Release builds therefore produce one APK per ABI instead of one with all four.
+    // (Play Store does the same automatically from an App Bundle: ./gradlew bundleRelease.)
+    // Debug builds and bundles are not split (bundles split per device on Play already).
+    splits {
+        abi {
+            isEnable = gradle.startParameter.taskNames.any {
+                it.contains("assemble", ignoreCase = true) && it.contains("Release", ignoreCase = true)
+            }
+            reset()
+            include("arm64-v8a", "armeabi-v7a", "x86_64")
+            isUniversalApk = false
+        }
+    }
 }
 
 room {
