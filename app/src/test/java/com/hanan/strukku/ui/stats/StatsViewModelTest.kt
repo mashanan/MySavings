@@ -1,15 +1,21 @@
 package com.hanan.strukku.ui.stats
 
 import app.cash.turbine.test
+import com.hanan.strukku.domain.model.MonthlyReport
 import com.hanan.strukku.domain.model.MonthlySummary
+import com.hanan.strukku.domain.repository.ReportExporter
+import com.hanan.strukku.domain.usecase.BuildMonthlyReportUseCase
 import com.hanan.strukku.domain.usecase.MonthTotal
 import com.hanan.strukku.domain.usecase.ObserveMonthlySummaryUseCase
 import com.hanan.strukku.domain.usecase.ObserveMonthlyTotalsUseCase
 import com.hanan.strukku.testutil.MainDispatcherRule
 import com.hanan.strukku.testutil.MutableClock
+import io.mockk.coEvery
+import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
+import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
@@ -18,6 +24,7 @@ import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
+import java.io.File
 import java.time.Instant
 import java.time.YearMonth
 
@@ -44,7 +51,10 @@ class StatsViewModelTest {
         }
     }
 
-    private fun createViewModel() = StatsViewModel(observeTotals, observeSummary, clock)
+    private val buildReport = mockk<BuildMonthlyReportUseCase>()
+    private val exporter = mockk<ReportExporter>()
+
+    private fun createViewModel() = StatsViewModel(observeTotals, observeSummary, buildReport, exporter, clock)
 
     private fun StatsUiState.content() = this as StatsUiState.Content
 
@@ -114,5 +124,50 @@ class StatsViewModelTest {
         val march = YearMonth.of(2026, 3)
         assertEquals(YearMonth.of(2026, 6), StatsViewModel.chartWindowEnd(YearMonth.of(2026, 6), previousEnd = march, current = october))
         assertEquals(october, StatsViewModel.chartWindowEnd(YearMonth.of(2026, 9), previousEnd = october, current = october))
+    }
+
+    // ---------------------------------------------------------------- PDF export
+
+    @Test
+    fun `export builds the report for the selected month and hands over the file`() = runTest {
+        val september = YearMonth.of(2026, 9)
+        val report = MonthlyReport(september, 0, null, emptyList(), emptyList())
+        val file = File("StrukKu-Laporan-2026-09.pdf")
+        coEvery { buildReport(september) } returns report
+        coEvery { exporter.export(report) } returns file
+        val viewModel = createViewModel()
+
+        viewModel.onPreviousMonth()
+        viewModel.onExport()
+
+        assertEquals(ExportState.Ready(file), viewModel.exportState.value)
+
+        viewModel.onExportHandled()
+        assertEquals(ExportState.Idle, viewModel.exportState.value)
+    }
+
+    @Test
+    fun `a failing export reports failure instead of crashing`() = runTest {
+        coEvery { buildReport(any()) } throws IllegalStateException("disk full")
+        val viewModel = createViewModel()
+
+        viewModel.onExport()
+
+        assertEquals(ExportState.Failed, viewModel.exportState.value)
+    }
+
+    @Test
+    fun `pressing export again while exporting does nothing`() = runTest {
+        val pending = CompletableDeferred<File>()
+        coEvery { buildReport(any()) } returns MonthlyReport(october, 0, null, emptyList(), emptyList())
+        coEvery { exporter.export(any()) } coAnswers { pending.await() }
+        val viewModel = createViewModel()
+
+        viewModel.onExport()
+        viewModel.onExport()
+        assertEquals(ExportState.Exporting, viewModel.exportState.value)
+        pending.complete(File("x.pdf"))
+
+        coVerify(exactly = 1) { exporter.export(any()) }
     }
 }

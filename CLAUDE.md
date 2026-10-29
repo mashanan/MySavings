@@ -33,6 +33,7 @@ com.hanan.strukku
 │  ├─ ocr/          ML Kit text recognizer wrapper
 │  └─ di/           Hilt modules
 ├─ notification/  budget alerts: WorkManager worker, scheduler, notifier (Android plumbing for a domain use case)
+├─ export/        PDF report: page layout (pure Kotlin) and PdfDocument writer
 ├─ domain/
 │  ├─ model/        plain Kotlin data classes
 │  ├─ repository/   repository interfaces

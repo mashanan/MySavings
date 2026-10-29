@@ -36,6 +36,10 @@ interface TransactionDao {
     )
     fun observeMonthlyTotals(fromEpochDay: Long, toEpochDay: Long): Flow<List<MonthTotalRow>>
 
+    // One-shot (suspend, not Flow): a report is a snapshot, it should not change while being written.
+    @Query("SELECT * FROM transactions WHERE date BETWEEN :fromEpochDay AND :toEpochDay ORDER BY date, createdAt")
+    suspend fun getInRange(fromEpochDay: Long, toEpochDay: Long): List<TransactionEntity>
+
     @Query("SELECT * FROM transactions ORDER BY date DESC, createdAt DESC LIMIT :limit")
     fun observeRecent(limit: Int): Flow<List<TransactionEntity>>
 }

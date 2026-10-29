@@ -3,14 +3,18 @@ package com.hanan.strukku.ui.stats
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.hanan.strukku.domain.model.MonthlySummary
+import com.hanan.strukku.domain.repository.ReportExporter
+import com.hanan.strukku.domain.usecase.BuildMonthlyReportUseCase
 import com.hanan.strukku.domain.usecase.MonthTotal
 import com.hanan.strukku.domain.usecase.ObserveMonthlySummaryUseCase
 import com.hanan.strukku.domain.usecase.ObserveMonthlyTotalsUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filterNotNull
@@ -18,6 +22,8 @@ import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
+import java.io.File
 import java.time.Clock
 import java.time.YearMonth
 import javax.inject.Inject
@@ -26,6 +32,8 @@ import javax.inject.Inject
 class StatsViewModel @Inject constructor(
     observeMonthlyTotals: ObserveMonthlyTotalsUseCase,
     observeMonthlySummary: ObserveMonthlySummaryUseCase,
+    private val buildMonthlyReport: BuildMonthlyReportUseCase,
+    private val reportExporter: ReportExporter,
     clock: Clock,
 ) : ViewModel() {
 
@@ -61,6 +69,31 @@ class StatsViewModel @Inject constructor(
 
     fun onNextMonth() = onSelectMonth(selection.value.month.plusMonths(1))
 
+    // Export progress is separate from the screen content so the charts don't re-render for it.
+    private val _exportState = MutableStateFlow<ExportState>(ExportState.Idle)
+    val exportState: StateFlow<ExportState> = _exportState.asStateFlow()
+
+    /** Builds the PDF for the selected month; the screen shares it once [ExportState.Ready]. */
+    fun onExport() {
+        if (_exportState.value == ExportState.Exporting) return
+        val month = selection.value.month
+        _exportState.value = ExportState.Exporting
+        viewModelScope.launch {
+            _exportState.value = try {
+                ExportState.Ready(reportExporter.export(buildMonthlyReport(month)))
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                ExportState.Failed
+            }
+        }
+    }
+
+    /** Called after the share sheet opened or the error was shown, so neither repeats. */
+    fun onExportHandled() {
+        _exportState.value = ExportState.Idle
+    }
+
     private data class Selection(val month: YearMonth, val windowEnd: YearMonth)
 
     companion object {
@@ -93,4 +126,11 @@ sealed interface StatsUiState {
         val trend: List<MonthTotal>,
         val summary: MonthlySummary,
     ) : StatsUiState
+}
+
+sealed interface ExportState {
+    data object Idle : ExportState
+    data object Exporting : ExportState
+    data class Ready(val file: File) : ExportState
+    data object Failed : ExportState
 }

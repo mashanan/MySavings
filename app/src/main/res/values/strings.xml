@@ -1,4 +1,4 @@
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools">
     <string name="app_name">StrukKu</string>
 
     <!-- Common actions -->
@@ -95,4 +95,29 @@
     <string name="notif_budget_used_up_title">Anggaran bulan ini habis</string>
     <string name="notif_budget_used_up_body">Pengeluaran sudah mencapai batas %1$s.</string>
     <string name="notif_budget_over_body">Pengeluaran melebihi anggaran %1$s.</string>
+
+    <!-- PDF report -->
+    <string name="stats_export">Ekspor PDF</string>
+    <string name="stats_export_failed">Gagal membuat laporan</string>
+    <string name="stats_export_share">Bagikan laporan</string>
+    <string name="report_title">Laporan Pengeluaran</string>
+    <string name="report_generated">Dibuat %1$s dengan StrukKu</string>
+    <string name="report_total">Total pengeluaran</string>
+    <string name="report_budget">Anggaran</string>
+    <string name="report_budget_none">Belum diatur</string>
+    <string name="report_remaining">Sisa anggaran</string>
+    <string name="report_over">Melebihi anggaran</string>
+    <string name="report_by_category">Pengeluaran per kategori</string>
+    <plurals name="report_transactions">
+        <item quantity="other">Daftar transaksi (%1$d)</item>
+    </plurals>
+    <string name="report_continued">Laporan Pengeluaran %1$s (lanjutan)</string>
+    <string name="report_no_transactions">Tidak ada transaksi</string>
+    <string name="report_col_category">Kategori</string>
+    <string name="report_col_amount">Jumlah</string>
+    <string name="report_col_share">Porsi</string>
+    <string name="report_col_date">Tanggal</string>
+    <string name="report_col_merchant">Toko / catatan</string>
+    <!-- "dari" means "of" here, not a counted noun, so this is not a plural. -->
+    <string name="report_page" tools:ignore="PluralsCandidate">Halaman %1$d dari %2$d</string>
 </resources>

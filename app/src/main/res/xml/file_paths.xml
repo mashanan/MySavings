@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Only the reports folder in the cache is shareable through the FileProvider. -->
+<paths>
+    <cache-path
+        name="reports"
+        path="reports/" />
+</paths>

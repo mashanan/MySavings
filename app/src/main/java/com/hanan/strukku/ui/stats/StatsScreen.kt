@@ -1,5 +1,7 @@
 package com.hanan.strukku.ui.stats
 
+import android.content.Context
+import android.content.Intent
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -8,6 +10,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Card
@@ -16,11 +19,17 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
@@ -32,6 +41,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.core.content.FileProvider
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.hanan.strukku.R
@@ -47,6 +57,8 @@ import com.hanan.strukku.ui.util.formatMonthShort
 import com.hanan.strukku.ui.util.formatMonthYear
 import com.hanan.strukku.ui.util.formatRupiah
 import com.hanan.strukku.ui.util.formatRupiahShort
+import kotlinx.coroutines.launch
+import java.io.File
 import java.time.YearMonth
 
 @Composable
@@ -55,13 +67,40 @@ fun StatsRoute(
     viewModel: StatsViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val exportState by viewModel.exportState.collectAsStateWithLifecycle()
+    val context = LocalContext.current
+    val shareTitle = stringResource(R.string.stats_export_share)
+
+    LaunchedEffect(exportState) {
+        val ready = exportState as? ExportState.Ready ?: return@LaunchedEffect
+        context.sharePdf(ready.file, shareTitle)
+        viewModel.onExportHandled()
+    }
+
     StatsScreen(
         uiState = uiState,
         onBack = onBack,
         onPreviousMonth = viewModel::onPreviousMonth,
         onNextMonth = viewModel::onNextMonth,
         onSelectMonth = viewModel::onSelectMonth,
+        isExporting = exportState == ExportState.Exporting,
+        showExportError = exportState == ExportState.Failed,
+        onExport = viewModel::onExport,
+        onExportErrorShown = viewModel::onExportHandled,
     )
+}
+
+/**
+ * Opens the system share sheet for a report. The FileProvider turns the private cache file
+ * into a content:// URI, and the grant flag lets only the chosen app read it, temporarily.
+ */
+private fun Context.sharePdf(file: File, chooserTitle: String) {
+    val uri = FileProvider.getUriForFile(this, "$packageName.fileprovider", file)
+    val send = Intent(Intent.ACTION_SEND)
+        .setType("application/pdf")
+        .putExtra(Intent.EXTRA_STREAM, uri)
+        .addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+    startActivity(Intent.createChooser(send, chooserTitle))
 }
 
 @Composable
@@ -72,10 +111,36 @@ fun StatsScreen(
     onNextMonth: () -> Unit,
     onSelectMonth: (YearMonth) -> Unit,
     modifier: Modifier = Modifier,
+    isExporting: Boolean = false,
+    showExportError: Boolean = false,
+    onExport: () -> Unit = {},
+    onExportErrorShown: () -> Unit = {},
 ) {
+    val snackbarHostState = remember { SnackbarHostState() }
+    val errorMessage = stringResource(R.string.stats_export_failed)
+    val scope = rememberCoroutineScope()
+    LaunchedEffect(showExportError) {
+        if (showExportError) {
+            // Separate scope: clearing the flag restarts this effect and would cancel the snackbar.
+            scope.launch { snackbarHostState.showSnackbar(errorMessage) }
+            onExportErrorShown()
+        }
+    }
+
     Scaffold(
         modifier = modifier,
-        topBar = { StrukKuTopBar(title = stringResource(R.string.stats_title), onBack = onBack) },
+        snackbarHost = { SnackbarHost(snackbarHostState) },
+        topBar = {
+            StrukKuTopBar(title = stringResource(R.string.stats_title), onBack = onBack) {
+                if (isExporting) {
+                    CircularProgressIndicator(strokeWidth = 2.dp, modifier = Modifier.padding(12.dp).size(24.dp))
+                } else {
+                    IconButton(onClick = onExport, enabled = uiState is StatsUiState.Content) {
+                        Icon(painterResource(R.drawable.ic_share), stringResource(R.string.stats_export))
+                    }
+                }
+            }
+        },
     ) { innerPadding ->
         when (uiState) {
             StatsUiState.Loading -> Box(Modifier.fillMaxSize().padding(innerPadding), Alignment.Center) {
