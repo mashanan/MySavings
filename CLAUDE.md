@@ -28,7 +28,7 @@ Single `:app` module, package by layer, then by feature:
 ```
 com.hanan.strukku
 ├─ data/
-│  ├─ local/        Room entities, DAOs, StrukKuDatabase, TypeConverters
+│  ├─ local/        Room entities, DAOs, StrukKuDatabase, default category seed
 │  ├─ repository/   repository implementations + entity <-> domain mappers
 │  ├─ ocr/          ML Kit text recognizer wrapper
 │  └─ di/           Hilt modules
@@ -47,7 +47,8 @@ Dependency rule: `ui` → `domain` ← `data`. `domain` must not import Android 
 ## Code conventions
 - **Language**: all user-facing text in Bahasa Indonesia, defined in `res/values/strings.xml` (never hardcoded in composables). Code, identifiers, comments and commit messages in English.
 - **Money** is `Long` in whole rupiah. Never use `Double`/`Float` for amounts. Format with a shared `formatRupiah()` helper (e.g. `Rp25.000`).
-- **Dates** use `java.time` (`LocalDate`, `YearMonth`). Room stores them as `Long` via TypeConverters.
+- **Dates** use `java.time` (`LocalDate`, `YearMonth`). Entities store plain numbers (`LocalDate` as epoch day, `YearMonth` as `yyyyMM` Int, `Instant` as epoch millis), and conversion happens in `data/repository/Mappers.kt`. No Room TypeConverters.
+- **Time**: never call `LocalDate.now()` directly in logic; inject `java.time.Clock` so tests can fix "today".
 - **Domain is pure Kotlin** so it can be unit tested on the JVM without an emulator.
 - **Room entities stay in `data`**; map to domain models with `toDomain()` / `toEntity()` extension functions.
 - **Screens** follow this pattern:
@@ -55,7 +56,7 @@ Dependency rule: `ui` → `domain` ← `data`. `domain` must not import Android 
   - `XxxRoute()`: obtains the ViewModel via `hiltViewModel()`, collects state with `collectAsStateWithLifecycle()`
   - `XxxViewModel`: exposes `StateFlow<XxxUiState>`; one-off events (navigation, snackbar) via a separate channel/flow
 - **Use cases**: one responsibility each, exposed as `operator fun invoke(...)`.
-- **Dispatchers** are injected with a Hilt qualifier (`@IoDispatcher`), never hardcoded, so tests can swap them.
+- **Dispatchers**: when code needs to switch threads, inject the dispatcher with a Hilt qualifier (`@IoDispatcher`) instead of hardcoding it, so tests can swap it. Room suspend/Flow queries already run off the main thread, so they need no dispatcher.
 - **Dependencies** are always added through the version catalog, never as inline strings.
 - **Tests**: every non-UI piece of logic (parser, classifier, use cases, ViewModels) gets unit tests in `src/test`. DAO tests go in `src/androidTest` with an in-memory database.
 - Prefer small, readable functions and comments that explain *why*, not *what*.
