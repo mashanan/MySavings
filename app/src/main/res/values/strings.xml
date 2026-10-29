@@ -34,6 +34,21 @@
     <string name="home_add_scan_desc">Photograph a receipt and the details fill in automatically</string>
     <string name="home_add_manual_desc">Type in the amount and category yourself</string>
 
+    <!-- Home insights -->
+    <plurals name="home_daily_allowance">
+        <item quantity="one">%1$s per day for the next %2$d day</item>
+        <item quantity="other">%1$s per day for the next %2$d days</item>
+    </plurals>
+    <string name="home_daily_allowance_today">%1$s left to spend today</string>
+    <string name="home_compare_title">Compared with last month</string>
+    <string name="home_compare_less">%1$d%% less than the same days last month</string>
+    <string name="home_compare_more">%1$d%% more than the same days last month</string>
+    <string name="home_compare_same">About the same as the same days last month</string>
+    <string name="home_compare_previous">%1$s by this point last month</string>
+    <string name="home_stat_transactions">Transactions</string>
+    <string name="home_stat_average">Avg. per day</string>
+    <string name="home_stat_top_category">Top category</string>
+
     <!-- Budget sheet -->
     <string name="budget_sheet_title">Budget for %1$s</string>
     <string name="budget_sheet_amount">Spending limit</string>

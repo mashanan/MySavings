@@ -46,7 +46,10 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.hanan.mysavings.R
 import com.hanan.mysavings.domain.model.Category
 import com.hanan.mysavings.domain.model.CategorySpending
+import com.hanan.mysavings.domain.model.DailyAllowance
+import com.hanan.mysavings.domain.model.MonthInsights
 import com.hanan.mysavings.domain.model.MonthlySummary
+import com.hanan.mysavings.domain.model.PeriodComparison
 import com.hanan.mysavings.domain.model.Transaction
 import com.hanan.mysavings.domain.model.TransactionSource
 import com.hanan.mysavings.domain.model.TransactionWithCategory
@@ -70,7 +73,7 @@ fun HomeRoute(
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     LifecycleResumeEffect(viewModel) {
-        viewModel.refreshMonth()
+        viewModel.refreshDate()
         onPauseOrDispose {}
     }
 
@@ -159,6 +162,7 @@ fun HomeScreen(
 
             is HomeUiState.Content -> HomeContent(
                 summary = uiState.summary,
+                insights = uiState.insights,
                 onEditBudget = { showBudgetSheet = true },
                 contentPadding = innerPadding,
             )
@@ -195,6 +199,7 @@ fun HomeScreen(
 @Composable
 private fun HomeContent(
     summary: MonthlySummary,
+    insights: MonthInsights,
     onEditBudget: () -> Unit,
     contentPadding: PaddingValues,
 ) {
@@ -205,7 +210,15 @@ private fun HomeContent(
         contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 8.dp, bottom = 88.dp),
     ) {
         item(key = "budget") {
-            BudgetCard(summary = summary, onEditBudget = onEditBudget)
+            BudgetCard(summary = summary, allowance = insights.dailyAllowance, onEditBudget = onEditBudget)
+        }
+        item(key = "stats") {
+            MonthStatsRow(insights = insights, modifier = Modifier.padding(top = 12.dp))
+        }
+        insights.comparison?.let { comparison ->
+            item(key = "comparison") {
+                ComparisonCard(comparison = comparison, modifier = Modifier.padding(top = 8.dp))
+            }
         }
 
         sectionTitle(R.string.home_by_category_title)
@@ -276,8 +289,15 @@ private fun HomeScreenPreview() {
             ),
         ),
     )
+    val insights = MonthInsights(
+        transactionCount = 2,
+        averagePerDay = 56_896,
+        topCategory = summary.spendingByCategory.first(),
+        dailyAllowance = DailyAllowance(amountPerDay = 116_666, daysLeft = 3),
+        comparison = PeriodComparison(previousTotal = 2_010_000, changePercent = -18),
+    )
     MySavingsTheme {
-        HomeScreen(uiState = HomeUiState.Content(summary), onScanClick = {}, onManualEntryClick = {}, onStatsClick = {}, onSettingsClick = {}, onSaveBudget = {})
+        HomeScreen(uiState = HomeUiState.Content(summary, insights), onScanClick = {}, onManualEntryClick = {}, onStatsClick = {}, onSettingsClick = {}, onSaveBudget = {})
     }
 }
 
@@ -285,7 +305,8 @@ private fun HomeScreenPreview() {
 @Composable
 private fun HomeScreenEmptyPreview() {
     val summary = MonthlySummary(YearMonth.of(2026, 10), 0, null, emptyList(), emptyList())
+    val insights = MonthInsights(0, 0, null, null, null)
     MySavingsTheme {
-        HomeScreen(uiState = HomeUiState.Content(summary), onScanClick = {}, onManualEntryClick = {}, onStatsClick = {}, onSettingsClick = {}, onSaveBudget = {})
+        HomeScreen(uiState = HomeUiState.Content(summary, insights), onScanClick = {}, onManualEntryClick = {}, onStatsClick = {}, onSettingsClick = {}, onSaveBudget = {})
     }
 }

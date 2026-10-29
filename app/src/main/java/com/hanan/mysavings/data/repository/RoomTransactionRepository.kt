@@ -23,6 +23,9 @@ class RoomTransactionRepository @Inject constructor(
         dao.observeMonthlyTotals(from.toEpochDay(), to.toEpochDay())
             .map { rows -> rows.associate { it.yearMonth.toYearMonth() to it.total } }
 
+    override fun observeCount(from: LocalDate, to: LocalDate): Flow<Int> =
+        dao.observeCount(from.toEpochDay(), to.toEpochDay())
+
     override suspend fun getInRange(from: LocalDate, to: LocalDate): List<Transaction> =
         dao.getInRange(from.toEpochDay(), to.toEpochDay()).map { it.toDomain() }
 

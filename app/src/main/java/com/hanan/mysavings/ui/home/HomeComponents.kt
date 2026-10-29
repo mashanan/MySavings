@@ -19,6 +19,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
@@ -28,6 +29,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.hanan.mysavings.R
 import com.hanan.mysavings.domain.model.CategorySpending
+import com.hanan.mysavings.domain.model.DailyAllowance
 import com.hanan.mysavings.domain.model.MonthlySummary
 import com.hanan.mysavings.domain.model.TransactionWithCategory
 import com.hanan.mysavings.ui.components.CategoryIcon
@@ -44,6 +46,7 @@ private const val WARNING_FRACTION = 0.8f
 @Composable
 fun BudgetCard(
     summary: MonthlySummary,
+    allowance: DailyAllowance?,
     onEditBudget: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -94,6 +97,22 @@ fun BudgetCard(
                 },
                 style = MaterialTheme.typography.bodyMedium,
             )
+            if (allowance != null) {
+                Text(
+                    text = if (allowance.daysLeft == 1) {
+                        stringResource(R.string.home_daily_allowance_today, formatRupiah(allowance.amountPerDay))
+                    } else {
+                        pluralStringResource(
+                            R.plurals.home_daily_allowance,
+                            allowance.daysLeft,
+                            formatRupiah(allowance.amountPerDay),
+                            allowance.daysLeft,
+                        )
+                    },
+                    style = MaterialTheme.typography.bodyMedium,
+                    fontWeight = FontWeight.Medium,
+                )
+            }
             TextButton(onClick = onEditBudget, modifier = Modifier.align(Alignment.End)) {
                 Text(stringResource(R.string.home_budget_edit))
             }

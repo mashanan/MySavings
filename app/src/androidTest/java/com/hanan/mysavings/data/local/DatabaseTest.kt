@@ -79,6 +79,23 @@ class DatabaseTest {
     }
 
     @Test
+    fun countIncludesBothEndsOfTheRange() = runTest {
+        val dao = db.transactionDao()
+        dao.insert(transaction(date = LocalDate.of(2026, 10, 1)))
+        dao.insert(transaction(date = LocalDate.of(2026, 10, 31)))
+        dao.insert(transaction(date = LocalDate.of(2026, 10, 15), categoryId = 2))
+        dao.insert(transaction(date = LocalDate.of(2026, 9, 30)))
+        dao.insert(transaction(date = LocalDate.of(2026, 11, 1)))
+
+        val count = dao.observeCount(
+            LocalDate.of(2026, 10, 1).toEpochDay(),
+            LocalDate.of(2026, 10, 31).toEpochDay(),
+        ).first()
+
+        assertEquals(3, count)
+    }
+
+    @Test
     fun recentIsOrderedByDateThenCreatedAtAndLimited() = runTest {
         val dao = db.transactionDao()
         val older = dao.insert(transaction(date = LocalDate.of(2026, 10, 1), createdAt = 3))

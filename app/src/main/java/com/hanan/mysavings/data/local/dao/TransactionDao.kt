@@ -36,6 +36,9 @@ interface TransactionDao {
     )
     fun observeMonthlyTotals(fromEpochDay: Long, toEpochDay: Long): Flow<List<MonthTotalRow>>
 
+    @Query("SELECT COUNT(*) FROM transactions WHERE date BETWEEN :fromEpochDay AND :toEpochDay")
+    fun observeCount(fromEpochDay: Long, toEpochDay: Long): Flow<Int>
+
     // One-shot (suspend, not Flow): a report is a snapshot, it should not change while being written.
     @Query("SELECT * FROM transactions WHERE date BETWEEN :fromEpochDay AND :toEpochDay ORDER BY date, createdAt")
     suspend fun getInRange(fromEpochDay: Long, toEpochDay: Long): List<TransactionEntity>

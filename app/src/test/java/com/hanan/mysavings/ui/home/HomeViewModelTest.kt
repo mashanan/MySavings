@@ -1,7 +1,9 @@
 package com.hanan.mysavings.ui.home
 
 import app.cash.turbine.test
+import com.hanan.mysavings.domain.model.MonthInsights
 import com.hanan.mysavings.domain.model.MonthlySummary
+import com.hanan.mysavings.domain.usecase.ObserveMonthInsightsUseCase
 import com.hanan.mysavings.domain.usecase.ObserveMonthlySummaryUseCase
 import com.hanan.mysavings.domain.usecase.SetBudgetUseCase
 import com.hanan.mysavings.testutil.MainDispatcherRule
@@ -18,6 +20,7 @@ import org.junit.Assert.assertEquals
 import org.junit.Rule
 import org.junit.Test
 import java.time.Instant
+import java.time.LocalDate
 import java.time.YearMonth
 
 class HomeViewModelTest {
@@ -33,14 +36,21 @@ class HomeViewModelTest {
     private val observeSummary = mockk<ObserveMonthlySummaryUseCase> {
         every { this@mockk.invoke(october) } returns octoberSummaries
     }
+
+    // Returns the day it was asked about, so tests can see which date reached the use case.
+    private val observeInsights = mockk<ObserveMonthInsightsUseCase> {
+        every { this@mockk.invoke(any(), any()) } answers { flowOf(insightsFor(secondArg())) }
+    }
     private val setBudget = mockk<SetBudgetUseCase>()
 
-    private fun createViewModel() = HomeViewModel(observeSummary, setBudget, clock)
+    private fun createViewModel() = HomeViewModel(observeSummary, observeInsights, setBudget, clock)
 
     private fun emptySummary(month: YearMonth) = MonthlySummary(month, 0, null, emptyList(), emptyList())
 
+    private fun insightsFor(day: LocalDate) = MonthInsights(day.dayOfMonth, null, null, null, null)
+
     @Test
-    fun `starts loading then shows the current month summary`() = runTest {
+    fun `starts loading then shows the current month summary with its insights`() = runTest {
         val viewModel = createViewModel()
         val summary = MonthlySummary(october, 100_000, 1_000_000, emptyList(), emptyList())
 
@@ -49,8 +59,9 @@ class HomeViewModelTest {
 
             octoberSummaries.emit(summary)
 
-            assertEquals(HomeUiState.Content(summary), awaitItem())
+            assertEquals(HomeUiState.Content(summary, insightsFor(LocalDate.of(2026, 10, 29))), awaitItem())
         }
+        verify { observeInsights(summary, LocalDate.of(2026, 10, 29)) }
     }
 
     @Test
@@ -73,21 +84,39 @@ class HomeViewModelTest {
 
             // Midnight passes on 31 October (Jakarta time) while the app is in the background.
             clock.instant = Instant.parse("2026-10-31T17:30:00Z")
-            viewModel.refreshMonth()
+            viewModel.refreshDate()
 
-            assertEquals(HomeUiState.Content(emptySummary(november)), awaitItem())
+            assertEquals(HomeUiState.Content(emptySummary(november), insightsFor(LocalDate.of(2026, 11, 1))), awaitItem())
         }
         viewModel.onSaveBudget(1_000_000)
         coVerify { setBudget(november, null, 1_000_000) }
     }
 
     @Test
-    fun `refreshing within the same month does not restart the query`() = runTest {
+    fun `a new day in the same month updates insights without restarting the summary query`() = runTest {
+        val viewModel = createViewModel()
+        val summary = emptySummary(october)
+
+        viewModel.uiState.test {
+            assertEquals(HomeUiState.Loading, awaitItem())
+            octoberSummaries.emit(summary)
+            assertEquals(HomeUiState.Content(summary, insightsFor(LocalDate.of(2026, 10, 29))), awaitItem())
+
+            clock.instant = Instant.parse("2026-10-29T17:30:00Z") // 00:30 on 30 October in Jakarta
+            viewModel.refreshDate()
+
+            assertEquals(HomeUiState.Content(summary, insightsFor(LocalDate.of(2026, 10, 30))), awaitItem())
+        }
+        verify(exactly = 1) { observeSummary(october) }
+    }
+
+    @Test
+    fun `refreshing within the same day does not restart the query`() = runTest {
         val viewModel = createViewModel()
         viewModel.uiState.test {
             awaitItem()
-            viewModel.refreshMonth()
-            viewModel.refreshMonth()
+            viewModel.refreshDate()
+            viewModel.refreshDate()
             cancelAndIgnoreRemainingEvents()
         }
 

@@ -29,6 +29,20 @@
     <string name="home_add_scan_desc">Foto struk, data terisi otomatis</string>
     <string name="home_add_manual_desc">Isi sendiri nominal dan kategorinya</string>
 
+    <!-- Home insights -->
+    <plurals name="home_daily_allowance">
+        <item quantity="other">%1$s per hari untuk %2$d hari ke depan</item>
+    </plurals>
+    <string name="home_daily_allowance_today">Sisa %1$s untuk hari ini</string>
+    <string name="home_compare_title">Dibanding bulan lalu</string>
+    <string name="home_compare_less">%1$d%% lebih hemat dari periode yang sama bulan lalu</string>
+    <string name="home_compare_more">%1$d%% lebih boros dari periode yang sama bulan lalu</string>
+    <string name="home_compare_same">Hampir sama dengan periode yang sama bulan lalu</string>
+    <string name="home_compare_previous">%1$s pada periode yang sama bulan lalu</string>
+    <string name="home_stat_transactions">Transaksi</string>
+    <string name="home_stat_average">Rata-rata/hari</string>
+    <string name="home_stat_top_category">Kategori terbesar</string>
+
     <!-- Budget sheet -->
     <string name="budget_sheet_title">Anggaran bulan %1$s</string>
     <string name="budget_sheet_amount">Batas pengeluaran</string>
