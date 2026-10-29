@@ -10,7 +10,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.hanan.strukku.ui.confirm.ConfirmRoute
 import com.hanan.strukku.ui.home.HomeRoute
-import com.hanan.strukku.ui.scan.ScanScreen
+import com.hanan.strukku.ui.scan.ScanRoute
 
 /** SavedStateHandle key Confirm sets on Home's back stack entry after a successful save. */
 private const val KEY_TRANSACTION_SAVED = "transaction_saved"
@@ -42,9 +42,16 @@ fun StrukKuNavHost(
             )
         }
         composable<Destination.Scan> {
-            ScanScreen(
+            ScanRoute(
                 onBack = { navController.popBackStack() },
-                onReceiptCaptured = { navController.navigate(Destination.Confirm) },
+                // Phase 5 passes the scanned draft along so Confirm opens pre-filled.
+                onContinue = { navController.navigate(Destination.Confirm) },
+                // Typing it in replaces the scan, so Back from the form returns to Home.
+                onManualEntry = {
+                    navController.navigate(Destination.Confirm) {
+                        popUpTo<Destination.Scan> { inclusive = true }
+                    }
+                },
             )
         }
         composable<Destination.Confirm> {

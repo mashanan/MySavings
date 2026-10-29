@@ -5,6 +5,7 @@ import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.hanan.strukku.data.local.entity.BudgetEntity
 import com.hanan.strukku.data.local.entity.TransactionEntity
+import com.hanan.strukku.domain.model.Category
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runTest
 import org.junit.After
@@ -36,7 +37,7 @@ class DatabaseTest {
         val categories = db.categoryDao().observeAll().first()
 
         assertEquals(DefaultCategories.all.map { it.name }, categories.map { it.name })
-        assertTrue(categories.any { it.iconKey == DefaultCategories.OTHER_ICON_KEY })
+        assertTrue(categories.any { it.iconKey == Category.OTHER_ICON_KEY })
     }
 
     @Test

@@ -1,14 +1,13 @@
 package com.hanan.strukku.data.local
 
 import com.hanan.strukku.data.local.entity.CategoryEntity
+import com.hanan.strukku.domain.model.Category
 
 /**
  * Categories inserted when the database is first created. Names are user-facing data,
  * so they are in Indonesian. Keywords are matched against receipt text in phase 4.
  */
 object DefaultCategories {
-    /** iconKey of the fallback category used when no keyword matches. */
-    const val OTHER_ICON_KEY = "other"
 
     val all = listOf(
         CategoryEntity(
@@ -58,7 +57,7 @@ object DefaultCategories {
         ),
         CategoryEntity(
             name = "Lainnya",
-            iconKey = OTHER_ICON_KEY,
+            iconKey = Category.OTHER_ICON_KEY,
             colorHex = "#90A4AE",
             keywords = "",
             isDefault = true,

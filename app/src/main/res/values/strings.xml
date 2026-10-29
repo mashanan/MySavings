@@ -35,7 +35,23 @@
 
     <!-- Scan -->
     <string name="scan_title">Scan struk</string>
-    <string name="scan_placeholder">Kamera untuk memindai struk akan tampil di sini.</string>
+    <string name="scan_hint">Posisikan struk di dalam bingkai</string>
+    <string name="scan_processing">Membaca struk…</string>
+    <string name="scan_permission_title">Izinkan akses kamera</string>
+    <string name="scan_permission_body">StrukKu memakai kamera untuk memotret struk. Foto dibaca langsung di HP Anda dan tidak disimpan atau dikirim ke mana pun.</string>
+    <string name="scan_permission_denied">Akses kamera ditolak. Aktifkan izin Kamera di pengaturan aplikasi untuk memindai struk.</string>
+    <string name="scan_allow_camera">Izinkan kamera</string>
+    <string name="scan_open_settings">Buka pengaturan</string>
+    <string name="scan_fill_manually">Isi manual</string>
+    <string name="scan_failed_title">Struk tidak terbaca</string>
+    <string name="scan_failed_body">Pastikan struk terang, rata, dan memenuhi bingkai, lalu coba lagi.</string>
+    <string name="scan_retry">Coba lagi</string>
+    <string name="scan_result_title">Hasil scan</string>
+    <string name="scan_result_note">Anda bisa memperbaiki semua data di langkah berikutnya.</string>
+    <string name="scan_not_detected">Tidak terbaca</string>
+    <string name="scan_needs_check">Periksa kembali</string>
+    <string name="scan_retake">Foto ulang</string>
+    <string name="scan_continue">Lanjut</string>
 
     <!-- Confirm -->
     <string name="confirm_title_manual">Tambah transaksi</string>

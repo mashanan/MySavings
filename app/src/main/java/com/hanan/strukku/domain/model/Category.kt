@@ -12,4 +12,9 @@ data class Category(
     val colorHex: String,
     val keywords: List<String>,
     val isDefault: Boolean,
-)
+) {
+    companion object {
+        /** iconKey of the fallback "Lainnya" category, used when no keyword matches. */
+        const val OTHER_ICON_KEY = "other"
+    }
+}
