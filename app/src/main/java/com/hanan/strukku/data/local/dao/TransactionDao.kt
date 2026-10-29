@@ -22,6 +22,20 @@ interface TransactionDao {
     )
     fun observeTotalsByCategory(fromEpochDay: Long, toEpochDay: Long): Flow<List<CategoryTotal>>
 
+    /**
+     * Totals per calendar month. `date` is an epoch day, so `date * 86400` is a Unix timestamp
+     * that SQLite can format as yyyyMM (e.g. 202610), the same encoding budgets use.
+     */
+    @Query(
+        """
+        SELECT CAST(strftime('%Y%m', date * 86400, 'unixepoch') AS INTEGER) AS yearMonth, SUM(amount) AS total
+        FROM transactions
+        WHERE date BETWEEN :fromEpochDay AND :toEpochDay
+        GROUP BY yearMonth
+        """,
+    )
+    fun observeMonthlyTotals(fromEpochDay: Long, toEpochDay: Long): Flow<List<MonthTotalRow>>
+
     @Query("SELECT * FROM transactions ORDER BY date DESC, createdAt DESC LIMIT :limit")
     fun observeRecent(limit: Int): Flow<List<TransactionEntity>>
 }
@@ -29,5 +43,12 @@ interface TransactionDao {
 /** Result row of [TransactionDao.observeTotalsByCategory]. */
 data class CategoryTotal(
     val categoryId: Long,
+    val total: Long,
+)
+
+/** Result row of [TransactionDao.observeMonthlyTotals]. */
+data class MonthTotalRow(
+    /** yyyyMM, e.g. 202610. */
+    val yearMonth: Int,
     val total: Long,
 )

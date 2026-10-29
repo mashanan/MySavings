@@ -1,5 +1,6 @@
 package com.hanan.strukku.ui.components
 
+import androidx.compose.foundation.layout.RowScope
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -16,6 +17,7 @@ import com.hanan.strukku.R
 fun StrukKuTopBar(
     title: String,
     onBack: (() -> Unit)? = null,
+    actions: @Composable RowScope.() -> Unit = {},
 ) {
     TopAppBar(
         title = { Text(title) },
@@ -29,5 +31,6 @@ fun StrukKuTopBar(
                 }
             }
         },
+        actions = actions,
     )
 }

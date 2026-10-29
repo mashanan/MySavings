@@ -13,6 +13,7 @@ import com.hanan.strukku.ui.confirm.ConfirmPrefill
 import com.hanan.strukku.ui.confirm.ConfirmRoute
 import com.hanan.strukku.ui.home.HomeRoute
 import com.hanan.strukku.ui.scan.ScanRoute
+import com.hanan.strukku.ui.stats.StatsRoute
 
 /** SavedStateHandle key Confirm sets on Home's back stack entry after a successful save. */
 private const val KEY_TRANSACTION_SAVED = "transaction_saved"
@@ -39,6 +40,7 @@ fun StrukKuNavHost(
             HomeRoute(
                 onScanClick = { navController.navigate(Destination.Scan) },
                 onManualEntryClick = { navController.navigate(Destination.Confirm()) },
+                onStatsClick = { navController.navigate(Destination.Stats) },
                 showSavedMessage = transactionSaved,
                 onSavedMessageShown = { entry.savedStateHandle[KEY_TRANSACTION_SAVED] = false },
             )
@@ -55,6 +57,9 @@ fun StrukKuNavHost(
                     }
                 },
             )
+        }
+        composable<Destination.Stats> {
+            StatsRoute(onBack = { navController.popBackStack() })
         }
         composable<Destination.Confirm>(typeMap = Destination.Confirm.typeMap) { entry ->
             val route = entry.toRoute<Destination.Confirm>()

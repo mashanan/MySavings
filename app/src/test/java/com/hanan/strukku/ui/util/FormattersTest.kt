@@ -48,4 +48,13 @@ class FormattersTest {
         assertEquals("29 Okt 2026", formatShortDate(LocalDate.of(2026, 10, 29)))
         assertEquals("Oktober 2026", formatMonthYear(YearMonth.of(2026, 10)))
     }
+
+    @Test
+    fun `short month and compact amounts for charts`() {
+        assertEquals("Okt", formatMonthShort(YearMonth.of(2026, 10)))
+        assertEquals("Rp500", formatRupiahShort(500))
+        assertEquals("Rp250 rb", formatRupiahShort(250_000))
+        assertEquals("Rp1,2 jt", formatRupiahShort(1_234_567))
+        assertEquals("Rp15 jt", formatRupiahShort(15_000_000))
+    }
 }

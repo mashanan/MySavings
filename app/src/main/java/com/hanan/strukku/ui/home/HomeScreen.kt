@@ -11,6 +11,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
@@ -54,6 +55,7 @@ import java.time.YearMonth
 fun HomeRoute(
     onScanClick: () -> Unit,
     onManualEntryClick: () -> Unit,
+    onStatsClick: () -> Unit,
     showSavedMessage: Boolean,
     onSavedMessageShown: () -> Unit,
     viewModel: HomeViewModel = hiltViewModel(),
@@ -67,6 +69,7 @@ fun HomeRoute(
         uiState = uiState,
         onScanClick = onScanClick,
         onManualEntryClick = onManualEntryClick,
+        onStatsClick = onStatsClick,
         onSaveBudget = viewModel::onSaveBudget,
         showSavedMessage = showSavedMessage,
         onSavedMessageShown = onSavedMessageShown,
@@ -78,6 +81,7 @@ fun HomeScreen(
     uiState: HomeUiState,
     onScanClick: () -> Unit,
     onManualEntryClick: () -> Unit,
+    onStatsClick: () -> Unit,
     onSaveBudget: (Long) -> Unit,
     modifier: Modifier = Modifier,
     showSavedMessage: Boolean = false,
@@ -100,7 +104,13 @@ fun HomeScreen(
 
     Scaffold(
         modifier = modifier,
-        topBar = { StrukKuTopBar(title = stringResource(R.string.app_name)) },
+        topBar = {
+            StrukKuTopBar(title = stringResource(R.string.app_name)) {
+                IconButton(onClick = onStatsClick) {
+                    Icon(painterResource(R.drawable.ic_chart), stringResource(R.string.stats_open))
+                }
+            }
+        },
         snackbarHost = { SnackbarHost(snackbarHostState) },
         floatingActionButton = {
             FloatingActionButton(onClick = { showAddSheet = true }) {
@@ -236,7 +246,7 @@ private fun HomeScreenPreview() {
         ),
     )
     StrukKuTheme {
-        HomeScreen(uiState = HomeUiState.Content(summary), onScanClick = {}, onManualEntryClick = {}, onSaveBudget = {})
+        HomeScreen(uiState = HomeUiState.Content(summary), onScanClick = {}, onManualEntryClick = {}, onStatsClick = {}, onSaveBudget = {})
     }
 }
 
@@ -245,6 +255,6 @@ private fun HomeScreenPreview() {
 private fun HomeScreenEmptyPreview() {
     val summary = MonthlySummary(YearMonth.of(2026, 10), 0, null, emptyList(), emptyList())
     StrukKuTheme {
-        HomeScreen(uiState = HomeUiState.Content(summary), onScanClick = {}, onManualEntryClick = {}, onSaveBudget = {})
+        HomeScreen(uiState = HomeUiState.Content(summary), onScanClick = {}, onManualEntryClick = {}, onStatsClick = {}, onSaveBudget = {})
     }
 }

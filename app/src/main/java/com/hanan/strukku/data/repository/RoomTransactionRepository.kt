@@ -6,6 +6,7 @@ import com.hanan.strukku.domain.repository.TransactionRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import java.time.LocalDate
+import java.time.YearMonth
 import javax.inject.Inject
 
 class RoomTransactionRepository @Inject constructor(
@@ -17,6 +18,10 @@ class RoomTransactionRepository @Inject constructor(
     override fun observeSpendingByCategory(from: LocalDate, to: LocalDate): Flow<Map<Long, Long>> =
         dao.observeTotalsByCategory(from.toEpochDay(), to.toEpochDay())
             .map { rows -> rows.associate { it.categoryId to it.total } }
+
+    override fun observeMonthlyTotals(from: LocalDate, to: LocalDate): Flow<Map<YearMonth, Long>> =
+        dao.observeMonthlyTotals(from.toEpochDay(), to.toEpochDay())
+            .map { rows -> rows.associate { it.yearMonth.toYearMonth() to it.total } }
 
     override fun observeRecent(limit: Int): Flow<List<Transaction>> =
         dao.observeRecent(limit).map { rows -> rows.map { it.toDomain() } }

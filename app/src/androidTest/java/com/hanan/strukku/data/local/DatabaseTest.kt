@@ -58,6 +58,26 @@ class DatabaseTest {
     }
 
     @Test
+    fun monthlyTotalsGroupByCalendarMonth() = runTest {
+        val dao = db.transactionDao()
+        dao.insert(transaction(amount = 10_000, date = LocalDate.of(2026, 9, 1)))
+        dao.insert(transaction(amount = 15_000, date = LocalDate.of(2026, 9, 30)))
+        dao.insert(transaction(amount = 40_000, date = LocalDate.of(2026, 10, 1)))
+        dao.insert(transaction(amount = 7_000, date = LocalDate.of(2025, 12, 31)))
+        dao.insert(transaction(amount = 99_000, date = LocalDate.of(2026, 11, 1))) // outside the range
+
+        val totals = dao.observeMonthlyTotals(
+            LocalDate.of(2025, 12, 1).toEpochDay(),
+            LocalDate.of(2026, 10, 31).toEpochDay(),
+        ).first()
+
+        assertEquals(
+            mapOf(202512 to 7_000L, 202609 to 25_000L, 202610 to 40_000L),
+            totals.associate { it.yearMonth to it.total },
+        )
+    }
+
+    @Test
     fun recentIsOrderedByDateThenCreatedAtAndLimited() = runTest {
         val dao = db.transactionDao()
         val older = dao.insert(transaction(date = LocalDate.of(2026, 10, 1), createdAt = 3))

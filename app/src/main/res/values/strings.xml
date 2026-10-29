@@ -54,6 +54,21 @@
     <string name="scan_retake">Foto ulang</string>
     <string name="scan_continue">Lanjut</string>
 
+    <!-- Stats -->
+    <string name="stats_title">Statistik</string>
+    <string name="stats_open">Lihat statistik</string>
+    <string name="stats_previous_month">Bulan sebelumnya</string>
+    <string name="stats_next_month">Bulan berikutnya</string>
+    <string name="stats_month_total">Total pengeluaran</string>
+    <string name="stats_trend_title">6 bulan terakhir</string>
+    <string name="stats_trend_desc">Grafik pengeluaran 6 bulan: %1$s</string>
+    <string name="stats_by_category">Per kategori</string>
+    <!-- Indonesian nouns do not inflect for number, so "other" covers every count. -->
+    <plurals name="stats_donut_desc">
+        <item quantity="other">Grafik lingkaran pengeluaran untuk %1$d kategori</item>
+    </plurals>
+    <string name="stats_empty">Belum ada pengeluaran di bulan ini</string>
+
     <!-- Confirm -->
     <string name="confirm_title_manual">Tambah transaksi</string>
     <string name="confirm_title_scan">Konfirmasi hasil scan</string>
