@@ -1,4 +1,4 @@
-package com.hanan.mysavings.ui.stats
+package com.hanan.mysavings.ui.components
 
 /**
  * The numbers behind the charts, kept apart from the Canvas drawing code so they can be

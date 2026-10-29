@@ -1,4 +1,4 @@
-package com.hanan.mysavings.ui.stats
+package com.hanan.mysavings.ui.components
 
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull

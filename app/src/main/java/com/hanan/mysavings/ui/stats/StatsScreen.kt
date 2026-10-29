@@ -34,11 +34,8 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.heading
-import androidx.compose.ui.semantics.liveRegion
-import androidx.compose.ui.semantics.LiveRegionMode
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.core.content.FileProvider
@@ -49,13 +46,13 @@ import com.hanan.mysavings.domain.model.Category
 import com.hanan.mysavings.domain.model.CategorySpending
 import com.hanan.mysavings.domain.model.MonthlySummary
 import com.hanan.mysavings.domain.usecase.MonthTotal
+import com.hanan.mysavings.ui.components.MonthSelector
 import com.hanan.mysavings.ui.components.MySavingsTopBar
 import com.hanan.mysavings.ui.components.categoryColor
 import com.hanan.mysavings.ui.home.CategorySpendingRow
 import com.hanan.mysavings.ui.theme.MySavingsTheme
 import com.hanan.mysavings.ui.util.currentLocale
 import com.hanan.mysavings.ui.util.formatMonthShort
-import com.hanan.mysavings.ui.util.formatMonthYear
 import com.hanan.mysavings.ui.util.formatRupiah
 import com.hanan.mysavings.ui.util.formatRupiahShort
 import kotlinx.coroutines.launch
@@ -240,32 +237,6 @@ private fun StatsContent(
             items(summary.spendingByCategory, key = { "category-${it.category.id}" }) {
                 CategorySpendingRow(spending = it, totalSpent = summary.totalSpent)
             }
-        }
-    }
-}
-
-@Composable
-private fun MonthSelector(
-    month: YearMonth,
-    canGoNext: Boolean,
-    onPrevious: () -> Unit,
-    onNext: () -> Unit,
-) {
-    Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-        IconButton(onClick = onPrevious) {
-            Icon(painterResource(R.drawable.ic_chevron_left), stringResource(R.string.stats_previous_month))
-        }
-        Text(
-            text = formatMonthYear(month, currentLocale()),
-            style = MaterialTheme.typography.titleLarge,
-            modifier = Modifier
-                .weight(1f)
-                // Announce the new month when it changes via the arrows or the chart.
-                .semantics { liveRegion = LiveRegionMode.Polite },
-            textAlign = TextAlign.Center,
-        )
-        IconButton(onClick = onNext, enabled = canGoNext) {
-            Icon(painterResource(R.drawable.ic_chevron_right), stringResource(R.string.stats_next_month))
         }
     }
 }

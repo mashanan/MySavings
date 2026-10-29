@@ -23,6 +23,10 @@ class RoomTransactionRepository @Inject constructor(
         dao.observeMonthlyTotals(from.toEpochDay(), to.toEpochDay())
             .map { rows -> rows.associate { it.yearMonth.toYearMonth() to it.total } }
 
+    override fun observeDailyTotals(from: LocalDate, to: LocalDate): Flow<Map<LocalDate, Long>> =
+        dao.observeDailyTotals(from.toEpochDay(), to.toEpochDay())
+            .map { rows -> rows.associate { LocalDate.ofEpochDay(it.epochDay) to it.total } }
+
     override fun observeCount(from: LocalDate, to: LocalDate): Flow<Int> =
         dao.observeCount(from.toEpochDay(), to.toEpochDay())
 

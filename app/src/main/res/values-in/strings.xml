@@ -12,17 +12,17 @@
     <string name="action_ok">OK</string>
 
     <!-- Home -->
-    <string name="home_budget_title">Sisa anggaran bulan ini</string>
+    <string name="home_budget_title">Sisa anggaran</string>
     <string name="home_budget_used">Terpakai %1$s dari %2$s</string>
     <string name="home_budget_over">Melebihi anggaran %1$s</string>
     <string name="home_budget_edit">Ubah anggaran</string>
     <string name="home_budget_progress_desc">%1$d%% anggaran terpakai</string>
     <string name="home_budget_empty_title">Anggaran belum diatur</string>
-    <string name="home_budget_empty_body">Pengeluaran bulan ini: %1$s</string>
+    <string name="home_budget_empty_body">Total pengeluaran: %1$s</string>
     <string name="home_budget_set">Atur anggaran</string>
     <string name="home_by_category_title">Pengeluaran per kategori</string>
     <string name="home_recent_title">Transaksi terbaru</string>
-    <string name="home_empty_month">Belum ada transaksi bulan ini</string>
+    <string name="home_empty_month">Tidak ada transaksi di bulan ini</string>
     <string name="home_empty_recent">Belum ada transaksi. Tekan + untuk menambahkan.</string>
     <string name="home_transaction_saved">Transaksi tersimpan</string>
     <string name="home_add_sheet_title">Tambah transaksi</string>
@@ -42,6 +42,8 @@
     <string name="home_stat_transactions">Transaksi</string>
     <string name="home_stat_average">Rata-rata/hari</string>
     <string name="home_stat_top_category">Kategori terbesar</string>
+    <string name="home_chart_title">7 hari terakhir</string>
+    <string name="home_chart_desc">Grafik pengeluaran 7 hari terakhir: %1$s</string>
 
     <!-- Budget sheet -->
     <string name="budget_sheet_title">Anggaran bulan %1$s</string>
@@ -71,8 +73,8 @@
     <!-- Stats -->
     <string name="stats_title">Statistik</string>
     <string name="stats_open">Lihat statistik</string>
-    <string name="stats_previous_month">Bulan sebelumnya</string>
-    <string name="stats_next_month">Bulan berikutnya</string>
+    <string name="month_previous">Bulan sebelumnya</string>
+    <string name="month_next">Bulan berikutnya</string>
     <string name="stats_month_total">Total pengeluaran</string>
     <string name="stats_trend_title">6 bulan terakhir</string>
     <string name="stats_trend_desc">Grafik pengeluaran 6 bulan: %1$s</string>

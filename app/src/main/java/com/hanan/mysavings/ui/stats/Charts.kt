@@ -30,6 +30,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.hanan.mysavings.domain.usecase.MonthTotal
+import com.hanan.mysavings.ui.components.ChartGeometry
 import com.hanan.mysavings.ui.util.currentLocale
 import com.hanan.mysavings.ui.util.formatMonthShort
 import java.time.YearMonth

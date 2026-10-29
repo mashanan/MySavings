@@ -53,6 +53,8 @@ import com.hanan.mysavings.domain.model.PeriodComparison
 import com.hanan.mysavings.domain.model.Transaction
 import com.hanan.mysavings.domain.model.TransactionSource
 import com.hanan.mysavings.domain.model.TransactionWithCategory
+import com.hanan.mysavings.domain.usecase.DayTotal
+import com.hanan.mysavings.ui.components.MonthSelector
 import com.hanan.mysavings.ui.components.MySavingsTopBar
 import com.hanan.mysavings.ui.theme.MySavingsTheme
 import kotlinx.coroutines.launch
@@ -101,6 +103,8 @@ fun HomeRoute(
             viewModel.onSaveBudget(limit)
             requestNotificationPermission()
         },
+        onPreviousMonth = viewModel::onPreviousMonth,
+        onNextMonth = viewModel::onNextMonth,
         showSavedMessage = showSavedMessage,
         onSavedMessageShown = onSavedMessageShown,
     )
@@ -115,6 +119,8 @@ fun HomeScreen(
     onSettingsClick: () -> Unit,
     onSaveBudget: (Long) -> Unit,
     modifier: Modifier = Modifier,
+    onPreviousMonth: () -> Unit = {},
+    onNextMonth: () -> Unit = {},
     showSavedMessage: Boolean = false,
     onSavedMessageShown: () -> Unit = {},
 ) {
@@ -161,8 +167,9 @@ fun HomeScreen(
             }
 
             is HomeUiState.Content -> HomeContent(
-                summary = uiState.summary,
-                insights = uiState.insights,
+                state = uiState,
+                onPreviousMonth = onPreviousMonth,
+                onNextMonth = onNextMonth,
                 onEditBudget = { showBudgetSheet = true },
                 contentPadding = innerPadding,
             )
@@ -198,8 +205,9 @@ fun HomeScreen(
 
 @Composable
 private fun HomeContent(
-    summary: MonthlySummary,
-    insights: MonthInsights,
+    state: HomeUiState.Content,
+    onPreviousMonth: () -> Unit,
+    onNextMonth: () -> Unit,
     onEditBudget: () -> Unit,
     contentPadding: PaddingValues,
 ) {
@@ -209,6 +217,18 @@ private fun HomeContent(
         // Bottom padding keeps the last row clear of the FAB.
         contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 8.dp, bottom = 88.dp),
     ) {
+        val summary = state.summary
+        val insights = state.insights
+
+        item(key = "month") {
+            MonthSelector(
+                month = summary.yearMonth,
+                canGoNext = state.canGoNext,
+                onPrevious = onPreviousMonth,
+                onNext = onNextMonth,
+                modifier = Modifier.padding(bottom = 8.dp),
+            )
+        }
         item(key = "budget") {
             BudgetCard(summary = summary, allowance = insights.dailyAllowance, onEditBudget = onEditBudget)
         }
@@ -219,6 +239,11 @@ private fun HomeContent(
             item(key = "comparison") {
                 ComparisonCard(comparison = comparison, modifier = Modifier.padding(top = 8.dp))
             }
+        }
+
+        sectionTitle(R.string.home_chart_title)
+        item(key = "chart") {
+            DailySpendingChart(days = state.dailyTotals, today = state.today)
         }
 
         sectionTitle(R.string.home_by_category_title)
@@ -265,6 +290,10 @@ private fun LazyListScope.emptyText(textRes: Int) {
 
 private val previewFood = Category(1, "Makan & Minum", "food", "#E57373", emptyList(), true)
 private val previewGroceries = Category(2, "Belanja Harian", "groceries", "#4DB6AC", emptyList(), true)
+private val previewToday = LocalDate.of(2026, 10, 29)
+
+private fun previewWeek(totals: List<Long>) =
+    totals.mapIndexed { index, total -> DayTotal(previewToday.minusDays(6L - index), total) }
 
 @Preview(showBackground = true)
 @Preview(showBackground = true, name = "Large font", fontScale = 1.5f)
@@ -297,7 +326,7 @@ private fun HomeScreenPreview() {
         comparison = PeriodComparison(previousTotal = 2_010_000, changePercent = -18),
     )
     MySavingsTheme {
-        HomeScreen(uiState = HomeUiState.Content(summary, insights), onScanClick = {}, onManualEntryClick = {}, onStatsClick = {}, onSettingsClick = {}, onSaveBudget = {})
+        HomeScreen(uiState = HomeUiState.Content(summary, insights, previewWeek(listOf(45_000, 0, 120_000, 87_500, 30_000, 0, 35_000)), previewToday, canGoNext = false), onScanClick = {}, onManualEntryClick = {}, onStatsClick = {}, onSettingsClick = {}, onSaveBudget = {})
     }
 }
 
@@ -307,6 +336,6 @@ private fun HomeScreenEmptyPreview() {
     val summary = MonthlySummary(YearMonth.of(2026, 10), 0, null, emptyList(), emptyList())
     val insights = MonthInsights(0, 0, null, null, null)
     MySavingsTheme {
-        HomeScreen(uiState = HomeUiState.Content(summary, insights), onScanClick = {}, onManualEntryClick = {}, onStatsClick = {}, onSettingsClick = {}, onSaveBudget = {})
+        HomeScreen(uiState = HomeUiState.Content(summary, insights, previewWeek(List(7) { 0L }), previewToday, canGoNext = false), onScanClick = {}, onManualEntryClick = {}, onStatsClick = {}, onSettingsClick = {}, onSaveBudget = {})
     }
 }

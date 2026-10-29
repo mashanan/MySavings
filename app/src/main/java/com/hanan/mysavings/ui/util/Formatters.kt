@@ -54,6 +54,10 @@ fun formatMonthYear(yearMonth: YearMonth, locale: Locale): String =
 fun formatMonthShort(yearMonth: YearMonth, locale: Locale): String =
     DateTimeFormatter.ofPattern("MMM", locale).format(yearMonth)
 
+/** 2026-10-29 -> "Thu" (en) / "Kam" (id). */
+fun formatDayOfWeekShort(date: LocalDate, locale: Locale): String =
+    DateTimeFormatter.ofPattern("EEE", locale).format(date)
+
 /**
  * Compact amount for charts: "Rp250K", "Rp1.2M" in English; "Rp250 rb", "Rp1,2 jt" in
  * Indonesian (ribu, juta, miliar). One decimal at most, with the language's decimal mark.

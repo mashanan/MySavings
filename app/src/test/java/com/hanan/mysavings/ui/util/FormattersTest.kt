@@ -64,6 +64,14 @@ class FormattersTest {
     }
 
     @Test
+    fun `short weekday follows the language`() {
+        val thursday = LocalDate.of(2026, 10, 29)
+
+        assertEquals("Thu", formatDayOfWeekShort(thursday, english))
+        assertEquals("Kam", formatDayOfWeekShort(thursday, indonesian))
+    }
+
+    @Test
     fun `compact amounts use English units and decimal point`() {
         assertEquals("Rp500", formatRupiahShort(500, english))
         assertEquals("Rp250K", formatRupiahShort(250_000, english))

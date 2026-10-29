@@ -36,6 +36,17 @@ interface TransactionDao {
     )
     fun observeMonthlyTotals(fromEpochDay: Long, toEpochDay: Long): Flow<List<MonthTotalRow>>
 
+    /** Totals per day, for the Home chart. Days without spending are absent. */
+    @Query(
+        """
+        SELECT date AS epochDay, SUM(amount) AS total
+        FROM transactions
+        WHERE date BETWEEN :fromEpochDay AND :toEpochDay
+        GROUP BY date
+        """,
+    )
+    fun observeDailyTotals(fromEpochDay: Long, toEpochDay: Long): Flow<List<DayTotalRow>>
+
     @Query("SELECT COUNT(*) FROM transactions WHERE date BETWEEN :fromEpochDay AND :toEpochDay")
     fun observeCount(fromEpochDay: Long, toEpochDay: Long): Flow<Int>
 
@@ -50,6 +61,12 @@ interface TransactionDao {
 /** Result row of [TransactionDao.observeTotalsByCategory]. */
 data class CategoryTotal(
     val categoryId: Long,
+    val total: Long,
+)
+
+/** Result row of [TransactionDao.observeDailyTotals]. */
+data class DayTotalRow(
+    val epochDay: Long,
     val total: Long,
 )
 

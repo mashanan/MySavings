@@ -79,6 +79,25 @@ class DatabaseTest {
     }
 
     @Test
+    fun dailyTotalsGroupByDayWithinTheRange() = runTest {
+        val dao = db.transactionDao()
+        dao.insert(transaction(amount = 10_000, date = LocalDate.of(2026, 10, 23)))
+        dao.insert(transaction(amount = 15_000, date = LocalDate.of(2026, 10, 29)))
+        dao.insert(transaction(amount = 5_000, date = LocalDate.of(2026, 10, 29), categoryId = 2))
+        dao.insert(transaction(amount = 99_000, date = LocalDate.of(2026, 10, 22))) // outside the range
+
+        val totals = dao.observeDailyTotals(
+            LocalDate.of(2026, 10, 23).toEpochDay(),
+            LocalDate.of(2026, 10, 29).toEpochDay(),
+        ).first()
+
+        assertEquals(
+            mapOf(LocalDate.of(2026, 10, 23).toEpochDay() to 10_000L, LocalDate.of(2026, 10, 29).toEpochDay() to 20_000L),
+            totals.associate { it.epochDay to it.total },
+        )
+    }
+
+    @Test
     fun countIncludesBothEndsOfTheRange() = runTest {
         val dao = db.transactionDao()
         dao.insert(transaction(date = LocalDate.of(2026, 10, 1)))

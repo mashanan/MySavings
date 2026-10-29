@@ -17,17 +17,17 @@
     <string name="action_ok">OK</string>
 
     <!-- Home -->
-    <string name="home_budget_title">Budget left this month</string>
+    <string name="home_budget_title">Budget left</string>
     <string name="home_budget_used">%1$s of %2$s spent</string>
     <string name="home_budget_over">Over budget by %1$s</string>
     <string name="home_budget_edit">Edit budget</string>
     <string name="home_budget_progress_desc">%1$d%% of budget used</string>
     <string name="home_budget_empty_title">No budget set</string>
-    <string name="home_budget_empty_body">Spent this month: %1$s</string>
+    <string name="home_budget_empty_body">Total spent: %1$s</string>
     <string name="home_budget_set">Set budget</string>
     <string name="home_by_category_title">Spending by category</string>
     <string name="home_recent_title">Recent transactions</string>
-    <string name="home_empty_month">No transactions this month yet</string>
+    <string name="home_empty_month">No transactions in this month</string>
     <string name="home_empty_recent">No transactions yet. Tap + to add one.</string>
     <string name="home_transaction_saved">Transaction saved</string>
     <string name="home_add_sheet_title">Add transaction</string>
@@ -48,6 +48,8 @@
     <string name="home_stat_transactions">Transactions</string>
     <string name="home_stat_average">Avg. per day</string>
     <string name="home_stat_top_category">Top category</string>
+    <string name="home_chart_title">Last 7 days</string>
+    <string name="home_chart_desc">Spending over the last 7 days: %1$s</string>
 
     <!-- Budget sheet -->
     <string name="budget_sheet_title">Budget for %1$s</string>
@@ -77,8 +79,8 @@
     <!-- Stats -->
     <string name="stats_title">Statistics</string>
     <string name="stats_open">View statistics</string>
-    <string name="stats_previous_month">Previous month</string>
-    <string name="stats_next_month">Next month</string>
+    <string name="month_previous">Previous month</string>
+    <string name="month_next">Next month</string>
     <string name="stats_month_total">Total spending</string>
     <string name="stats_trend_title">Last 6 months</string>
     <string name="stats_trend_desc">Spending over 6 months: %1$s</string>
