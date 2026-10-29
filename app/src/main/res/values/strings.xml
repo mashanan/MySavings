@@ -8,15 +8,45 @@
     <string name="action_manual_entry">Input manual</string>
     <string name="action_capture">Ambil foto</string>
     <string name="action_save">Simpan</string>
+    <string name="action_cancel">Batal</string>
+    <string name="action_ok">OK</string>
 
     <!-- Home -->
-    <string name="home_placeholder">Ringkasan anggaran dan transaksi akan tampil di sini.</string>
+    <string name="home_budget_title">Sisa anggaran bulan ini</string>
+    <string name="home_budget_used">Terpakai %1$s dari %2$s</string>
+    <string name="home_budget_over">Melebihi anggaran %1$s</string>
+    <string name="home_budget_edit">Ubah anggaran</string>
+    <string name="home_budget_empty_title">Anggaran belum diatur</string>
+    <string name="home_budget_empty_body">Pengeluaran bulan ini: %1$s</string>
+    <string name="home_budget_set">Atur anggaran</string>
+    <string name="home_by_category_title">Pengeluaran per kategori</string>
+    <string name="home_recent_title">Transaksi terbaru</string>
+    <string name="home_empty_month">Belum ada transaksi bulan ini</string>
+    <string name="home_empty_recent">Belum ada transaksi. Tekan + untuk menambahkan.</string>
+    <string name="home_transaction_saved">Transaksi tersimpan</string>
+    <string name="home_add_sheet_title">Tambah transaksi</string>
+    <string name="home_add_scan_desc">Foto struk, data terisi otomatis</string>
+    <string name="home_add_manual_desc">Isi sendiri nominal dan kategorinya</string>
+
+    <!-- Budget sheet -->
+    <string name="budget_sheet_title">Anggaran bulan %1$s</string>
+    <string name="budget_sheet_amount">Batas pengeluaran</string>
+    <string name="budget_sheet_error">Masukkan nominal lebih dari 0</string>
 
     <!-- Scan -->
     <string name="scan_title">Scan struk</string>
     <string name="scan_placeholder">Kamera untuk memindai struk akan tampil di sini.</string>
 
     <!-- Confirm -->
-    <string name="confirm_title">Konfirmasi transaksi</string>
-    <string name="confirm_placeholder">Form untuk memeriksa dan menyimpan transaksi akan tampil di sini.</string>
+    <string name="confirm_title_manual">Tambah transaksi</string>
+    <string name="confirm_merchant">Nama toko</string>
+    <string name="confirm_amount">Total</string>
+    <string name="confirm_date">Tanggal</string>
+    <string name="confirm_pick_date">Pilih tanggal</string>
+    <string name="confirm_category">Kategori</string>
+    <string name="confirm_category_hint">Pilih kategori</string>
+    <string name="confirm_note">Catatan (opsional)</string>
+    <string name="confirm_error_amount">Total harus lebih dari 0</string>
+    <string name="confirm_error_category">Kategori wajib dipilih</string>
+    <string name="confirm_error_date">Tanggal tidak boleh di masa depan</string>
 </resources>
