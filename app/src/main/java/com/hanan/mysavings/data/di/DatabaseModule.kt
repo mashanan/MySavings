@@ -1,0 +1,45 @@
+package com.hanan.mysavings.data.di
+
+import android.content.Context
+import androidx.room.Room
+import com.hanan.mysavings.data.local.MySavingsDatabase
+import com.hanan.mysavings.data.local.dao.BudgetAlertDao
+import com.hanan.mysavings.data.local.dao.BudgetDao
+import com.hanan.mysavings.data.local.dao.CategoryDao
+import com.hanan.mysavings.data.local.dao.TransactionDao
+import dagger.Module
+import dagger.Provides
+import dagger.hilt.InstallIn
+import dagger.hilt.android.qualifiers.ApplicationContext
+import dagger.hilt.components.SingletonComponent
+import java.time.Clock
+import javax.inject.Singleton
+
+@Module
+@InstallIn(SingletonComponent::class)
+object DatabaseModule {
+
+    // One database instance for the whole app; opening it is expensive.
+    @Provides
+    @Singleton
+    fun provideDatabase(@ApplicationContext context: Context): MySavingsDatabase =
+        Room.databaseBuilder(context, MySavingsDatabase::class.java, MySavingsDatabase.NAME)
+            .addCallback(MySavingsDatabase.SeedCallback)
+            .build()
+
+    @Provides
+    fun provideCategoryDao(db: MySavingsDatabase): CategoryDao = db.categoryDao()
+
+    @Provides
+    fun provideTransactionDao(db: MySavingsDatabase): TransactionDao = db.transactionDao()
+
+    @Provides
+    fun provideBudgetDao(db: MySavingsDatabase): BudgetDao = db.budgetDao()
+
+    @Provides
+    fun provideBudgetAlertDao(db: MySavingsDatabase): BudgetAlertDao = db.budgetAlertDao()
+
+    // Use cases read "now" through this Clock; tests pass a fixed one instead.
+    @Provides
+    fun provideClock(): Clock = Clock.systemDefaultZone()
+}

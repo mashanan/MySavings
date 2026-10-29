@@ -22,6 +22,6 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "StrukKu"
+rootProject.name = "MySavings"
 include(":app")
  

@@ -1,8 +1,8 @@
-# StrukKu
+# MySavings
 
 **Offline-first expense tracker for Android with on-device receipt scanning.**
 
-Point the camera at a receipt and StrukKu reads the store name, total, date and category on the phone itself, with no internet and no account. You review the result, save it, and the home screen shows how much of this month's budget is left.
+Point the camera at a receipt and MySavings reads the store name, total, date and category on the phone itself, with no internet and no account. You review the result, save it, and the home screen shows how much of this month's budget is left.
 
 > The UI is in Bahasa Indonesia; code and documentation are in English.
 
@@ -72,7 +72,7 @@ flowchart LR
 ## Project structure
 
 ```
-app/src/main/java/com/hanan/strukku/
+app/src/main/java/com/hanan/mysavings/
 ├─ data/      Room entities, DAOs, repositories, ML Kit recognizer, Hilt modules
 ├─ domain/    models, repository interfaces, use cases, receipt parser
 └─ ui/        theme, navigation, components, home/, scan/, confirm/

@@ -1,4 +1,4 @@
-# SPEC — StrukKu
+# SPEC — MySavings
 
 Pencatat pengeluaran offline-first dengan scan struk di perangkat.
 Konvensi teknis dan perintah build ada di [CLAUDE.md](CLAUDE.md).
@@ -108,8 +108,8 @@ Setiap fase dimulai dengan rencana singkat, menunggu persetujuan, lalu dikerjaka
 
 | Fase | Isi | Selesai jika |
 |---|---|---|
-| **1. Fondasi** | Menambahkan dependency ke version catalog (KSP, Hilt, Room, Navigation, kotlinx-serialization, lifecycle-viewmodel-compose, MockK, coroutines-test, Turbine); `@HiltAndroidApp`; struktur paket; tema M3 dan `strings.xml`; NavHost dengan 3 layar placeholder; menghapus tes contoh template. (Ganti package ke `com.hanan.strukku` dan `git init` sudah dilakukan.) | Build lulus dan aplikasi bisa berpindah antar ketiga placeholder. |
-| **2. Data & domain** | Entity, DAO, `StrukKuDatabase` dengan seed kategori, mapper entity ↔ domain, model domain, interface dan implementasi repository, modul Hilt, serta use case `AddTransaction`, `ObserveMonthlySummary`, `SetBudget`, dan `ObserveCategories`. | Unit test use case (MockK) dan DAO test (in-memory) lulus. |
+| **1. Fondasi** | Menambahkan dependency ke version catalog (KSP, Hilt, Room, Navigation, kotlinx-serialization, lifecycle-viewmodel-compose, MockK, coroutines-test, Turbine); `@HiltAndroidApp`; struktur paket; tema M3 dan `strings.xml`; NavHost dengan 3 layar placeholder; menghapus tes contoh template. (Ganti package ke `com.hanan.mysavings` dan `git init` sudah dilakukan.) | Build lulus dan aplikasi bisa berpindah antar ketiga placeholder. |
+| **2. Data & domain** | Entity, DAO, `MySavingsDatabase` dengan seed kategori, mapper entity ↔ domain, model domain, interface dan implementasi repository, modul Hilt, serta use case `AddTransaction`, `ObserveMonthlySummary`, `SetBudget`, dan `ObserveCategories`. | Unit test use case (MockK) dan DAO test (in-memory) lulus. |
 | **3. Beranda & input manual** | `HomeViewModel` dan UI Beranda; bottom sheet "Atur anggaran"; layar Konfirmasi mode manual; helper `formatRupiah`. | Transaksi manual tersimpan dan langsung tampil di Beranda. Tes ViewModel (Turbine) lulus. |
 | **4. Scan struk** | CameraX (preview dan ImageCapture); alur izin kamera; `MlKitTextRecognizer` di data layer; `ReceiptParser` dan `CategoryClassifier` dengan unit test dari contoh teks struk Indonesia. | Foto struk menghasilkan `ReceiptDraft` yang benar untuk contoh-contoh uji. |
 | **5. Konfirmasi hasil scan & polish MVP** | Draft hasil scan mengisi form Konfirmasi; penanda field; validasi; empty dan error state; pengecekan aksesibilitas dasar (contentDescription, ukuran sentuh). | Alur lengkap Beranda → Scan → Konfirmasi → Beranda berjalan offline. **MVP selesai.** |

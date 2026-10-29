@@ -8,13 +8,13 @@ plugins {
 }
 
 android {
-    namespace = "com.hanan.strukku"
+    namespace = "com.hanan.mysavings"
     compileSdk {
         version = release(37)
     }
 
     defaultConfig {
-        applicationId = "com.hanan.strukku"
+        applicationId = "com.hanan.mysavings"
         minSdk = 29
         targetSdk = 37
         versionCode = 1

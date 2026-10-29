@@ -1,5 +1,5 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
-    <string name="app_name">StrukKu</string>
+    <string name="app_name">MySavings</string>
 
     <!-- Common actions -->
     <string name="action_back">Kembali</string>
@@ -39,7 +39,7 @@
     <string name="scan_hint">Posisikan struk di dalam bingkai</string>
     <string name="scan_processing">Membaca struk…</string>
     <string name="scan_permission_title">Izinkan akses kamera</string>
-    <string name="scan_permission_body">StrukKu memakai kamera untuk memotret struk. Foto dibaca langsung di HP Anda dan tidak disimpan atau dikirim ke mana pun.</string>
+    <string name="scan_permission_body">MySavings memakai kamera untuk memotret struk. Foto dibaca langsung di HP Anda dan tidak disimpan atau dikirim ke mana pun.</string>
     <string name="scan_permission_denied">Akses kamera ditolak. Aktifkan izin Kamera di pengaturan aplikasi untuk memindai struk.</string>
     <string name="scan_allow_camera">Izinkan kamera</string>
     <string name="scan_open_settings">Buka pengaturan</string>
@@ -101,7 +101,7 @@
     <string name="stats_export_failed">Gagal membuat laporan</string>
     <string name="stats_export_share">Bagikan laporan</string>
     <string name="report_title">Laporan Pengeluaran</string>
-    <string name="report_generated">Dibuat %1$s dengan StrukKu</string>
+    <string name="report_generated">Dibuat %1$s dengan MySavings</string>
     <string name="report_total">Total pengeluaran</string>
     <string name="report_budget">Anggaran</string>
     <string name="report_budget_none">Belum diatur</string>

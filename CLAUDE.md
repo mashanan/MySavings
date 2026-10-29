@@ -3,7 +3,7 @@
 Guidance for Claude Code when working in this repository.
 
 ## About the app
-**StrukKu** is an offline-first Android expense tracker with on-device receipt scanning.
+**MySavings** is an offline-first Android expense tracker with on-device receipt scanning.
 The user photographs a receipt, ML Kit reads the text on the device (no internet), and the
 app pre-fills total, date, merchant and category. The user corrects the result and saves it.
 All data is stored locally. This is a portfolio project, so code clarity matters as much as features.
@@ -26,9 +26,9 @@ minSdk 29, targetSdk/compileSdk 37, JVM target 11.
 Single `:app` module, package by layer, then by feature:
 
 ```
-com.hanan.strukku
+com.hanan.mysavings
 ├─ data/
-│  ├─ local/        Room entities, DAOs, StrukKuDatabase, default category seed
+│  ├─ local/        Room entities, DAOs, MySavingsDatabase, default category seed
 │  ├─ repository/   repository implementations + entity <-> domain mappers
 │  ├─ ocr/          ML Kit text recognizer wrapper
 │  └─ di/           Hilt modules
