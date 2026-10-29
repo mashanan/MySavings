@@ -20,6 +20,7 @@ Point the camera at a receipt and StrukKu reads the store name, total, date and 
 - **Monthly budget**: remaining budget with a progress bar that turns amber at 80% and red when overspent.
 - **Spending by category and recent transactions** on the home screen, updated live.
 - **Statistics**: six-month spending bars and a category donut, both drawn by hand on a Compose `Canvas`, with text descriptions for screen readers.
+- **Budget alerts**: a notification at 80% and when the budget is used up, at most once per level per month. Checked in the background with WorkManager after every save and once a day.
 - **Manual entry** with a thousands-grouped amount field, a date picker that blocks future dates, and a category dropdown.
 - **Private by design**: no `INTERNET` permission; photos are processed in memory and never written to storage.
 
@@ -62,6 +63,8 @@ flowchart LR
 | Manual budget upsert | SQLite treats `NULL`s as distinct in unique indexes, so `@Upsert` would allow two "overall" budgets per month. |
 | Scanned draft as a navigation argument | Survives rotation and process death. Encoded as URL-safe Base64 JSON so user text like `Kopi & Roti 100%` can't be corrupted by URL decoding (caught by an instrumented test). |
 | Charts on `Canvas`, geometry in `ChartGeometry` | No chart library; bar heights and donut angles are plain functions with unit tests, the composables only draw them. |
+| Room AutoMigration with a migration test | Adding the alerts table bumped the schema to v2. Room generates the migration from the committed schema files, and `MigrationTest` upgrades a real v1 database to prove no user data is lost. |
+| Alert logic in the domain, WorkManager at the edge | `CheckBudgetAlertUseCase` decides (and is unit tested); the worker just runs it. Every reached level is recorded, so jumping from 50% to 120% sends one "used up" alert, never a late "nearly used". |
 | Injected `Clock` | "Today" and "this month" are testable, including crossing midnight at month end. |
 
 ## Project structure
@@ -93,4 +96,4 @@ Development happens in phases; see [SPEC.md](SPEC.md) for the full spec.
 - [x] 3. Home screen and manual entry
 - [x] 4. Receipt scanning
 - [x] 5. Scan confirmation and MVP polish
-- [ ] 6. Monthly charts ✅ · budget notifications (WorkManager) · PDF export
+- [ ] 6. Monthly charts ✅ · budget notifications ✅ · PDF export

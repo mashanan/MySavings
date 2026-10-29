@@ -86,4 +86,13 @@
     <string name="confirm_error_amount">Total harus lebih dari 0</string>
     <string name="confirm_error_category">Kategori wajib dipilih</string>
     <string name="confirm_error_date">Tanggal tidak boleh di masa depan</string>
+
+    <!-- Notifications -->
+    <string name="notif_channel_budget">Anggaran</string>
+    <string name="notif_channel_budget_desc">Pemberitahuan saat anggaran bulanan hampir atau sudah habis</string>
+    <string name="notif_budget_nearly_title">Anggaran hampir habis</string>
+    <string name="notif_budget_nearly_body">%1$d%% anggaran bulan ini terpakai. Sisa %2$s.</string>
+    <string name="notif_budget_used_up_title">Anggaran bulan ini habis</string>
+    <string name="notif_budget_used_up_body">Pengeluaran sudah mencapai batas %1$s.</string>
+    <string name="notif_budget_over_body">Pengeluaran melebihi anggaran %1$s.</string>
 </resources>

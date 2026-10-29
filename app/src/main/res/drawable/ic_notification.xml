@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Status bar icon: the launcher receipt, single colour as Android requires. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+    <path
+        android:fillColor="#FFFFFFFF"
+        android:fillType="evenOdd"
+        android:pathData="M6,2h12v19l-1.5,-1l-1.5,1l-1.5,-1l-1.5,1l-1.5,-1l-1.5,1l-1.5,-1l-1.5,1z
+            M8.5,6h7v1.5h-7z
+            M8.5,9.5h7v1.5h-7z
+            M8.5,13h4v1.5h-4z" />
+</vector>

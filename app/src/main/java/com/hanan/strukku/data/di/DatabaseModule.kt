@@ -3,6 +3,7 @@ package com.hanan.strukku.data.di
 import android.content.Context
 import androidx.room.Room
 import com.hanan.strukku.data.local.StrukKuDatabase
+import com.hanan.strukku.data.local.dao.BudgetAlertDao
 import com.hanan.strukku.data.local.dao.BudgetDao
 import com.hanan.strukku.data.local.dao.CategoryDao
 import com.hanan.strukku.data.local.dao.TransactionDao
@@ -34,6 +35,9 @@ object DatabaseModule {
 
     @Provides
     fun provideBudgetDao(db: StrukKuDatabase): BudgetDao = db.budgetDao()
+
+    @Provides
+    fun provideBudgetAlertDao(db: StrukKuDatabase): BudgetAlertDao = db.budgetAlertDao()
 
     // Use cases read "now" through this Clock; tests pass a fixed one instead.
     @Provides

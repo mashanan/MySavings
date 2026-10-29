@@ -32,6 +32,7 @@ com.hanan.strukku
 │  ├─ repository/   repository implementations + entity <-> domain mappers
 │  ├─ ocr/          ML Kit text recognizer wrapper
 │  └─ di/           Hilt modules
+├─ notification/  budget alerts: WorkManager worker, scheduler, notifier (Android plumbing for a domain use case)
 ├─ domain/
 │  ├─ model/        plain Kotlin data classes
 │  ├─ repository/   repository interfaces
@@ -39,7 +40,7 @@ com.hanan.strukku
 │  └─ parser/       ReceiptParser, CategoryClassifier
 └─ ui/
    ├─ theme/  navigation/  components/  util/
-   └─ home/  scan/  confirm/   (one package per screen)
+   └─ home/  scan/  confirm/  stats/   (one package per screen)
 ```
 
 Dependency rule: `ui` → `domain` ← `data`. `domain` must not import Android or `data` classes.

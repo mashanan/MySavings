@@ -2,11 +2,13 @@ package com.hanan.strukku.domain.usecase
 
 import com.hanan.strukku.domain.model.Transaction
 import com.hanan.strukku.domain.model.TransactionSource
+import com.hanan.strukku.domain.repository.BudgetCheckScheduler
 import com.hanan.strukku.domain.repository.TransactionRepository
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.mockk
 import io.mockk.slot
+import io.mockk.verify
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
@@ -23,7 +25,8 @@ class AddTransactionUseCaseTest {
     private val today = LocalDate.of(2026, 10, 29)
 
     private val repository = mockk<TransactionRepository>()
-    private val addTransaction = AddTransactionUseCase(repository, clock)
+    private val scheduler = mockk<BudgetCheckScheduler>(relaxed = true)
+    private val addTransaction = AddTransactionUseCase(repository, scheduler, clock)
 
     @Test
     fun `valid transaction is saved with trimmed text and createdAt from clock`() = runTest {
@@ -49,6 +52,7 @@ class AddTransactionUseCaseTest {
             assertEquals(TransactionSource.SCAN, source)
             assertEquals(now, createdAt)
         }
+        verify(exactly = 1) { scheduler.requestCheck() }
     }
 
     @Test
@@ -58,6 +62,7 @@ class AddTransactionUseCaseTest {
             assertEquals(AddTransactionResult.Invalid(TransactionError.AMOUNT_NOT_POSITIVE), result)
         }
         coVerify(exactly = 0) { repository.add(any()) }
+        verify(exactly = 0) { scheduler.requestCheck() }
     }
 
     @Test

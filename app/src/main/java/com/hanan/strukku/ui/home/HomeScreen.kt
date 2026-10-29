@@ -1,5 +1,10 @@
 package com.hanan.strukku.ui.home
 
+import android.Manifest
+import android.content.pm.PackageManager
+import android.os.Build
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
@@ -27,12 +32,14 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.core.content.ContextCompat
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.LifecycleResumeEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -65,12 +72,30 @@ fun HomeRoute(
         viewModel.refreshMonth()
         onPauseOrDispose {}
     }
+
+    // Budget alerts need notification permission on Android 13+. Asking right after the user
+    // sets a budget makes the reason obvious. If they decline twice, Android stops showing
+    // the dialog by itself, so asking again later is harmless.
+    val context = LocalContext.current
+    val notificationPermission = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) {}
+    val requestNotificationPermission = {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
+            ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) !=
+            PackageManager.PERMISSION_GRANTED
+        ) {
+            notificationPermission.launch(Manifest.permission.POST_NOTIFICATIONS)
+        }
+    }
+
     HomeScreen(
         uiState = uiState,
         onScanClick = onScanClick,
         onManualEntryClick = onManualEntryClick,
         onStatsClick = onStatsClick,
-        onSaveBudget = viewModel::onSaveBudget,
+        onSaveBudget = { limit ->
+            viewModel.onSaveBudget(limit)
+            requestNotificationPermission()
+        },
         showSavedMessage = showSavedMessage,
         onSavedMessageShown = onSavedMessageShown,
     )

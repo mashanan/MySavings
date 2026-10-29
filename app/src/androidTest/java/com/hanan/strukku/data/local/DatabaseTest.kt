@@ -3,6 +3,7 @@ package com.hanan.strukku.data.local
 import androidx.room.Room
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import com.hanan.strukku.data.local.entity.BudgetAlertEntity
 import com.hanan.strukku.data.local.entity.BudgetEntity
 import com.hanan.strukku.data.local.entity.TransactionEntity
 import com.hanan.strukku.domain.model.Category
@@ -118,6 +119,21 @@ class DatabaseTest {
         val october = dao.observeForMonth(202610).first().associate { it.categoryId to it.limitAmount }
 
         assertEquals(mapOf(null to 3_000_000L, 1L to 900_000L), october)
+    }
+
+    @Test
+    fun budgetAlertsAreRecordedOncePerMonthAndClearedPerMonth() = runTest {
+        val dao = db.budgetAlertDao()
+        dao.insertAll(listOf(BudgetAlertEntity(202610, 80, sentAt = 1)))
+        dao.insertAll(listOf(BudgetAlertEntity(202610, 80, sentAt = 2), BudgetAlertEntity(202610, 100, sentAt = 2)))
+        dao.insertAll(listOf(BudgetAlertEntity(202609, 80, sentAt = 3)))
+
+        assertEquals(setOf(80, 100), dao.sentThresholds(202610).toSet())
+
+        dao.clear(202610)
+
+        assertEquals(emptyList<Int>(), dao.sentThresholds(202610))
+        assertEquals(listOf(80), dao.sentThresholds(202609))
     }
 
     private fun transaction(

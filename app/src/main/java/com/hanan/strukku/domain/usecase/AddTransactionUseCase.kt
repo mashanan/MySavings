@@ -2,6 +2,7 @@ package com.hanan.strukku.domain.usecase
 
 import com.hanan.strukku.domain.model.Transaction
 import com.hanan.strukku.domain.model.TransactionSource
+import com.hanan.strukku.domain.repository.BudgetCheckScheduler
 import com.hanan.strukku.domain.repository.TransactionRepository
 import java.time.Clock
 import java.time.Instant
@@ -14,6 +15,7 @@ import javax.inject.Inject
  */
 class AddTransactionUseCase @Inject constructor(
     private val transactionRepository: TransactionRepository,
+    private val budgetCheckScheduler: BudgetCheckScheduler,
     // Injected instead of calling LocalDate.now() so tests control "today".
     private val clock: Clock,
 ) {
@@ -39,6 +41,8 @@ class AddTransactionUseCase @Inject constructor(
                 createdAt = Instant.now(clock),
             ),
         )
+        // A new expense may push the month over a budget threshold.
+        budgetCheckScheduler.requestCheck()
         return AddTransactionResult.Success(id)
     }
 }
