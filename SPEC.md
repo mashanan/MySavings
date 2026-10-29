@@ -1,6 +1,6 @@
 # SPEC — MySavings
 
-Pencatat pengeluaran offline-first dengan scan struk di perangkat.
+Aplikasi keuangan pribadi offline-first: pencatat pengeluaran dengan scan struk di perangkat, diperluas dengan tabungan, hutang, dan (nanti) sinkron akun. Lihat bagian 9.
 Konvensi teknis dan perintah build ada di [CLAUDE.md](CLAUDE.md).
 
 ## 1. Tujuan
@@ -18,15 +18,20 @@ Konvensi teknis dan perintah build ada di [CLAUDE.md](CLAUDE.md).
 
 ## 3. Layar
 
-### 3.1 Beranda
+### 3.1 Beranda (tab Pengeluaran)
 | Bagian | Isi |
 |---|---|
-| Sisa anggaran bulan ini | Nominal sisa, terpakai/limit, dan progress bar. Warnanya berubah menjadi peringatan di atas 80% dan merah di atas 100%. Jika anggaran belum diatur, muncul tombol "Atur anggaran" yang membuka bottom sheet. |
-| Pengeluaran per kategori | Daftar kategori bulan ini, diurutkan dari yang terbesar, dengan nominal dan persentase. |
-| Transaksi terbaru | 10 transaksi terakhir: ikon kategori, nama toko, tanggal, dan nominal. |
+| Pemilih bulan | ‹ Oktober 2026 ›. Mengikuti bulan berjalan, kecuali pengguna sengaja membuka bulan lain. Tidak bisa maju melewati bulan berjalan. |
+| Sisa anggaran | Nominal sisa, terpakai/limit, progress bar (peringatan di atas 80%, merah di atas 100%), dan jatah per hari untuk sisa bulan. Tanpa anggaran: tombol "Atur anggaran". |
+| Aksi cepat | Kartu "Scan struk" dan "Input manual". |
+| Statistik singkat | Jumlah transaksi, rata-rata per hari, kategori terbesar. |
+| Dibanding bulan lalu | Persentase lebih hemat/boros dibanding hari-hari yang sama bulan lalu (disembunyikan jika bulan lalu kosong). |
+| 7 hari terakhir | Grafik batang pengeluaran harian (atau minggu terakhir untuk bulan lalu). Batang bisa diketuk. |
+| Pengeluaran per kategori | Diurutkan dari yang terbesar, dengan nominal dan persentase. |
+| Transaksi | Semua transaksi bulan terpilih, dikelompokkan per hari ("Hari ini", "Kemarin", "Sel, 27 Okt") dengan total harian. |
 | Tombol + (FAB) | Membuka pilihan "Scan struk" atau "Input manual". |
 
-State yang ditangani: memuat, kosong ("Belum ada transaksi bulan ini"), dan ada data.
+State yang ditangani: memuat, bulan kosong (satu kartu ajakan untuk bulan berjalan, atau "Tidak ada transaksi di …" untuk bulan lalu), dan ada data.
 
 ### 3.2 Scan struk
 - Saat pertama dibuka, aplikasi meminta izin kamera disertai penjelasan. Jika pengguna menolak, tampil pesan dan tombol "Input manual".
@@ -42,6 +47,8 @@ State yang ditangani: memuat, kosong ("Belum ada transaksi bulan ini"), dan ada 
 - Layar yang sama dipakai untuk **input manual**, dengan draft kosong dan tanggal terisi hari ini.
 
 ### Navigasi
+Bottom navbar dengan 4 tab: **Pengeluaran** (Beranda), **Tabungan**, **Hutang**, **Profil**. Navbar disembunyikan di layar detail (Scan, Konfirmasi, Statistik, Pengaturan). Back dari tab lain kembali ke Pengeluaran. Pengaturan dibuka dari tab Profil.
+
 ```
 Beranda ──(+ Scan)──▶ Scan struk ──(hasil)──▶ Konfirmasi ──(Simpan)──▶ Beranda
    └────(+ Manual)────────────────────────▶ Konfirmasi
@@ -120,3 +127,20 @@ Setiap fase dimulai dengan rencana singkat, menunggu persetujuan, lalu dikerjaka
 - Pilihan di **Pengaturan → Bahasa**: English, Bahasa Indonesia, atau Ikuti bahasa sistem. Berganti langsung tanpa restart.
 - Nama kategori bawaan, tanggal, notifikasi, dan laporan PDF ikut bahasa yang dipilih. Nominal tetap ditulis dalam format Rupiah (`Rp25.000`).
 - Menambah bahasa baru: satu file `values-xx/strings.xml` dan satu entri di `AppLanguage`.
+
+## 9. Perluasan: 4 tab (setelah fase 6)
+MySavings diperluas dari pencatat pengeluaran menjadi aplikasi keuangan pribadi. Keputusan pemilik:
+- **Pengeluaran**: Beranda yang sudah ada, isinya tetap.
+- **Tabungan**: target tabungan untuk barang yang ingin dibeli, dikelompokkan per kategori barang.
+- **Hutang**: hutang pribadi saja (tanpa piutang). Kalender dengan tanggal jatuh tempo, dan di bawahnya daftar hutang terdekat yang harus dibayar.
+- **Profil**: info pengguna (email, foto), pengaturan, dan sinkron data online lewat **Firebase** agar bisa dipakai di perangkat lain dengan akun yang sama.
+
+| Fase | Isi | Selesai jika |
+|---|---|---|
+| **7. Navigasi 4 tab** | Bottom navbar, tab Tabungan dan Hutang berisi "Segera hadir", Pengaturan pindah ke Profil. | Keempat tab bisa dibuka, Back kembali ke Pengeluaran, navbar tersembunyi di layar detail. |
+| **8. Target tabungan** | Target per kategori barang, setoran, progress. | Target dan setoran tersimpan; logika progress punya unit test. |
+| **9. Hutang** | Kalender jatuh tempo, daftar hutang terdekat, tandai lunas/cicil, notifikasi jatuh tempo (WorkManager). | Hutang tersimpan dan tampil di kalender; logika jatuh tempo punya unit test. |
+| **10. Profil lokal** | Nama dan foto pengguna disimpan di perangkat. | Profil tersimpan dan tampil. |
+| **11. Akun & sinkron (Firebase)** | Login, sinkron Room ↔ Firestore. Room tetap sumber utama (offline-first); data dikirim saat ada internet. | Data yang sama muncul di dua perangkat dengan akun yang sama. |
+
+Catatan: fase 11 mengubah prinsip di bagian 1 ("data tidak pernah meninggalkan perangkat"). Sampai fase itu dikerjakan, prinsip tersebut tetap berlaku.

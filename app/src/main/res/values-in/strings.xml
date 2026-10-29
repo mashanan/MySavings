@@ -115,6 +115,18 @@
     <string name="category_health">Kesehatan</string>
     <string name="category_other">Lainnya</string>
 
+    <!-- Bottom navigation and tabs -->
+    <string name="tab_expenses">Pengeluaran</string>
+    <string name="tab_savings">Tabungan</string>
+    <string name="tab_debts">Hutang</string>
+    <string name="tab_profile">Profil</string>
+    <string name="coming_soon_title">Segera hadir</string>
+    <string name="savings_coming_soon_body">Buat target tabungan untuk barang yang ingin dibeli, dikelompokkan per kategori, dan pantau progresnya.</string>
+    <string name="debts_coming_soon_body">Catat hutangmu di kalender lengkap dengan tanggal jatuh tempo, dan lihat pembayaran mana yang paling dekat.</string>
+    <string name="profile_settings_language">Bahasa: %1$s</string>
+    <string name="profile_account">Akun dan sinkron</string>
+    <string name="profile_account_soon">Segera hadir: masuk untuk memakai datamu di perangkat lain</string>
+
     <!-- Settings -->
     <string name="settings_title">Pengaturan</string>
     <string name="settings_language">Bahasa</string>

@@ -11,7 +11,10 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
 import com.hanan.mysavings.ui.confirm.ConfirmPrefill
 import com.hanan.mysavings.ui.confirm.ConfirmRoute
+import com.hanan.mysavings.ui.debts.DebtsScreen
 import com.hanan.mysavings.ui.home.HomeRoute
+import com.hanan.mysavings.ui.profile.ProfileRoute
+import com.hanan.mysavings.ui.savings.SavingsScreen
 import com.hanan.mysavings.ui.scan.ScanRoute
 import com.hanan.mysavings.ui.settings.SettingsRoute
 import com.hanan.mysavings.ui.stats.StatsRoute
@@ -22,6 +25,7 @@ private const val KEY_TRANSACTION_SAVED = "transaction_saved"
 /**
  * The app's navigation graph. Screens never touch [NavHostController] directly; they
  * receive plain lambdas, which keeps them previewable and testable in isolation.
+ * Switching tabs is handled by the bottom bar in [MySavingsApp].
  */
 @Composable
 fun MySavingsNavHost(
@@ -42,10 +46,18 @@ fun MySavingsNavHost(
                 onScanClick = { navController.navigate(Destination.Scan) },
                 onManualEntryClick = { navController.navigate(Destination.Confirm()) },
                 onStatsClick = { navController.navigate(Destination.Stats) },
-                onSettingsClick = { navController.navigate(Destination.Settings) },
                 showSavedMessage = transactionSaved,
                 onSavedMessageShown = { entry.savedStateHandle[KEY_TRANSACTION_SAVED] = false },
             )
+        }
+        composable<Destination.Savings> {
+            SavingsScreen()
+        }
+        composable<Destination.Debts> {
+            DebtsScreen()
+        }
+        composable<Destination.Profile> {
+            ProfileRoute(onSettingsClick = { navController.navigate(Destination.Settings) })
         }
         composable<Destination.Scan> {
             ScanRoute(

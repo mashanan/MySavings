@@ -9,8 +9,18 @@ import kotlin.reflect.typeOf
  * routes, so a typo or a missing argument is a compile error instead of a runtime crash.
  */
 sealed interface Destination {
+    /** The "Expenses" tab. Kept as Home: it is still the start screen. */
     @Serializable
     data object Home : Destination
+
+    @Serializable
+    data object Savings : Destination
+
+    @Serializable
+    data object Debts : Destination
+
+    @Serializable
+    data object Profile : Destination
 
     @Serializable
     data object Scan : Destination

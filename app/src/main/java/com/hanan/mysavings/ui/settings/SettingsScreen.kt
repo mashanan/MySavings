@@ -85,7 +85,8 @@ private fun LanguageRow(label: String, selected: Boolean, onClick: () -> Unit) {
     }
 }
 
-private fun AppLanguage.labelRes(): Int = when (this) {
+/** Also used by the Profile tab to show the current choice. */
+internal fun AppLanguage.labelRes(): Int = when (this) {
     AppLanguage.ENGLISH -> R.string.language_english
     AppLanguage.INDONESIAN -> R.string.language_indonesian
     AppLanguage.SYSTEM -> R.string.language_system

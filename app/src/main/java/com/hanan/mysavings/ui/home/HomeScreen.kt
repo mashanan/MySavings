@@ -67,7 +67,6 @@ fun HomeRoute(
     onScanClick: () -> Unit,
     onManualEntryClick: () -> Unit,
     onStatsClick: () -> Unit,
-    onSettingsClick: () -> Unit,
     showSavedMessage: Boolean,
     onSavedMessageShown: () -> Unit,
     viewModel: HomeViewModel = hiltViewModel(),
@@ -97,7 +96,6 @@ fun HomeRoute(
         onScanClick = onScanClick,
         onManualEntryClick = onManualEntryClick,
         onStatsClick = onStatsClick,
-        onSettingsClick = onSettingsClick,
         onSaveBudget = { limit ->
             viewModel.onSaveBudget(limit)
             requestNotificationPermission()
@@ -115,7 +113,6 @@ fun HomeScreen(
     onScanClick: () -> Unit,
     onManualEntryClick: () -> Unit,
     onStatsClick: () -> Unit,
-    onSettingsClick: () -> Unit,
     onSaveBudget: (Long) -> Unit,
     modifier: Modifier = Modifier,
     onPreviousMonth: () -> Unit = {},
@@ -141,12 +138,9 @@ fun HomeScreen(
     Scaffold(
         modifier = modifier,
         topBar = {
-            MySavingsTopBar(title = stringResource(R.string.app_name)) {
+            MySavingsTopBar(title = stringResource(R.string.tab_expenses)) {
                 IconButton(onClick = onStatsClick) {
                     Icon(painterResource(R.drawable.ic_chart), stringResource(R.string.stats_open))
-                }
-                IconButton(onClick = onSettingsClick) {
-                    Icon(painterResource(R.drawable.ic_settings), stringResource(R.string.settings_title))
                 }
             }
         },
@@ -332,7 +326,7 @@ private fun HomeScreenPreview() {
         comparison = PeriodComparison(previousTotal = 2_010_000, changePercent = -18),
     )
     MySavingsTheme {
-        HomeScreen(uiState = HomeUiState.Content(summary, insights, transactionDays, previewWeek(listOf(45_000, 0, 120_000, 87_500, 30_000, 0, 35_000)), previewToday, canGoNext = false), onScanClick = {}, onManualEntryClick = {}, onStatsClick = {}, onSettingsClick = {}, onSaveBudget = {})
+        HomeScreen(uiState = HomeUiState.Content(summary, insights, transactionDays, previewWeek(listOf(45_000, 0, 120_000, 87_500, 30_000, 0, 35_000)), previewToday, canGoNext = false), onScanClick = {}, onManualEntryClick = {}, onStatsClick = {}, onSaveBudget = {})
     }
 }
 
@@ -342,6 +336,6 @@ private fun HomeScreenEmptyPreview() {
     val summary = MonthlySummary(YearMonth.of(2026, 10), 0, null, emptyList())
     val insights = MonthInsights(0, 0, null, null, null)
     MySavingsTheme {
-        HomeScreen(uiState = HomeUiState.Content(summary, insights, emptyList(), previewWeek(List(7) { 0L }), previewToday, canGoNext = false), onScanClick = {}, onManualEntryClick = {}, onStatsClick = {}, onSettingsClick = {}, onSaveBudget = {})
+        HomeScreen(uiState = HomeUiState.Content(summary, insights, emptyList(), previewWeek(List(7) { 0L }), previewToday, canGoNext = false), onScanClick = {}, onManualEntryClick = {}, onStatsClick = {}, onSaveBudget = {})
     }
 }

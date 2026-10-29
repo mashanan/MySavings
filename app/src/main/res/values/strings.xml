@@ -121,6 +121,18 @@
     <string name="category_health">Health</string>
     <string name="category_other">Other</string>
 
+    <!-- Bottom navigation and tabs -->
+    <string name="tab_expenses">Expenses</string>
+    <string name="tab_savings">Savings</string>
+    <string name="tab_debts">Debts</string>
+    <string name="tab_profile">Profile</string>
+    <string name="coming_soon_title">Coming soon</string>
+    <string name="savings_coming_soon_body">Set savings goals for the things you want to buy, grouped by category, and track how close you are.</string>
+    <string name="debts_coming_soon_body">Keep track of your debts on a calendar with due dates, and see which payments are coming up next.</string>
+    <string name="profile_settings_language">Language: %1$s</string>
+    <string name="profile_account">Account and sync</string>
+    <string name="profile_account_soon">Coming soon: sign in to use your data on other devices</string>
+
     <!-- Settings -->
     <string name="settings_title">Settings</string>
     <string name="settings_language">Language</string>

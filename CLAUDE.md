@@ -6,7 +6,9 @@ Guidance for Claude Code when working in this repository.
 **MySavings** is an offline-first Android expense tracker with on-device receipt scanning.
 The user photographs a receipt, ML Kit reads the text on the device (no internet), and the
 app pre-fills total, date, merchant and category. The user corrects the result and saves it.
-All data is stored locally. This is a portfolio project, so code clarity matters as much as features.
+All data is stored locally. The app is growing into a personal finance app with four bottom-bar tabs
+(Expenses, Savings, Debts, Profile); online sync via Firebase is planned as the last phase (SPEC.md section 9).
+This is a portfolio project, so code clarity matters as much as features.
 
 Product spec, data model and phase plan: see [SPEC.md](SPEC.md).
 
@@ -41,7 +43,8 @@ com.hanan.mysavings
 │  └─ parser/       ReceiptParser, CategoryClassifier
 └─ ui/
    ├─ theme/  navigation/  components/  util/
-   └─ home/  scan/  confirm/  stats/   (one package per screen)
+   ├─ home/  savings/  debts/  profile/   (one package per bottom-bar tab; home = Expenses)
+   └─ scan/  confirm/  stats/  settings/   (detail screens, no bottom bar)
 ```
 
 Dependency rule: `ui` → `domain` ← `data`. `domain` must not import Android or `data` classes.
