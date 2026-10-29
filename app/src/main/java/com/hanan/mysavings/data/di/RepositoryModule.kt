@@ -1,10 +1,12 @@
 package com.hanan.mysavings.data.di
 
+import com.hanan.mysavings.data.profile.AndroidProfilePhotoStore
 import com.hanan.mysavings.data.repository.RoomBudgetAlertRepository
 import com.hanan.mysavings.data.repository.RoomBudgetRepository
 import com.hanan.mysavings.data.repository.RoomCategoryRepository
 import com.hanan.mysavings.data.repository.RoomDebtReminderRepository
 import com.hanan.mysavings.data.repository.RoomDebtRepository
+import com.hanan.mysavings.data.repository.RoomProfileRepository
 import com.hanan.mysavings.data.repository.RoomSavingsRepository
 import com.hanan.mysavings.data.repository.RoomTransactionRepository
 import com.hanan.mysavings.domain.repository.BudgetAlertRepository
@@ -12,6 +14,8 @@ import com.hanan.mysavings.domain.repository.BudgetRepository
 import com.hanan.mysavings.domain.repository.CategoryRepository
 import com.hanan.mysavings.domain.repository.DebtReminderRepository
 import com.hanan.mysavings.domain.repository.DebtRepository
+import com.hanan.mysavings.domain.repository.ProfilePhotoStore
+import com.hanan.mysavings.domain.repository.ProfileRepository
 import com.hanan.mysavings.domain.repository.SavingsRepository
 import com.hanan.mysavings.domain.repository.TransactionRepository
 import dagger.Binds
@@ -46,4 +50,10 @@ abstract class RepositoryModule {
 
     @Binds
     abstract fun bindDebtReminderRepository(impl: RoomDebtReminderRepository): DebtReminderRepository
+
+    @Binds
+    abstract fun bindProfileRepository(impl: RoomProfileRepository): ProfileRepository
+
+    @Binds
+    abstract fun bindProfilePhotoStore(impl: AndroidProfilePhotoStore): ProfilePhotoStore
 }

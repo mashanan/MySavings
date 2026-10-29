@@ -7,11 +7,13 @@ import com.hanan.mysavings.data.local.entity.DebtPaymentEntity
 import com.hanan.mysavings.data.local.entity.SavingsDepositEntity
 import com.hanan.mysavings.data.local.entity.SavingsGoalEntity
 import com.hanan.mysavings.data.local.entity.TransactionEntity
+import com.hanan.mysavings.data.local.entity.UserProfileEntity
 import com.hanan.mysavings.domain.model.Budget
 import com.hanan.mysavings.domain.model.Category
 import com.hanan.mysavings.domain.model.Debt
 import com.hanan.mysavings.domain.model.DebtPayment
 import com.hanan.mysavings.domain.model.GoalCategory
+import com.hanan.mysavings.domain.model.ProfileRecord
 import com.hanan.mysavings.domain.model.SavingsDeposit
 import com.hanan.mysavings.domain.model.SavingsGoal
 import com.hanan.mysavings.domain.model.Transaction
@@ -139,6 +141,11 @@ fun DebtPayment.toEntity() = DebtPaymentEntity(
     date = date.toEpochDay(),
     note = note,
     createdAt = createdAt.toEpochMilli(),
+)
+
+fun UserProfileEntity.toDomain() = ProfileRecord(
+    name = name,
+    photoUpdatedAt = photoUpdatedAt?.let { Instant.ofEpochMilli(it) },
 )
 
 /** 2026-10 -> 202610. Sortable and readable in the database. */

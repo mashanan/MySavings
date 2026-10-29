@@ -10,6 +10,7 @@ import com.hanan.mysavings.data.local.dao.BudgetAlertDao
 import com.hanan.mysavings.data.local.dao.BudgetDao
 import com.hanan.mysavings.data.local.dao.CategoryDao
 import com.hanan.mysavings.data.local.dao.DebtDao
+import com.hanan.mysavings.data.local.dao.ProfileDao
 import com.hanan.mysavings.data.local.dao.SavingsDao
 import com.hanan.mysavings.data.local.dao.TransactionDao
 import com.hanan.mysavings.data.local.entity.BudgetAlertEntity
@@ -21,12 +22,14 @@ import com.hanan.mysavings.data.local.entity.DebtReminderEntity
 import com.hanan.mysavings.data.local.entity.SavingsDepositEntity
 import com.hanan.mysavings.data.local.entity.SavingsGoalEntity
 import com.hanan.mysavings.data.local.entity.TransactionEntity
+import com.hanan.mysavings.data.local.entity.UserProfileEntity
 
 // Version history:
 // 1: categories, transactions, budgets
 // 2: budget_alerts (phase 6b). A new table only, so Room can generate the migration.
 // 3: savings_goals and savings_deposits (phase 8). New tables only, generated again.
 // 4: debts, debt_payments and debt_reminders_sent (phase 9). New tables only, generated again.
+// 5: user_profile (phase 10). A new table only.
 @Database(
     entities = [
         CategoryEntity::class,
@@ -38,13 +41,15 @@ import com.hanan.mysavings.data.local.entity.TransactionEntity
         DebtEntity::class,
         DebtPaymentEntity::class,
         DebtReminderEntity::class,
+        UserProfileEntity::class,
     ],
-    version = 4,
+    version = 5,
     exportSchema = true,
     autoMigrations = [
         AutoMigration(from = 1, to = 2),
         AutoMigration(from = 2, to = 3),
         AutoMigration(from = 3, to = 4),
+        AutoMigration(from = 4, to = 5),
     ],
 )
 abstract class MySavingsDatabase : RoomDatabase() {
@@ -54,6 +59,7 @@ abstract class MySavingsDatabase : RoomDatabase() {
     abstract fun budgetAlertDao(): BudgetAlertDao
     abstract fun savingsDao(): SavingsDao
     abstract fun debtDao(): DebtDao
+    abstract fun profileDao(): ProfileDao
 
     /**
      * Seeds the default categories once, when the database file is first created.

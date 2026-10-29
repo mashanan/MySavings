@@ -125,6 +125,18 @@
     <string name="profile_settings_language">Bahasa: %1$s</string>
     <string name="profile_account">Akun dan sinkron</string>
     <string name="profile_account_soon">Segera hadir: masuk untuk memakai datamu di perangkat lain</string>
+    <string name="profile_add_name">Tambahkan nama</string>
+    <string name="profile_local_note">Tersimpan hanya di perangkat ini</string>
+    <string name="profile_edit">Ubah profil</string>
+    <string name="profile_photo_desc">Foto profil</string>
+    <string name="profile_summary_title">Ringkasan</string>
+    <string name="profile_summary_spent">Pengeluaran bulan ini</string>
+    <string name="profile_summary_saved">Total tabungan</string>
+    <string name="profile_summary_debt">Sisa hutang</string>
+    <string name="edit_profile_name">Nama</string>
+    <string name="edit_profile_change_photo">Ganti foto</string>
+    <string name="edit_profile_remove_photo">Hapus foto</string>
+    <string name="edit_profile_photo_error">Gambar itu tidak bisa dipakai. Coba gambar lain.</string>
 
     <!-- Savings -->
     <string name="savings_total_title">Total tabungan</string>

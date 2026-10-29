@@ -60,6 +60,11 @@ State yang ditangani: memuat, bulan kosong (satu kartu ajakan untuk bulan berjal
 - **Pengingat**: notifikasi H-3 (atau hari berikutnya bila terlewat) dan pada hari jatuh tempo, masing-masing sekali per cicilan. Cicilan yang sudah telat tidak diingatkan lewat notifikasi, cukup tampil merah di aplikasi.
 - Pembayaran hutang **tidak** dihitung sebagai pengeluaran.
 
+### 3.6 Profil (fase 10)
+- **Tab Profil**: foto (atau inisial, atau ikon orang), nama (atau "Tambahkan nama"), catatan "Tersimpan hanya di perangkat ini", tombol Ubah profil; kartu **Ringkasan** berisi pengeluaran bulan ini, total tabungan, dan sisa hutang (diambil dari use case tab masing-masing); lalu Pengaturan dan Akun & sinkron (segera hadir).
+- **Ubah profil**: ganti/hapus foto lewat Photo Picker sistem (tanpa izin penyimpanan), nama maks. 40 karakter (boleh kosong). Foto langsung diterapkan; nama disimpan dengan tombol Simpan.
+- Foto disalin ke penyimpanan internal aplikasi sebagai JPEG persegi 512 px (potong tengah, rotasi EXIF diterapkan).
+
 ### Navigasi
 Bottom navbar dengan 4 tab: **Pengeluaran** (Beranda), **Tabungan**, **Hutang**, **Profil**. Navbar disembunyikan di layar detail (Scan, Konfirmasi, Statistik, Pengaturan). Back dari tab lain kembali ke Pengeluaran. Pengaturan dibuka dari tab Profil.
 
@@ -149,6 +154,9 @@ Saldo target = `SUM(amount)`. Saldo tidak boleh negatif: penarikan dibatasi sald
 
 ### `debt_reminders_sent` (versi 4, fase 9)
 PK (`debtId`, `installmentNumber`, `kind`), FK `debtId` **CASCADE**. `kind` = `soon` / `today`. Dikosongkan untuk hutang yang jadwalnya diubah.
+
+### `user_profile` (versi 5, fase 10)
+Satu baris (`id` = 1): `name` (String?), `photoUpdatedAt` (Long?, epoch millis; `null` = tanpa foto, sekaligus versi foto). File foto: `files/profile/avatar.jpg`.
 
 ## 5. Logika pembacaan struk
 Seluruh logika ini ada di `domain/parser` dan ditulis dalam Kotlin murni, sehingga bisa diuji dengan unit test.

@@ -2,9 +2,11 @@ package com.hanan.mysavings.data.repository
 
 import com.hanan.mysavings.data.local.entity.BudgetEntity
 import com.hanan.mysavings.data.local.entity.CategoryEntity
+import com.hanan.mysavings.data.local.entity.UserProfileEntity
 import com.hanan.mysavings.domain.model.Debt
 import com.hanan.mysavings.domain.model.DebtPayment
 import com.hanan.mysavings.domain.model.GoalCategory
+import com.hanan.mysavings.domain.model.ProfileRecord
 import com.hanan.mysavings.domain.model.SavingsDeposit
 import com.hanan.mysavings.domain.model.SavingsGoal
 import com.hanan.mysavings.domain.model.Transaction
@@ -79,5 +81,14 @@ class MappersTest {
 
         assertEquals(debt, debt.toEntity().toDomain())
         assertEquals(payment, payment.toEntity().toDomain())
+    }
+
+    @Test
+    fun `profile photo time is stored as epoch millis and may be missing`() {
+        assertEquals(
+            ProfileRecord("Louise", Instant.ofEpochMilli(1_700_000_000_000)),
+            UserProfileEntity(name = "Louise", photoUpdatedAt = 1_700_000_000_000).toDomain(),
+        )
+        assertEquals(ProfileRecord(null, null), UserProfileEntity(name = null, photoUpdatedAt = null).toDomain())
     }
 }

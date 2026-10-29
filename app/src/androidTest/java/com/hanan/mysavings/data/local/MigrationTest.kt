@@ -95,6 +95,26 @@ class MigrationTest {
         db.close()
     }
 
+    @Test
+    fun migrate4To5KeepsDebtsAndAddsAnEmptyProfileTable() {
+        helper.createDatabase(TEST_DB, 4).apply {
+            execSQL("INSERT INTO debts (id, creditor, totalAmount, firstDueDate, installmentCount, note, createdAt) VALUES (1, 'Budi', 500000, 20400, 1, NULL, 0)")
+            close()
+        }
+
+        val db = helper.runMigrationsAndValidate(TEST_DB, 5, true)
+
+        db.query("SELECT creditor FROM debts WHERE id = 1").use { cursor ->
+            assertTrue(cursor.moveToFirst())
+            assertEquals("Budi", cursor.getString(0))
+        }
+        db.query("SELECT COUNT(*) FROM user_profile").use { cursor ->
+            assertTrue(cursor.moveToFirst())
+            assertEquals(0, cursor.getInt(0))
+        }
+        db.close()
+    }
+
     private companion object {
         const val TEST_DB = "migration-test.db"
     }

@@ -15,6 +15,7 @@ import com.hanan.mysavings.ui.debts.DebtDetailRoute
 import com.hanan.mysavings.ui.debts.DebtFormRoute
 import com.hanan.mysavings.ui.debts.DebtsRoute
 import com.hanan.mysavings.ui.home.HomeRoute
+import com.hanan.mysavings.ui.profile.EditProfileRoute
 import com.hanan.mysavings.ui.profile.ProfileRoute
 import com.hanan.mysavings.ui.savings.GoalDetailRoute
 import com.hanan.mysavings.ui.savings.GoalFormRoute
@@ -99,7 +100,13 @@ fun MySavingsNavHost(
             )
         }
         composable<Destination.Profile> {
-            ProfileRoute(onSettingsClick = { navController.navigate(Destination.Settings) })
+            ProfileRoute(
+                onEditProfile = { navController.navigate(Destination.EditProfile) },
+                onSettingsClick = { navController.navigate(Destination.Settings) },
+            )
+        }
+        composable<Destination.EditProfile> {
+            EditProfileRoute(onBack = { navController.popBackStack() })
         }
         composable<Destination.Scan> {
             ScanRoute(
