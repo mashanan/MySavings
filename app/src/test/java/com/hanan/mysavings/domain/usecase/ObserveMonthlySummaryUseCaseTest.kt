@@ -3,8 +3,6 @@ package com.hanan.mysavings.domain.usecase
 import app.cash.turbine.test
 import com.hanan.mysavings.domain.model.Budget
 import com.hanan.mysavings.domain.model.Category
-import com.hanan.mysavings.domain.model.Transaction
-import com.hanan.mysavings.domain.model.TransactionSource
 import com.hanan.mysavings.domain.repository.BudgetRepository
 import com.hanan.mysavings.domain.repository.CategoryRepository
 import com.hanan.mysavings.domain.repository.TransactionRepository
@@ -18,7 +16,6 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
 import org.junit.Before
 import org.junit.Test
-import java.time.Instant
 import java.time.LocalDate
 import java.time.YearMonth
 
@@ -44,30 +41,25 @@ class ObserveMonthlySummaryUseCaseTest {
         every { categoryRepository.observeAll() } returns flowOf(listOf(food, groceries, transport))
         every { transactionRepository.observeSpendingByCategory(any(), any()) } returns spending
         every { budgetRepository.observeForMonth(october) } returns budgets
-        every { transactionRepository.observeRecent(any()) } returns flowOf(
-            listOf(transaction(id = 9, categoryId = 2), transaction(id = 8, categoryId = 1)),
-        )
     }
 
     @Test
-    fun `queries the full calendar month and the recent limit`() = runTest {
+    fun `queries the full calendar month`() = runTest {
         observeSummary(october).test { awaitItem(); cancelAndIgnoreRemainingEvents() }
 
         verify {
             transactionRepository.observeSpendingByCategory(LocalDate.of(2026, 10, 1), LocalDate.of(2026, 10, 31))
-            transactionRepository.observeRecent(ObserveMonthlySummaryUseCase.RECENT_LIMIT)
         }
     }
 
     @Test
-    fun `sums spending, sorts categories largest first and joins recent transactions`() = runTest {
+    fun `sums spending and sorts categories largest first`() = runTest {
         observeSummary(october).test {
             val summary = awaitItem()
 
             assertEquals(550_000L, summary.totalSpent)
             assertEquals(listOf(groceries, food), summary.spendingByCategory.map { it.category })
             assertEquals(listOf(400_000L, 150_000L), summary.spendingByCategory.map { it.amount })
-            assertEquals(listOf(9L to groceries, 8L to food), summary.recentTransactions.map { it.transaction.id to it.category })
             cancelAndIgnoreRemainingEvents()
         }
     }
@@ -134,16 +126,5 @@ class ObserveMonthlySummaryUseCaseTest {
         colorHex = "#000000",
         keywords = emptyList(),
         isDefault = true,
-    )
-
-    private fun transaction(id: Long, categoryId: Long) = Transaction(
-        id = id,
-        amount = 10_000,
-        date = LocalDate.of(2026, 10, 20),
-        merchant = null,
-        note = null,
-        categoryId = categoryId,
-        source = TransactionSource.MANUAL,
-        createdAt = Instant.EPOCH,
     )
 }

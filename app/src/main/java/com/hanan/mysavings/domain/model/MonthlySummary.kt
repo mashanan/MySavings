@@ -10,8 +10,6 @@ data class MonthlySummary(
     val budgetLimit: Long?,
     /** Categories with spending this month, largest first. */
     val spendingByCategory: List<CategorySpending>,
-    /** Latest transactions across all months, newest first. */
-    val recentTransactions: List<TransactionWithCategory>,
 ) {
     /** Budget left this month. Negative when overspent, `null` without a budget. */
     val remaining: Long? get() = budgetLimit?.let { it - totalSpent }

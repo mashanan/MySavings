@@ -26,9 +26,12 @@
     <string name="home_budget_empty_body">Total spent: %1$s</string>
     <string name="home_budget_set">Set budget</string>
     <string name="home_by_category_title">Spending by category</string>
-    <string name="home_recent_title">Recent transactions</string>
-    <string name="home_empty_month">No transactions in this month</string>
-    <string name="home_empty_recent">No transactions yet. Tap + to add one.</string>
+    <string name="home_transactions_title">Transactions</string>
+    <string name="home_day_today">Today</string>
+    <string name="home_day_yesterday">Yesterday</string>
+    <string name="home_empty_current_title">No spending yet this month</string>
+    <string name="home_empty_current_body">Scan your first receipt or add a transaction by hand. Your overview will show up here.</string>
+    <string name="home_empty_past_title">No transactions in %1$s</string>
     <string name="home_transaction_saved">Transaction saved</string>
     <string name="home_add_sheet_title">Add transaction</string>
     <string name="home_add_scan_desc">Photograph a receipt and the details fill in automatically</string>

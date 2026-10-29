@@ -8,7 +8,6 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
@@ -52,7 +51,7 @@ import com.hanan.mysavings.domain.model.MonthlySummary
 import com.hanan.mysavings.domain.model.PeriodComparison
 import com.hanan.mysavings.domain.model.Transaction
 import com.hanan.mysavings.domain.model.TransactionSource
-import com.hanan.mysavings.domain.model.TransactionWithCategory
+import com.hanan.mysavings.domain.usecase.ObserveTransactionsByDayUseCase
 import com.hanan.mysavings.domain.usecase.DayTotal
 import com.hanan.mysavings.ui.components.MonthSelector
 import com.hanan.mysavings.ui.components.MySavingsTopBar
@@ -171,6 +170,8 @@ fun HomeScreen(
                 onPreviousMonth = onPreviousMonth,
                 onNextMonth = onNextMonth,
                 onEditBudget = { showBudgetSheet = true },
+                onScanClick = onScanClick,
+                onManualEntryClick = onManualEntryClick,
                 contentPadding = innerPadding,
             )
         }
@@ -209,6 +210,8 @@ private fun HomeContent(
     onPreviousMonth: () -> Unit,
     onNextMonth: () -> Unit,
     onEditBudget: () -> Unit,
+    onScanClick: () -> Unit,
+    onManualEntryClick: () -> Unit,
     contentPadding: PaddingValues,
 ) {
     // One LazyColumn for the whole page so only visible rows are composed.
@@ -232,6 +235,13 @@ private fun HomeContent(
         item(key = "budget") {
             BudgetCard(summary = summary, allowance = insights.dailyAllowance, onEditBudget = onEditBudget)
         }
+        item(key = "quick-actions") {
+            QuickActionsRow(
+                onScanClick = onScanClick,
+                onManualEntryClick = onManualEntryClick,
+                modifier = Modifier.padding(top = 12.dp),
+            )
+        }
         item(key = "stats") {
             MonthStatsRow(insights = insights, modifier = Modifier.padding(top = 12.dp))
         }
@@ -246,20 +256,29 @@ private fun HomeContent(
             DailySpendingChart(days = state.dailyTotals, today = state.today)
         }
 
-        sectionTitle(R.string.home_by_category_title)
-        if (summary.spendingByCategory.isEmpty()) {
-            emptyText(R.string.home_empty_month)
-        } else {
-            items(summary.spendingByCategory, key = { "category-${it.category.id}" }) {
-                CategorySpendingRow(spending = it, totalSpent = summary.totalSpent)
+        // One friendly card instead of two empty sections with a line of grey text each.
+        if (state.transactionDays.isEmpty()) {
+            item(key = "empty") {
+                EmptyMonthCard(
+                    month = summary.yearMonth,
+                    isCurrentMonth = summary.yearMonth == YearMonth.from(state.today),
+                    modifier = Modifier.padding(top = 24.dp),
+                )
             }
+            return@LazyColumn
         }
 
-        sectionTitle(R.string.home_recent_title)
-        if (summary.recentTransactions.isEmpty()) {
-            emptyText(R.string.home_empty_recent)
-        } else {
-            items(summary.recentTransactions, key = { "transaction-${it.transaction.id}" }) {
+        sectionTitle(R.string.home_by_category_title)
+        items(summary.spendingByCategory, key = { "category-${it.category.id}" }) {
+            CategorySpendingRow(spending = it, totalSpent = summary.totalSpent)
+        }
+
+        sectionTitle(R.string.home_transactions_title)
+        state.transactionDays.forEach { day ->
+            item(key = "day-${day.date}") {
+                DayHeader(day = day, today = state.today)
+            }
+            items(day.transactions, key = { "transaction-${it.transaction.id}" }) {
                 TransactionRow(item = it)
             }
         }
@@ -273,17 +292,6 @@ private fun LazyListScope.sectionTitle(titleRes: Int) {
             style = MaterialTheme.typography.titleMedium,
             // Marked as a heading so screen-reader users can jump between sections.
             modifier = Modifier.padding(top = 24.dp, bottom = 4.dp).semantics { heading() },
-        )
-    }
-}
-
-private fun LazyListScope.emptyText(textRes: Int) {
-    item(key = "empty-$textRes") {
-        Text(
-            text = stringResource(textRes),
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier.fillMaxWidth().padding(vertical = 16.dp),
         )
     }
 }
@@ -307,16 +315,14 @@ private fun HomeScreenPreview() {
             CategorySpending(previewGroceries, 1_200_000, null),
             CategorySpending(previewFood, 450_000, null),
         ),
-        recentTransactions = listOf(
-            TransactionWithCategory(
-                Transaction(1, 87_500, LocalDate.of(2026, 10, 28), "Indomaret", null, 2, TransactionSource.SCAN, Instant.EPOCH),
-                previewGroceries,
-            ),
-            TransactionWithCategory(
-                Transaction(2, 35_000, LocalDate.of(2026, 10, 27), null, null, 1, TransactionSource.MANUAL, Instant.EPOCH),
-                previewFood,
-            ),
+    )
+    val transactionDays = ObserveTransactionsByDayUseCase.groupByDay(
+        listOf(
+            Transaction(3, 35_000, previewToday, null, null, 1, TransactionSource.MANUAL, Instant.EPOCH),
+            Transaction(2, 87_500, previewToday.minusDays(1), "Indomaret", null, 2, TransactionSource.SCAN, Instant.EPOCH),
+            Transaction(1, 120_000, previewToday.minusDays(3), "Superindo", null, 2, TransactionSource.SCAN, Instant.EPOCH),
         ),
+        listOf(previewFood, previewGroceries),
     )
     val insights = MonthInsights(
         transactionCount = 2,
@@ -326,16 +332,16 @@ private fun HomeScreenPreview() {
         comparison = PeriodComparison(previousTotal = 2_010_000, changePercent = -18),
     )
     MySavingsTheme {
-        HomeScreen(uiState = HomeUiState.Content(summary, insights, previewWeek(listOf(45_000, 0, 120_000, 87_500, 30_000, 0, 35_000)), previewToday, canGoNext = false), onScanClick = {}, onManualEntryClick = {}, onStatsClick = {}, onSettingsClick = {}, onSaveBudget = {})
+        HomeScreen(uiState = HomeUiState.Content(summary, insights, transactionDays, previewWeek(listOf(45_000, 0, 120_000, 87_500, 30_000, 0, 35_000)), previewToday, canGoNext = false), onScanClick = {}, onManualEntryClick = {}, onStatsClick = {}, onSettingsClick = {}, onSaveBudget = {})
     }
 }
 
 @Preview(showBackground = true)
 @Composable
 private fun HomeScreenEmptyPreview() {
-    val summary = MonthlySummary(YearMonth.of(2026, 10), 0, null, emptyList(), emptyList())
+    val summary = MonthlySummary(YearMonth.of(2026, 10), 0, null, emptyList())
     val insights = MonthInsights(0, 0, null, null, null)
     MySavingsTheme {
-        HomeScreen(uiState = HomeUiState.Content(summary, insights, previewWeek(List(7) { 0L }), previewToday, canGoNext = false), onScanClick = {}, onManualEntryClick = {}, onStatsClick = {}, onSettingsClick = {}, onSaveBudget = {})
+        HomeScreen(uiState = HomeUiState.Content(summary, insights, emptyList(), previewWeek(List(7) { 0L }), previewToday, canGoNext = false), onScanClick = {}, onManualEntryClick = {}, onStatsClick = {}, onSettingsClick = {}, onSaveBudget = {})
     }
 }

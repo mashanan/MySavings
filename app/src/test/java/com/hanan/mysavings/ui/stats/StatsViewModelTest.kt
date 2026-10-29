@@ -47,7 +47,7 @@ class StatsViewModelTest {
             flowOf((5L downTo 0L).map { MonthTotal(end.minusMonths(it), 0) })
         }
         every { observeSummary(any()) } answers {
-            flowOf(MonthlySummary(firstArg(), 0, null, emptyList(), emptyList()))
+            flowOf(MonthlySummary(firstArg(), 0, null, emptyList()))
         }
     }
 

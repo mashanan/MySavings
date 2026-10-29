@@ -21,9 +21,12 @@
     <string name="home_budget_empty_body">Total pengeluaran: %1$s</string>
     <string name="home_budget_set">Atur anggaran</string>
     <string name="home_by_category_title">Pengeluaran per kategori</string>
-    <string name="home_recent_title">Transaksi terbaru</string>
-    <string name="home_empty_month">Tidak ada transaksi di bulan ini</string>
-    <string name="home_empty_recent">Belum ada transaksi. Tekan + untuk menambahkan.</string>
+    <string name="home_transactions_title">Transaksi</string>
+    <string name="home_day_today">Hari ini</string>
+    <string name="home_day_yesterday">Kemarin</string>
+    <string name="home_empty_current_title">Belum ada pengeluaran bulan ini</string>
+    <string name="home_empty_current_body">Scan struk pertamamu atau catat transaksi secara manual. Ringkasannya akan muncul di sini.</string>
+    <string name="home_empty_past_title">Tidak ada transaksi di %1$s</string>
     <string name="home_transaction_saved">Transaksi tersimpan</string>
     <string name="home_add_sheet_title">Tambah transaksi</string>
     <string name="home_add_scan_desc">Foto struk, data terisi otomatis</string>

@@ -30,9 +30,9 @@ class RoomTransactionRepository @Inject constructor(
     override fun observeCount(from: LocalDate, to: LocalDate): Flow<Int> =
         dao.observeCount(from.toEpochDay(), to.toEpochDay())
 
+    override fun observeInRange(from: LocalDate, to: LocalDate): Flow<List<Transaction>> =
+        dao.observeInRange(from.toEpochDay(), to.toEpochDay()).map { rows -> rows.map { it.toDomain() } }
+
     override suspend fun getInRange(from: LocalDate, to: LocalDate): List<Transaction> =
         dao.getInRange(from.toEpochDay(), to.toEpochDay()).map { it.toDomain() }
-
-    override fun observeRecent(limit: Int): Flow<List<Transaction>> =
-        dao.observeRecent(limit).map { rows -> rows.map { it.toDomain() } }
 }

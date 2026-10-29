@@ -28,7 +28,6 @@ class BuildMonthlyReportUseCaseTest {
         totalSpent = 130_000,
         budgetLimit = 100_000,
         spendingByCategory = listOf(CategorySpending(groceries, 100_000, null), CategorySpending(food, 30_000, null)),
-        recentTransactions = emptyList(),
     )
     private val observeSummary = mockk<ObserveMonthlySummaryUseCase> {
         every { this@mockk.invoke(october) } returns flowOf(summary)
@@ -58,7 +57,7 @@ class BuildMonthlyReportUseCaseTest {
 
     @Test
     fun `empty month gives an empty but valid report`() = runTest {
-        every { observeSummary(october) } returns flowOf(MonthlySummary(october, 0, null, emptyList(), emptyList()))
+        every { observeSummary(october) } returns flowOf(MonthlySummary(october, 0, null, emptyList()))
         coEvery { transactionRepository.getInRange(any(), any()) } returns emptyList()
 
         val report = buildReport(october)

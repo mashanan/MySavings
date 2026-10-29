@@ -132,7 +132,7 @@ class ObserveMonthInsightsUseCaseTest {
     @Test
     fun `an empty month has no top category and an average of zero`() = runTest {
         every { transactionRepository.observeCount(any(), any()) } returns flowOf(0)
-        val empty = MonthlySummary(october, 0, null, emptyList(), emptyList())
+        val empty = MonthlySummary(october, 0, null, emptyList())
 
         val insights = insights(empty, today = LocalDate.of(2026, 10, 1))
 
@@ -171,6 +171,5 @@ class ObserveMonthInsightsUseCaseTest {
             CategorySpending(groceries, totalSpent - totalSpent / 4, null),
             CategorySpending(food, totalSpent / 4, null),
         ),
-        recentTransactions = emptyList(),
     )
 }

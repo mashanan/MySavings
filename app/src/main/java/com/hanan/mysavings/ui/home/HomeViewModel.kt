@@ -8,7 +8,9 @@ import com.hanan.mysavings.domain.usecase.DayTotal
 import com.hanan.mysavings.domain.usecase.ObserveDailyTotalsUseCase
 import com.hanan.mysavings.domain.usecase.ObserveMonthInsightsUseCase
 import com.hanan.mysavings.domain.usecase.ObserveMonthlySummaryUseCase
+import com.hanan.mysavings.domain.usecase.ObserveTransactionsByDayUseCase
 import com.hanan.mysavings.domain.usecase.SetBudgetUseCase
+import com.hanan.mysavings.domain.usecase.TransactionDay
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -31,6 +33,7 @@ class HomeViewModel @Inject constructor(
     observeMonthlySummary: ObserveMonthlySummaryUseCase,
     observeMonthInsights: ObserveMonthInsightsUseCase,
     observeDailyTotals: ObserveDailyTotalsUseCase,
+    observeTransactionsByDay: ObserveTransactionsByDayUseCase,
     private val setBudget: SetBudgetUseCase,
     private val clock: Clock,
 ) : ViewModel() {
@@ -51,24 +54,31 @@ class HomeViewModel @Inject constructor(
     // query, and browsing past months keeps nothing it does not need.
     // flatMapLatest cancels the previous query when its key changes.
     @OptIn(ExperimentalCoroutinesApi::class)
-    private val summary = homeDate.map { it.month }.distinctUntilChanged().flatMapLatest { observeMonthlySummary(it) }
+    private val monthData = homeDate.map { it.month }.distinctUntilChanged().flatMapLatest { month ->
+        combine(observeMonthlySummary(month), observeTransactionsByDay(month)) { summary, days -> summary to days }
+    }
 
-    // Insights build on the summary, so they are recomputed whenever it changes.
+    // Insights build on the summary, so they are recomputed whenever it changes. The transaction
+    // list rides along with its summary: both belong to the same month and change together.
     @OptIn(ExperimentalCoroutinesApi::class)
-    private val summaryWithInsights = combine(summary, homeDate) { summary, date -> summary to date.today }
+    private val monthWithInsights = combine(monthData, homeDate) { data, date -> data to date.today }
         .distinctUntilChanged()
-        .flatMapLatest { (summary, today) -> observeMonthInsights(summary, today).map { summary to it } }
+        .flatMapLatest { (data, today) ->
+            val (summary, days) = data
+            observeMonthInsights(summary, today).map { MonthContent(summary, days, it) }
+        }
 
     @OptIn(ExperimentalCoroutinesApi::class)
     private val dailyTotals = homeDate.map { it.chartEnd }.distinctUntilChanged().flatMapLatest { observeDailyTotals(it) }
 
     // WhileSubscribed(5s) keeps the queries alive across rotation but stops them in the background.
-    val uiState: StateFlow<HomeUiState> = combine(summaryWithInsights, dailyTotals, homeDate) { (summary, insights), daily, date ->
+    val uiState: StateFlow<HomeUiState> = combine(monthWithInsights, dailyTotals, homeDate) { (summary, transactionDays, insights), daily, date ->
         // While switching months the queries answer one by one; skip the frames that still mix in the old month.
         if (summary.yearMonth != date.month || daily.lastOrNull()?.date != date.chartEnd) return@combine null
         HomeUiState.Content(
             summary = summary,
             insights = insights,
+            transactionDays = transactionDays,
             dailyTotals = daily,
             today = date.today,
             canGoNext = date.month < date.currentMonth,
@@ -101,6 +111,12 @@ class HomeViewModel @Inject constructor(
 
     private fun displayedMonth(): YearMonth = selectedMonth.value ?: YearMonth.from(today.value)
 
+    private data class MonthContent(
+        val summary: MonthlySummary,
+        val transactionDays: List<TransactionDay>,
+        val insights: MonthInsights,
+    )
+
     /** Which month Home shows and which day its chart ends on. */
     private data class HomeDate(val today: LocalDate, val selected: YearMonth?) {
         val currentMonth: YearMonth get() = YearMonth.from(today)
@@ -116,6 +132,8 @@ sealed interface HomeUiState {
     data class Content(
         val summary: MonthlySummary,
         val insights: MonthInsights,
+        /** The month's transactions grouped per day, newest first. */
+        val transactionDays: List<TransactionDay>,
         /** The last seven days of the chart, oldest first. */
         val dailyTotals: List<DayTotal>,
         val today: LocalDate,

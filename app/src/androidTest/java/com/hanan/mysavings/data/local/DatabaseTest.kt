@@ -115,16 +115,19 @@ class DatabaseTest {
     }
 
     @Test
-    fun recentIsOrderedByDateThenCreatedAtAndLimited() = runTest {
+    fun inRangeIsNewestFirstAndLimitedToTheRange() = runTest {
         val dao = db.transactionDao()
         val older = dao.insert(transaction(date = LocalDate.of(2026, 10, 1), createdAt = 3))
         val sameDayFirst = dao.insert(transaction(date = LocalDate.of(2026, 10, 5), createdAt = 1))
         val sameDaySecond = dao.insert(transaction(date = LocalDate.of(2026, 10, 5), createdAt = 2))
+        dao.insert(transaction(date = LocalDate.of(2026, 9, 30))) // outside the range
 
-        val recent = dao.observeRecent(limit = 2).first()
+        val inRange = dao.observeInRange(
+            LocalDate.of(2026, 10, 1).toEpochDay(),
+            LocalDate.of(2026, 10, 31).toEpochDay(),
+        ).first()
 
-        assertEquals(listOf(sameDaySecond, sameDayFirst), recent.map { it.id })
-        assertTrue(recent.none { it.id == older })
+        assertEquals(listOf(sameDaySecond, sameDayFirst, older), inRange.map { it.id })
     }
 
     @Test(expected = Exception::class)

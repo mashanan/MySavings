@@ -72,6 +72,14 @@ class FormattersTest {
     }
 
     @Test
+    fun `day header shows weekday and date without the year`() {
+        val tuesday = LocalDate.of(2026, 10, 27)
+
+        assertEquals("Tue, 27 Oct", formatDayHeader(tuesday, english))
+        assertEquals("Sel, 27 Okt", formatDayHeader(tuesday, indonesian))
+    }
+
+    @Test
     fun `compact amounts use English units and decimal point`() {
         assertEquals("Rp500", formatRupiahShort(500, english))
         assertEquals("Rp250K", formatRupiahShort(250_000, english))

@@ -7,7 +7,9 @@ import com.hanan.mysavings.domain.usecase.DayTotal
 import com.hanan.mysavings.domain.usecase.ObserveDailyTotalsUseCase
 import com.hanan.mysavings.domain.usecase.ObserveMonthInsightsUseCase
 import com.hanan.mysavings.domain.usecase.ObserveMonthlySummaryUseCase
+import com.hanan.mysavings.domain.usecase.ObserveTransactionsByDayUseCase
 import com.hanan.mysavings.domain.usecase.SetBudgetUseCase
+import com.hanan.mysavings.domain.usecase.TransactionDay
 import com.hanan.mysavings.testutil.MainDispatcherRule
 import com.hanan.mysavings.testutil.MutableClock
 import io.mockk.coEvery
@@ -52,30 +54,40 @@ class HomeViewModelTest {
     private val observeDaily = mockk<ObserveDailyTotalsUseCase> {
         every { this@mockk.invoke(any(), any()) } answers { flowOf(weekEndingOn(firstArg())) }
     }
+    private val octoberDays = listOf(TransactionDay(LocalDate.of(2026, 10, 28), 87_500, emptyList()))
+    private val observeByDay = mockk<ObserveTransactionsByDayUseCase> {
+        every { this@mockk.invoke(any()) } returns flowOf(emptyList())
+        every { this@mockk.invoke(october) } returns flowOf(octoberDays)
+    }
     private val setBudget = mockk<SetBudgetUseCase>()
 
-    private fun createViewModel() = HomeViewModel(observeSummary, observeInsights, observeDaily, setBudget, clock)
+    private fun createViewModel() = HomeViewModel(observeSummary, observeInsights, observeDaily, observeByDay, setBudget, clock)
 
-    private fun emptySummary(month: YearMonth) = MonthlySummary(month, 0, null, emptyList(), emptyList())
+    private fun emptySummary(month: YearMonth) = MonthlySummary(month, 0, null, emptyList())
 
     private fun insightsFor(day: LocalDate) = MonthInsights(day.dayOfMonth, null, null, null, null)
 
     private fun weekEndingOn(end: LocalDate) = (6L downTo 0L).map { DayTotal(end.minusDays(it), 0) }
 
-    private fun content(summary: MonthlySummary, today: LocalDate, chartEnd: LocalDate, canGoNext: Boolean) =
-        HomeUiState.Content(summary, insightsFor(today), weekEndingOn(chartEnd), today, canGoNext)
+    private fun content(
+        summary: MonthlySummary,
+        today: LocalDate,
+        chartEnd: LocalDate,
+        canGoNext: Boolean,
+        days: List<TransactionDay> = emptyList(),
+    ) = HomeUiState.Content(summary, insightsFor(today), days, weekEndingOn(chartEnd), today, canGoNext)
 
     @Test
     fun `starts loading then shows the current month with insights and the week up to today`() = runTest {
         val viewModel = createViewModel()
-        val summary = MonthlySummary(october, 100_000, 1_000_000, emptyList(), emptyList())
+        val summary = MonthlySummary(october, 100_000, 1_000_000, emptyList())
 
         viewModel.uiState.test {
             assertEquals(HomeUiState.Loading, awaitItem())
 
             octoberSummaries.emit(summary)
 
-            assertEquals(content(summary, today, chartEnd = today, canGoNext = false), awaitItem())
+            assertEquals(content(summary, today, chartEnd = today, canGoNext = false, days = octoberDays), awaitItem())
         }
         verify { observeInsights(summary, today) }
     }
@@ -101,9 +113,11 @@ class HomeViewModelTest {
             val state = awaitItem() as HomeUiState.Content
             assertEquals(emptySummary(september), state.summary)
             assertEquals(LocalDate.of(2026, 9, 30), state.dailyTotals.last().date)
+            assertTrue(state.transactionDays.isEmpty()) // September's list, not October's
             assertTrue(state.canGoNext)
             cancelAndIgnoreRemainingEvents()
         }
+        verify { observeByDay(september) }
     }
 
     @Test
@@ -177,13 +191,13 @@ class HomeViewModelTest {
         viewModel.uiState.test {
             assertEquals(HomeUiState.Loading, awaitItem())
             octoberSummaries.emit(summary)
-            assertEquals(content(summary, today, chartEnd = today, canGoNext = false), awaitItem())
+            assertEquals(content(summary, today, chartEnd = today, canGoNext = false, days = octoberDays), awaitItem())
 
             clock.instant = Instant.parse("2026-10-29T17:30:00Z") // 00:30 on 30 October in Jakarta
             viewModel.refreshDate()
 
             val nextDay = LocalDate.of(2026, 10, 30)
-            assertEquals(content(summary, nextDay, chartEnd = nextDay, canGoNext = false), expectMostRecentItem())
+            assertEquals(content(summary, nextDay, chartEnd = nextDay, canGoNext = false, days = octoberDays), expectMostRecentItem())
         }
         verify(exactly = 1) { observeSummary(october) }
     }

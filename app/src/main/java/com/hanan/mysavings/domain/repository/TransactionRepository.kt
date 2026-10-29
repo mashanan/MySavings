@@ -21,9 +21,9 @@ interface TransactionRepository {
     /** Number of transactions between [from] and [to], both inclusive. */
     fun observeCount(from: LocalDate, to: LocalDate): Flow<Int>
 
+    /** Transactions between [from] and [to], both inclusive, newest first. Re-emits on every change. */
+    fun observeInRange(from: LocalDate, to: LocalDate): Flow<List<Transaction>>
+
     /** All transactions between [from] and [to], both inclusive, oldest first. */
     suspend fun getInRange(from: LocalDate, to: LocalDate): List<Transaction>
-
-    /** The [limit] most recent transactions, newest first. */
-    fun observeRecent(limit: Int): Flow<List<Transaction>>
 }

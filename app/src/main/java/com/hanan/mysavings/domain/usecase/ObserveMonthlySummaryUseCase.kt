@@ -2,7 +2,6 @@ package com.hanan.mysavings.domain.usecase
 
 import com.hanan.mysavings.domain.model.CategorySpending
 import com.hanan.mysavings.domain.model.MonthlySummary
-import com.hanan.mysavings.domain.model.TransactionWithCategory
 import com.hanan.mysavings.domain.repository.BudgetRepository
 import com.hanan.mysavings.domain.repository.CategoryRepository
 import com.hanan.mysavings.domain.repository.TransactionRepository
@@ -24,8 +23,7 @@ class ObserveMonthlySummaryUseCase @Inject constructor(
         categoryRepository.observeAll(),
         transactionRepository.observeSpendingByCategory(yearMonth.atDay(1), yearMonth.atEndOfMonth()),
         budgetRepository.observeForMonth(yearMonth),
-        transactionRepository.observeRecent(RECENT_LIMIT),
-    ) { categories, spendingByCategoryId, budgets, recent ->
+    ) { categories, spendingByCategoryId, budgets ->
         val categoriesById = categories.associateBy { it.id }
         val categoryBudgets = budgets
             .mapNotNull { budget -> budget.categoryId?.let { it to budget.limitAmount } }
@@ -40,13 +38,6 @@ class ObserveMonthlySummaryUseCase @Inject constructor(
                     categoriesById[categoryId]?.let { CategorySpending(it, amount, categoryBudgets[categoryId]) }
                 }
                 .sortedByDescending { it.amount },
-            recentTransactions = recent.mapNotNull { transaction ->
-                categoriesById[transaction.categoryId]?.let { TransactionWithCategory(transaction, it) }
-            },
         )
-    }
-
-    companion object {
-        const val RECENT_LIMIT = 10
     }
 }

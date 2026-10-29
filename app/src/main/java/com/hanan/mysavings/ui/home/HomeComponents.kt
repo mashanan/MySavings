@@ -36,8 +36,6 @@ import com.hanan.mysavings.ui.components.CategoryIcon
 import com.hanan.mysavings.ui.components.categoryColor
 import com.hanan.mysavings.ui.util.formatRupiah
 import com.hanan.mysavings.ui.components.displayName
-import com.hanan.mysavings.ui.util.currentLocale
-import com.hanan.mysavings.ui.util.formatShortDate
 import kotlin.math.roundToInt
 
 /** Usage above this share of the budget is shown as a warning. */
@@ -176,7 +174,7 @@ fun TransactionRow(
 ) {
     val transaction = item.transaction
     Row(
-        // One TalkBack stop per row: "Indomaret, 28 Okt 2026 · Belanja Harian, Rp87.500".
+        // One TalkBack stop per row: "Indomaret, Belanja Harian, Rp87.500". The date is in the day header above.
         modifier = modifier.fillMaxWidth().padding(vertical = 8.dp).semantics(mergeDescendants = true) {},
         verticalAlignment = Alignment.CenterVertically,
     ) {
@@ -189,11 +187,14 @@ fun TransactionRow(
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
             )
-            Text(
-                text = "${formatShortDate(transaction.date, currentLocale())} · ${item.category.displayName()}",
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
+            // Without a merchant the category is already the title; repeating it adds nothing.
+            if (transaction.merchant != null) {
+                Text(
+                    text = item.category.displayName(),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
         }
         Spacer(Modifier.width(8.dp))
         Text(

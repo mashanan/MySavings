@@ -50,12 +50,13 @@ interface TransactionDao {
     @Query("SELECT COUNT(*) FROM transactions WHERE date BETWEEN :fromEpochDay AND :toEpochDay")
     fun observeCount(fromEpochDay: Long, toEpochDay: Long): Flow<Int>
 
+    /** Live list for Home, newest first; createdAt breaks ties so the latest entry of a day is on top. */
+    @Query("SELECT * FROM transactions WHERE date BETWEEN :fromEpochDay AND :toEpochDay ORDER BY date DESC, createdAt DESC")
+    fun observeInRange(fromEpochDay: Long, toEpochDay: Long): Flow<List<TransactionEntity>>
+
     // One-shot (suspend, not Flow): a report is a snapshot, it should not change while being written.
     @Query("SELECT * FROM transactions WHERE date BETWEEN :fromEpochDay AND :toEpochDay ORDER BY date, createdAt")
     suspend fun getInRange(fromEpochDay: Long, toEpochDay: Long): List<TransactionEntity>
-
-    @Query("SELECT * FROM transactions ORDER BY date DESC, createdAt DESC LIMIT :limit")
-    fun observeRecent(limit: Int): Flow<List<TransactionEntity>>
 }
 
 /** Result row of [TransactionDao.observeTotalsByCategory]. */

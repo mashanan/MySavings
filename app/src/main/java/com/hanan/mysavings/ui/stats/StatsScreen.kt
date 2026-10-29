@@ -264,7 +264,6 @@ private fun StatsScreenPreview() {
                         CategorySpending(food, 450_000, null),
                         CategorySpending(transport, 300_000, null),
                     ),
-                    recentTransactions = emptyList(),
                 ),
             ),
             onBack = {},
