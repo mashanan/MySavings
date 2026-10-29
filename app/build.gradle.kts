@@ -26,8 +26,11 @@ android {
     buildTypes {
         release {
             optimization {
+                // Whole-app R8. The template limited it with packageScope = androidx/kotlin/kotlinx,
+                // which changed class visibility inside Kotlin's stdlib while our classes outside
+                // that scope still extended them: the release build crashed on launch with an
+                // IllegalAccessError. Libraries ship their own keep rules, so full scope is safe.
                 enable = true
-                packageScope = setOf("androidx.**", "kotlin.**", "kotlinx.**")
             }
         }
     }

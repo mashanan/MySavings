@@ -92,7 +92,7 @@ Requires Android Studio (bundled JDK) and an Android 10+ device or emulator.
 Release builds are shrunk with R8 and split per CPU type, because ML Kit's on-device OCR engine is a native library of 7-11 MB per ABI:
 
 ```bash
-./gradlew assembleRelease   # app-arm64-v8a-release.apk ~19 MB (instead of one 50 MB APK)
+./gradlew assembleRelease   # app-arm64-v8a-release.apk ~17 MB (instead of one 50 MB APK)
 ./gradlew bundleRelease     # App Bundle for Play, which delivers only the device's ABI
 ```
 
