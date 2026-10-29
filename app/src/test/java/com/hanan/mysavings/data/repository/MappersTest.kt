@@ -2,6 +2,9 @@ package com.hanan.mysavings.data.repository
 
 import com.hanan.mysavings.data.local.entity.BudgetEntity
 import com.hanan.mysavings.data.local.entity.CategoryEntity
+import com.hanan.mysavings.domain.model.GoalCategory
+import com.hanan.mysavings.domain.model.SavingsDeposit
+import com.hanan.mysavings.domain.model.SavingsGoal
 import com.hanan.mysavings.domain.model.Transaction
 import com.hanan.mysavings.domain.model.TransactionSource
 import org.junit.Assert.assertEquals
@@ -47,5 +50,23 @@ class MappersTest {
         assertEquals(202610, YearMonth.of(2026, 10).toInt())
         assertEquals(YearMonth.of(2027, 1), 202701.toYearMonth())
         assertEquals(YearMonth.of(2026, 10), BudgetEntity(1, 202610, null, 1).toDomain().yearMonth)
+    }
+
+    @Test
+    fun `savings goal and deposit survive a round trip through the entity`() {
+        val goal = SavingsGoal(3, "Laptop", 12_000_000, GoalCategory.GADGET, LocalDate.of(2027, 3, 1), Instant.ofEpochMilli(1_700_000_000_000))
+        val noDeadline = goal.copy(targetDate = null)
+        val withdrawal = SavingsDeposit(5, 3, -200_000, LocalDate.of(2026, 10, 20), null, Instant.ofEpochMilli(1_700_000_000_000))
+
+        assertEquals(goal, goal.toEntity().toDomain())
+        assertEquals(noDeadline, noDeadline.toEntity().toDomain())
+        assertEquals(withdrawal, withdrawal.toEntity().toDomain())
+    }
+
+    @Test
+    fun `goal category is stored by its key and unknown keys fall back to Other`() {
+        assertEquals("emergency", GoalCategory.EMERGENCY.key)
+        assertEquals(GoalCategory.EMERGENCY, GoalCategory.fromKey("emergency"))
+        assertEquals(GoalCategory.OTHER, GoalCategory.fromKey("crypto"))
     }
 }

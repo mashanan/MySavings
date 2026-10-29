@@ -25,7 +25,17 @@ fun CategoryIcon(
     modifier: Modifier = Modifier,
     size: Dp = 40.dp,
 ) {
-    val color = categoryColor(category)
+    TintedCircleIcon(icon = iconFor(category.iconKey), color = categoryColor(category), modifier = modifier, size = size)
+}
+
+/** An icon in [color] on a light circle of the same color. Shared by expense and savings categories. */
+@Composable
+fun TintedCircleIcon(
+    @DrawableRes icon: Int,
+    color: Color,
+    modifier: Modifier = Modifier,
+    size: Dp = 40.dp,
+) {
     Box(
         modifier = modifier
             .size(size)
@@ -33,7 +43,7 @@ fun CategoryIcon(
         contentAlignment = Alignment.Center,
     ) {
         Icon(
-            painter = painterResource(iconFor(category.iconKey)),
+            painter = painterResource(icon),
             contentDescription = null,
             tint = color,
             modifier = Modifier.padding(size / 5),

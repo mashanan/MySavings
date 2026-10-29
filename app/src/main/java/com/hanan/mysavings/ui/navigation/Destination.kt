@@ -16,6 +16,13 @@ sealed interface Destination {
     @Serializable
     data object Savings : Destination
 
+    /** Create a savings goal (`goalId == null`) or edit one. */
+    @Serializable
+    data class GoalForm(val goalId: Long? = null) : Destination
+
+    @Serializable
+    data class GoalDetail(val goalId: Long) : Destination
+
     @Serializable
     data object Debts : Destination
 

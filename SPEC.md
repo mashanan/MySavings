@@ -46,6 +46,12 @@ State yang ditangani: memuat, bulan kosong (satu kartu ajakan untuk bulan berjal
 - Tombol "Simpan" menyimpan transaksi, kembali ke Beranda, dan menampilkan snackbar "Transaksi tersimpan". Tombol "Batal" kembali tanpa menyimpan.
 - Layar yang sama dipakai untuk **input manual**, dengan draft kosong dan tanggal terisi hari ini.
 
+### 3.4 Tabungan (fase 8)
+- **Tab Tabungan**: kartu total tabungan dan jumlah target tercapai, chip filter kategori (hanya kategori yang punya target), daftar target dengan progress. Urutan: target terbuka dengan tenggat terdekat dulu, lalu tanpa tenggat, target tercapai paling bawah. FAB "Target baru".
+- **Form target** (tambah/ubah): nama, nominal target, tenggat opsional (tidak boleh lewat, kecuali tenggat lama target yang sedang diubah), kategori.
+- **Detail target**: progress, sisa, saran per bulan (sisa ÷ jumlah bulan sampai bulan tenggat, dibulatkan ke atas), tombol Setor/Tarik (bottom sheet), riwayat. Ketuk riwayat untuk menghapus. Menu ubah dan hapus target.
+- Setoran tabungan **tidak** dihitung sebagai pengeluaran.
+
 ### Navigasi
 Bottom navbar dengan 4 tab: **Pengeluaran** (Beranda), **Tabungan**, **Hutang**, **Profil**. Navbar disembunyikan di layar detail (Scan, Konfirmasi, Statistik, Pengaturan). Back dari tab lain kembali ke Pengeluaran. Pengaturan dibuka dari tab Profil.
 
@@ -89,6 +95,28 @@ Seed awal: Makan & Minum, Belanja Harian, Transportasi, Tagihan, Hiburan, Keseha
 | `limitAmount` | Long | rupiah |
 
 Constraint unik: (`yearMonth`, `categoryId`).
+
+### `savings_goals` (versi 3, fase 8)
+| Kolom | Tipe | Keterangan |
+|---|---|---|
+| `id` | Long PK | auto-generate |
+| `name` | String | nama barang/target |
+| `targetAmount` | Long | rupiah, > 0 |
+| `categoryKey` | String | `GoalCategory.key`: gadget, vehicle, travel, home, education, emergency, other |
+| `targetDate` | Long? | epoch day; `null` = tanpa tenggat |
+| `createdAt` | Long | epoch millis |
+
+### `savings_deposits` (versi 3, fase 8)
+| Kolom | Tipe | Keterangan |
+|---|---|---|
+| `id` | Long PK | auto-generate |
+| `goalId` | Long FK | ke `savings_goals`, **CASCADE** saat target dihapus |
+| `amount` | Long | rupiah; positif = setor, negatif = tarik |
+| `date` | Long | epoch day |
+| `note` | String? | opsional |
+| `createdAt` | Long | epoch millis |
+
+Saldo target = `SUM(amount)`. Saldo tidak boleh negatif: penarikan dibatasi saldo, dan menghapus setoran yang membuat saldo minus ditolak.
 
 ## 5. Logika pembacaan struk
 Seluruh logika ini ada di `domain/parser` dan ditulis dalam Kotlin murni, sehingga bisa diuji dengan unit test.

@@ -16,22 +16,21 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import com.hanan.mysavings.R
 
-/** Placeholder for a tab whose feature is planned but not built yet. */
+/** A big icon with a title and a short explanation: for empty states and features still to come. */
 @Composable
-fun ComingSoonContent(
+fun IconMessage(
     @DrawableRes icon: Int,
+    title: String,
     body: String,
     modifier: Modifier = Modifier,
 ) {
     Column(
-        // Read as one sentence: "Coming soon. Set savings targets…".
+        // Read as one sentence: "No savings goals yet. Create a goal…".
         modifier = modifier.fillMaxSize().padding(32.dp).semantics(mergeDescendants = true) {},
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(16.dp, Alignment.CenterVertically),
@@ -50,7 +49,7 @@ fun ComingSoonContent(
             )
         }
         Text(
-            text = stringResource(R.string.coming_soon_title),
+            text = title,
             style = MaterialTheme.typography.titleLarge,
             fontWeight = FontWeight.Bold,
         )

@@ -14,7 +14,9 @@ import com.hanan.mysavings.ui.confirm.ConfirmRoute
 import com.hanan.mysavings.ui.debts.DebtsScreen
 import com.hanan.mysavings.ui.home.HomeRoute
 import com.hanan.mysavings.ui.profile.ProfileRoute
-import com.hanan.mysavings.ui.savings.SavingsScreen
+import com.hanan.mysavings.ui.savings.GoalDetailRoute
+import com.hanan.mysavings.ui.savings.GoalFormRoute
+import com.hanan.mysavings.ui.savings.SavingsRoute
 import com.hanan.mysavings.ui.scan.ScanRoute
 import com.hanan.mysavings.ui.settings.SettingsRoute
 import com.hanan.mysavings.ui.stats.StatsRoute
@@ -51,7 +53,26 @@ fun MySavingsNavHost(
             )
         }
         composable<Destination.Savings> {
-            SavingsScreen()
+            SavingsRoute(
+                onNewGoal = { navController.navigate(Destination.GoalForm()) },
+                onGoalClick = { navController.navigate(Destination.GoalDetail(it)) },
+            )
+        }
+        composable<Destination.GoalForm> { entry ->
+            GoalFormRoute(
+                goalId = entry.toRoute<Destination.GoalForm>().goalId,
+                onBack = { navController.popBackStack() },
+                // Back to wherever the form was opened from: the list for a new goal, the detail for an edit.
+                onSaved = { navController.popBackStack() },
+            )
+        }
+        composable<Destination.GoalDetail> { entry ->
+            val goalId = entry.toRoute<Destination.GoalDetail>().goalId
+            GoalDetailRoute(
+                goalId = goalId,
+                onBack = { navController.popBackStack() },
+                onEdit = { navController.navigate(Destination.GoalForm(goalId)) },
+            )
         }
         composable<Destination.Debts> {
             DebtsScreen()

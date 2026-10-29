@@ -15,6 +15,8 @@
     <string name="action_save">Save</string>
     <string name="action_cancel">Cancel</string>
     <string name="action_ok">OK</string>
+    <string name="action_delete">Delete</string>
+    <string name="action_clear_date">Clear date</string>
 
     <!-- Home -->
     <string name="home_budget_title">Budget left</string>
@@ -104,7 +106,7 @@
     <string name="confirm_merchant">Store name</string>
     <string name="confirm_amount">Total</string>
     <string name="confirm_date">Date</string>
-    <string name="confirm_pick_date">Pick a date</string>
+    <string name="action_pick_date">Pick a date</string>
     <string name="confirm_category">Category</string>
     <string name="confirm_category_hint">Choose a category</string>
     <string name="confirm_note">Note (optional)</string>
@@ -127,11 +129,68 @@
     <string name="tab_debts">Debts</string>
     <string name="tab_profile">Profile</string>
     <string name="coming_soon_title">Coming soon</string>
-    <string name="savings_coming_soon_body">Set savings goals for the things you want to buy, grouped by category, and track how close you are.</string>
     <string name="debts_coming_soon_body">Keep track of your debts on a calendar with due dates, and see which payments are coming up next.</string>
     <string name="profile_settings_language">Language: %1$s</string>
     <string name="profile_account">Account and sync</string>
     <string name="profile_account_soon">Coming soon: sign in to use your data on other devices</string>
+
+    <!-- Savings -->
+    <string name="savings_total_title">Total savings</string>
+    <string name="savings_reached_count">Goals reached: %1$d of %2$d</string>
+    <string name="savings_new_goal">New goal</string>
+    <string name="savings_filter_all">All</string>
+    <string name="savings_empty_title">No savings goals yet</string>
+    <string name="savings_empty_body">Create a goal for something you want to buy, then put money aside for it bit by bit.</string>
+    <string name="goal_category_gadget">Gadgets &amp; electronics</string>
+    <string name="goal_category_vehicle">Vehicle</string>
+    <string name="goal_category_travel">Travel</string>
+    <string name="goal_category_home">Home &amp; furniture</string>
+    <string name="goal_category_education">Education</string>
+    <string name="goal_category_emergency">Emergency fund</string>
+    <string name="goal_category_other">Other</string>
+    <string name="goal_progress_amount">%1$s of %2$s</string>
+    <string name="goal_progress_desc">%1$d%% saved</string>
+    <string name="goal_reached">Reached 🎉</string>
+    <string name="goal_overdue">Past the deadline</string>
+    <string name="goal_deadline">Deadline: %1$s</string>
+    <string name="goal_remaining">%1$s to go</string>
+    <string name="goal_monthly_suggestion">Save %1$s a month to make it by %2$s</string>
+    <string name="goal_form_title_new">New savings goal</string>
+    <string name="goal_form_title_edit">Edit goal</string>
+    <string name="goal_form_name">What are you saving for?</string>
+    <string name="goal_form_name_placeholder">e.g. New laptop</string>
+    <string name="goal_form_target">Target amount</string>
+    <string name="goal_form_deadline">Deadline (optional)</string>
+    <string name="goal_form_no_deadline">No deadline</string>
+    <string name="goal_form_category">Category</string>
+    <string name="goal_error_name">Enter a name for the goal</string>
+    <string name="goal_error_target">Enter an amount above 0</string>
+    <string name="goal_error_deadline">The deadline cannot be in the past</string>
+    <string name="goal_error_not_found">This goal no longer exists</string>
+    <string name="goal_deposit">Add money</string>
+    <string name="goal_withdraw">Withdraw</string>
+    <string name="goal_history">History</string>
+    <string name="goal_history_empty">Nothing saved yet. Tap Add money to start.</string>
+    <string name="goal_edit">Edit goal</string>
+    <string name="goal_delete">Delete goal</string>
+    <string name="goal_delete_title">Delete this goal?</string>
+    <string name="goal_delete_body">The goal and its whole history will be removed. This cannot be undone.</string>
+    <string name="deposit_sheet_title_deposit">Add money to %1$s</string>
+    <string name="deposit_sheet_title_withdraw">Withdraw from %1$s</string>
+    <string name="deposit_amount">Amount</string>
+    <string name="deposit_date">Date</string>
+    <string name="deposit_note">Note (optional)</string>
+    <string name="deposit_error_amount">Enter an amount above 0</string>
+    <string name="deposit_error_date">The date cannot be in the future</string>
+    <string name="deposit_error_balance">You can take out at most %1$s</string>
+    <string name="deposit_label">Deposit</string>
+    <string name="withdrawal_label">Withdrawal</string>
+    <string name="deposit_saved">Deposit saved</string>
+    <string name="withdrawal_saved">Withdrawal saved</string>
+    <string name="deposit_deleted">Entry deleted</string>
+    <string name="deposit_delete_blocked">Cannot delete: the balance would go below zero. Delete the later withdrawal first.</string>
+    <string name="deposit_delete_title">Delete this entry?</string>
+    <string name="deposit_delete_body">%1$s on %2$s</string>
 
     <!-- Settings -->
     <string name="settings_title">Settings</string>

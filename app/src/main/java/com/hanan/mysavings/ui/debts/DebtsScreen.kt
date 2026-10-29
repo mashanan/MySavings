@@ -7,7 +7,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import com.hanan.mysavings.R
-import com.hanan.mysavings.ui.components.ComingSoonContent
+import com.hanan.mysavings.ui.components.IconMessage
 import com.hanan.mysavings.ui.components.MySavingsTopBar
 import com.hanan.mysavings.ui.theme.MySavingsTheme
 
@@ -21,8 +21,9 @@ fun DebtsScreen(modifier: Modifier = Modifier) {
         modifier = modifier,
         topBar = { MySavingsTopBar(title = stringResource(R.string.tab_debts)) },
     ) { innerPadding ->
-        ComingSoonContent(
+        IconMessage(
             icon = R.drawable.ic_calendar,
+            title = stringResource(R.string.coming_soon_title),
             body = stringResource(R.string.debts_coming_soon_body),
             modifier = Modifier.padding(innerPadding),
         )

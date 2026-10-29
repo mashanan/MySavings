@@ -3,10 +3,12 @@ package com.hanan.mysavings.data.di
 import com.hanan.mysavings.data.repository.RoomBudgetAlertRepository
 import com.hanan.mysavings.data.repository.RoomBudgetRepository
 import com.hanan.mysavings.data.repository.RoomCategoryRepository
+import com.hanan.mysavings.data.repository.RoomSavingsRepository
 import com.hanan.mysavings.data.repository.RoomTransactionRepository
 import com.hanan.mysavings.domain.repository.BudgetAlertRepository
 import com.hanan.mysavings.domain.repository.BudgetRepository
 import com.hanan.mysavings.domain.repository.CategoryRepository
+import com.hanan.mysavings.domain.repository.SavingsRepository
 import com.hanan.mysavings.domain.repository.TransactionRepository
 import dagger.Binds
 import dagger.Module
@@ -31,4 +33,7 @@ abstract class RepositoryModule {
 
     @Binds
     abstract fun bindBudgetAlertRepository(impl: RoomBudgetAlertRepository): BudgetAlertRepository
+
+    @Binds
+    abstract fun bindSavingsRepository(impl: RoomSavingsRepository): SavingsRepository
 }

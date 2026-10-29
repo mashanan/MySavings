@@ -10,6 +10,8 @@
     <string name="action_save">Simpan</string>
     <string name="action_cancel">Batal</string>
     <string name="action_ok">OK</string>
+    <string name="action_delete">Hapus</string>
+    <string name="action_clear_date">Hapus tanggal</string>
 
     <!-- Home -->
     <string name="home_budget_title">Sisa anggaran</string>
@@ -98,7 +100,7 @@
     <string name="confirm_merchant">Nama toko</string>
     <string name="confirm_amount">Total</string>
     <string name="confirm_date">Tanggal</string>
-    <string name="confirm_pick_date">Pilih tanggal</string>
+    <string name="action_pick_date">Pilih tanggal</string>
     <string name="confirm_category">Kategori</string>
     <string name="confirm_category_hint">Pilih kategori</string>
     <string name="confirm_note">Catatan (opsional)</string>
@@ -121,11 +123,68 @@
     <string name="tab_debts">Hutang</string>
     <string name="tab_profile">Profil</string>
     <string name="coming_soon_title">Segera hadir</string>
-    <string name="savings_coming_soon_body">Buat target tabungan untuk barang yang ingin dibeli, dikelompokkan per kategori, dan pantau progresnya.</string>
     <string name="debts_coming_soon_body">Catat hutangmu di kalender lengkap dengan tanggal jatuh tempo, dan lihat pembayaran mana yang paling dekat.</string>
     <string name="profile_settings_language">Bahasa: %1$s</string>
     <string name="profile_account">Akun dan sinkron</string>
     <string name="profile_account_soon">Segera hadir: masuk untuk memakai datamu di perangkat lain</string>
+
+    <!-- Savings -->
+    <string name="savings_total_title">Total tabungan</string>
+    <string name="savings_reached_count">Target tercapai: %1$d dari %2$d</string>
+    <string name="savings_new_goal">Target baru</string>
+    <string name="savings_filter_all">Semua</string>
+    <string name="savings_empty_title">Belum ada target tabungan</string>
+    <string name="savings_empty_body">Buat target untuk barang yang ingin dibeli, lalu sisihkan uang sedikit demi sedikit.</string>
+    <string name="goal_category_gadget">Gadget &amp; elektronik</string>
+    <string name="goal_category_vehicle">Kendaraan</string>
+    <string name="goal_category_travel">Liburan</string>
+    <string name="goal_category_home">Rumah &amp; perabot</string>
+    <string name="goal_category_education">Pendidikan</string>
+    <string name="goal_category_emergency">Dana darurat</string>
+    <string name="goal_category_other">Lainnya</string>
+    <string name="goal_progress_amount">%1$s dari %2$s</string>
+    <string name="goal_progress_desc">%1$d%% terkumpul</string>
+    <string name="goal_reached">Tercapai 🎉</string>
+    <string name="goal_overdue">Lewat tenggat</string>
+    <string name="goal_deadline">Tenggat: %1$s</string>
+    <string name="goal_remaining">Kurang %1$s</string>
+    <string name="goal_monthly_suggestion">Sisihkan %1$s/bulan agar tercapai %2$s</string>
+    <string name="goal_form_title_new">Target tabungan baru</string>
+    <string name="goal_form_title_edit">Ubah target</string>
+    <string name="goal_form_name">Mau menabung untuk apa?</string>
+    <string name="goal_form_name_placeholder">misal: Laptop baru</string>
+    <string name="goal_form_target">Nominal target</string>
+    <string name="goal_form_deadline">Tenggat (opsional)</string>
+    <string name="goal_form_no_deadline">Tanpa tenggat</string>
+    <string name="goal_form_category">Kategori</string>
+    <string name="goal_error_name">Isi nama target</string>
+    <string name="goal_error_target">Masukkan nominal lebih dari 0</string>
+    <string name="goal_error_deadline">Tenggat tidak boleh di masa lalu</string>
+    <string name="goal_error_not_found">Target ini sudah tidak ada</string>
+    <string name="goal_deposit">Setor</string>
+    <string name="goal_withdraw">Tarik</string>
+    <string name="goal_history">Riwayat</string>
+    <string name="goal_history_empty">Belum ada setoran. Tekan Setor untuk mulai.</string>
+    <string name="goal_edit">Ubah target</string>
+    <string name="goal_delete">Hapus target</string>
+    <string name="goal_delete_title">Hapus target ini?</string>
+    <string name="goal_delete_body">Target beserta seluruh riwayat setorannya akan dihapus. Tindakan ini tidak bisa dibatalkan.</string>
+    <string name="deposit_sheet_title_deposit">Setor ke %1$s</string>
+    <string name="deposit_sheet_title_withdraw">Tarik dari %1$s</string>
+    <string name="deposit_amount">Nominal</string>
+    <string name="deposit_date">Tanggal</string>
+    <string name="deposit_note">Catatan (opsional)</string>
+    <string name="deposit_error_amount">Masukkan nominal lebih dari 0</string>
+    <string name="deposit_error_date">Tanggal tidak boleh di masa depan</string>
+    <string name="deposit_error_balance">Maksimal yang bisa ditarik %1$s</string>
+    <string name="deposit_label">Setoran</string>
+    <string name="withdrawal_label">Penarikan</string>
+    <string name="deposit_saved">Setoran tersimpan</string>
+    <string name="withdrawal_saved">Penarikan tersimpan</string>
+    <string name="deposit_deleted">Catatan dihapus</string>
+    <string name="deposit_delete_blocked">Tidak bisa dihapus: saldo akan minus. Hapus penarikan setelahnya dulu.</string>
+    <string name="deposit_delete_title">Hapus catatan ini?</string>
+    <string name="deposit_delete_body">%1$s pada %2$s</string>
 
     <!-- Settings -->
     <string name="settings_title">Pengaturan</string>
