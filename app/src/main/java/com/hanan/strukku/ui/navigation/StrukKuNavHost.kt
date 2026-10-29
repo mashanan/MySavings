@@ -8,6 +8,8 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.toRoute
+import com.hanan.strukku.ui.confirm.ConfirmPrefill
 import com.hanan.strukku.ui.confirm.ConfirmRoute
 import com.hanan.strukku.ui.home.HomeRoute
 import com.hanan.strukku.ui.scan.ScanRoute
@@ -36,7 +38,7 @@ fun StrukKuNavHost(
                 .collectAsStateWithLifecycle()
             HomeRoute(
                 onScanClick = { navController.navigate(Destination.Scan) },
-                onManualEntryClick = { navController.navigate(Destination.Confirm) },
+                onManualEntryClick = { navController.navigate(Destination.Confirm()) },
                 showSavedMessage = transactionSaved,
                 onSavedMessageShown = { entry.savedStateHandle[KEY_TRANSACTION_SAVED] = false },
             )
@@ -44,18 +46,20 @@ fun StrukKuNavHost(
         composable<Destination.Scan> {
             ScanRoute(
                 onBack = { navController.popBackStack() },
-                // Phase 5 passes the scanned draft along so Confirm opens pre-filled.
-                onContinue = { navController.navigate(Destination.Confirm) },
+                // Scan stays on the back stack, so Back from the form returns to the scan result.
+                onContinue = { draft -> navController.navigate(Destination.Confirm(ConfirmPrefill.fromDraft(draft))) },
                 // Typing it in replaces the scan, so Back from the form returns to Home.
                 onManualEntry = {
-                    navController.navigate(Destination.Confirm) {
+                    navController.navigate(Destination.Confirm()) {
                         popUpTo<Destination.Scan> { inclusive = true }
                     }
                 },
             )
         }
-        composable<Destination.Confirm> {
+        composable<Destination.Confirm>(typeMap = Destination.Confirm.typeMap) { entry ->
+            val route = entry.toRoute<Destination.Confirm>()
             ConfirmRoute(
+                prefill = route.prefill,
                 onBack = { navController.popBackStack() },
                 onSaved = {
                     navController.getBackStackEntry<Destination.Home>()

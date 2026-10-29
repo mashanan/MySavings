@@ -1,5 +1,6 @@
 package com.hanan.strukku.ui.confirm
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.PressInteraction
 import androidx.compose.foundation.layout.Arrangement
@@ -14,6 +15,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DatePicker
@@ -50,9 +52,11 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.hanan.strukku.R
 import com.hanan.strukku.domain.model.Category
+import com.hanan.strukku.domain.model.ReceiptField
 import com.hanan.strukku.ui.components.AmountTextField
 import com.hanan.strukku.ui.components.CategoryIcon
 import com.hanan.strukku.ui.components.StrukKuTopBar
+import com.hanan.strukku.ui.components.fieldSupportingText
 import com.hanan.strukku.ui.theme.StrukKuTheme
 import com.hanan.strukku.ui.util.formatShortDate
 import java.time.Instant
@@ -61,9 +65,10 @@ import java.time.ZoneOffset
 
 @Composable
 fun ConfirmRoute(
+    prefill: ConfirmPrefill,
     onBack: () -> Unit,
     onSaved: () -> Unit,
-    viewModel: ConfirmViewModel = hiltViewModel(),
+    viewModel: ConfirmViewModel = hiltViewModel<ConfirmViewModel, ConfirmViewModel.Factory> { it.create(prefill) },
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
@@ -99,10 +104,22 @@ fun ConfirmScreen(
 ) {
     val form = uiState.form
     var showDatePicker by rememberSaveable { mutableStateOf(false) }
+    var showDiscardDialog by rememberSaveable { mutableStateOf(false) }
+    val checkHint = stringResource(R.string.scan_needs_check)
+    fun hintFor(field: ReceiptField) = checkHint.takeIf { field in form.needsCheck }
+
+    // Every way out of the form (system back, top bar arrow, Batal) asks first if it would lose input.
+    val requestLeave = { if (uiState.hasChanges) showDiscardDialog = true else onBack() }
+    BackHandler(enabled = uiState.hasChanges && !form.isSaved) { showDiscardDialog = true }
 
     Scaffold(
         modifier = modifier,
-        topBar = { StrukKuTopBar(title = stringResource(R.string.confirm_title_manual), onBack = onBack) },
+        topBar = {
+            StrukKuTopBar(
+                title = stringResource(if (uiState.isFromScan) R.string.confirm_title_scan else R.string.confirm_title_manual),
+                onBack = requestLeave,
+            )
+        },
     ) { innerPadding ->
         Column(
             modifier = Modifier
@@ -117,6 +134,7 @@ fun ConfirmScreen(
                 value = form.merchant,
                 onValueChange = onMerchantChange,
                 label = { Text(stringResource(R.string.confirm_merchant)) },
+                supportingText = fieldSupportingText(errorText = null, hintText = hintFor(ReceiptField.MERCHANT)),
                 singleLine = true,
                 keyboardOptions = KeyboardOptions(
                     capitalization = KeyboardCapitalization.Words,
@@ -130,17 +148,20 @@ fun ConfirmScreen(
                 label = stringResource(R.string.confirm_amount),
                 isError = form.amountError,
                 errorText = stringResource(R.string.confirm_error_amount),
+                hintText = hintFor(ReceiptField.TOTAL),
                 modifier = Modifier.fillMaxWidth(),
             )
             DateField(
                 date = form.date,
                 isError = form.dateError,
+                hintText = hintFor(ReceiptField.DATE),
                 onClick = { showDatePicker = true },
             )
             CategoryDropdown(
                 categories = uiState.categories,
                 selected = uiState.selectedCategory,
                 isError = form.categoryError,
+                hintText = hintFor(ReceiptField.CATEGORY),
                 onSelect = onCategoryChange,
             )
             OutlinedTextField(
@@ -152,7 +173,7 @@ fun ConfirmScreen(
                 modifier = Modifier.fillMaxWidth(),
             )
             Row(Modifier.fillMaxWidth().padding(top = 8.dp)) {
-                OutlinedButton(onClick = onBack, modifier = Modifier.weight(1f)) {
+                OutlinedButton(onClick = requestLeave, modifier = Modifier.weight(1f)) {
                     Text(stringResource(R.string.action_cancel))
                 }
                 Spacer(Modifier.width(12.dp))
@@ -178,11 +199,28 @@ fun ConfirmScreen(
             },
         )
     }
+
+    if (showDiscardDialog) {
+        AlertDialog(
+            onDismissRequest = { showDiscardDialog = false },
+            title = { Text(stringResource(R.string.confirm_discard_title)) },
+            text = { Text(stringResource(R.string.confirm_discard_body)) },
+            confirmButton = {
+                TextButton(onClick = {
+                    showDiscardDialog = false
+                    onBack()
+                }) { Text(stringResource(R.string.confirm_discard_action)) }
+            },
+            dismissButton = {
+                TextButton(onClick = { showDiscardDialog = false }) { Text(stringResource(R.string.confirm_keep_editing)) }
+            },
+        )
+    }
 }
 
 /** Read-only field that opens the date picker when tapped anywhere. */
 @Composable
-private fun DateField(date: LocalDate, isError: Boolean, onClick: () -> Unit) {
+private fun DateField(date: LocalDate, isError: Boolean, hintText: String?, onClick: () -> Unit) {
     val interactionSource = remember { MutableInteractionSource() }
     // A read-only text field consumes taps itself, so listen to its press interactions instead.
     LaunchedEffect(interactionSource) {
@@ -199,7 +237,10 @@ private fun DateField(date: LocalDate, isError: Boolean, onClick: () -> Unit) {
             }
         },
         isError = isError,
-        supportingText = if (isError) ({ Text(stringResource(R.string.confirm_error_date)) }) else null,
+        supportingText = fieldSupportingText(
+            errorText = stringResource(R.string.confirm_error_date).takeIf { isError },
+            hintText = hintText,
+        ),
         interactionSource = interactionSource,
         modifier = Modifier.fillMaxWidth(),
     )
@@ -211,6 +252,7 @@ private fun CategoryDropdown(
     categories: List<Category>,
     selected: Category?,
     isError: Boolean,
+    hintText: String?,
     onSelect: (Long) -> Unit,
 ) {
     var expanded by remember { mutableStateOf(false) }
@@ -224,7 +266,10 @@ private fun CategoryDropdown(
             leadingIcon = selected?.let { { CategoryIcon(it, size = 28.dp) } },
             trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
             isError = isError,
-            supportingText = if (isError) ({ Text(stringResource(R.string.confirm_error_category)) }) else null,
+            supportingText = fieldSupportingText(
+                errorText = stringResource(R.string.confirm_error_category).takeIf { isError },
+                hintText = hintText,
+            ),
             modifier = Modifier
                 .menuAnchor(ExposedDropdownMenuAnchorType.PrimaryNotEditable)
                 .fillMaxWidth(),
@@ -281,14 +326,20 @@ private fun Long.toUtcLocalDate(): LocalDate = Instant.ofEpochMilli(this).atZone
 
 @Preview(showBackground = true)
 @Composable
-private fun ConfirmScreenPreview() {
+private fun ConfirmScreenScannedPreview() {
     val today = LocalDate.of(2026, 10, 29)
     StrukKuTheme {
         ConfirmScreen(
             uiState = ConfirmUiState(
-                form = ConfirmForm(merchant = "Indomaret", amountDigits = "87500", date = today, amountError = false),
+                form = ConfirmForm(
+                    merchant = "Indomaret",
+                    amountDigits = "87500",
+                    date = today,
+                    needsCheck = setOf(ReceiptField.DATE, ReceiptField.CATEGORY),
+                ),
                 categories = emptyList(),
                 maxDate = today,
+                isFromScan = true,
             ),
             onBack = {},
             onMerchantChange = {},

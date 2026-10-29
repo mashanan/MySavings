@@ -75,5 +75,6 @@ Dependency rule: `ui` → `domain` ← `data`. `domain` must not import Android 
 ## Working agreement
 - Work on **one phase (or step) per request**. Present a short plan first and wait for approval before changing code.
 - After finishing, run `assembleDebug` and `testDebugUnitTest`, then summarize what changed and the test results (report failures honestly).
+- End every phase with a commit (`feat: phase N ...`) and `git push` to `origin main`, so progress per phase is visible on GitHub.
 - Briefly explain every architectural decision. The owner wants to understand the code.
 - Don't add features or dependencies outside the approved plan.

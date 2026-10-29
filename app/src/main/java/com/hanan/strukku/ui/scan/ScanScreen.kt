@@ -72,7 +72,7 @@ import java.time.LocalDate
 @Composable
 fun ScanRoute(
     onBack: () -> Unit,
-    onContinue: () -> Unit,
+    onContinue: (ReceiptDraft) -> Unit,
     onManualEntry: () -> Unit,
     viewModel: ScanViewModel = hiltViewModel(),
 ) {
@@ -131,7 +131,7 @@ fun ScanContent(
     camera: @Composable () -> Unit,
     onCapture: () -> Unit,
     onRetry: () -> Unit,
-    onContinue: () -> Unit,
+    onContinue: (ReceiptDraft) -> Unit,
     onManualEntry: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -143,7 +143,7 @@ fun ScanContent(
             modifier = modifier,
         )
 
-        is ScanUiState.Result -> ResultContent(uiState.draft, onRetry, onContinue, modifier)
+        is ScanUiState.Result -> ResultContent(uiState.draft, onRetry, { onContinue(uiState.draft) }, modifier)
 
         ScanUiState.Failed -> MessageContent(
             title = stringResource(R.string.scan_failed_title),
@@ -215,10 +215,7 @@ private fun CameraContent(
     }
 }
 
-/**
- * Phase 4 shows what was read so it can be checked. Phase 5 replaces "Lanjut" with
- * pre-filling the Confirm form from this draft.
- */
+/** Summary of what was read; "Lanjut" opens the Confirm form pre-filled with this draft. */
 @Composable
 private fun ResultContent(
     draft: ReceiptDraft,

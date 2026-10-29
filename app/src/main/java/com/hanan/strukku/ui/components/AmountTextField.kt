@@ -27,6 +27,7 @@ fun AmountTextField(
     modifier: Modifier = Modifier,
     isError: Boolean = false,
     errorText: String? = null,
+    hintText: String? = null,
     imeAction: ImeAction = ImeAction.Next,
     keyboardActions: KeyboardActions = KeyboardActions.Default,
 ) {
@@ -37,7 +38,7 @@ fun AmountTextField(
         prefix = { Text("Rp") },
         singleLine = true,
         isError = isError,
-        supportingText = errorText?.takeIf { isError }?.let { { Text(it) } },
+        supportingText = fieldSupportingText(errorText?.takeIf { isError }, hintText),
         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number, imeAction = imeAction),
         keyboardActions = keyboardActions,
         visualTransformation = ThousandsSeparatorTransformation,

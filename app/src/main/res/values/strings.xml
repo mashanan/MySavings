@@ -16,6 +16,7 @@
     <string name="home_budget_used">Terpakai %1$s dari %2$s</string>
     <string name="home_budget_over">Melebihi anggaran %1$s</string>
     <string name="home_budget_edit">Ubah anggaran</string>
+    <string name="home_budget_progress_desc">%1$d%% anggaran terpakai</string>
     <string name="home_budget_empty_title">Anggaran belum diatur</string>
     <string name="home_budget_empty_body">Pengeluaran bulan ini: %1$s</string>
     <string name="home_budget_set">Atur anggaran</string>
@@ -55,6 +56,11 @@
 
     <!-- Confirm -->
     <string name="confirm_title_manual">Tambah transaksi</string>
+    <string name="confirm_title_scan">Konfirmasi hasil scan</string>
+    <string name="confirm_discard_title">Buang perubahan?</string>
+    <string name="confirm_discard_body">Data yang sudah diisi belum disimpan dan akan hilang.</string>
+    <string name="confirm_discard_action">Buang</string>
+    <string name="confirm_keep_editing">Lanjut mengisi</string>
     <string name="confirm_merchant">Nama toko</string>
     <string name="confirm_amount">Total</string>
     <string name="confirm_date">Tanggal</string>

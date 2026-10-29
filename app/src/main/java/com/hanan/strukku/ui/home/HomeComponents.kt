@@ -20,6 +20,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -58,8 +61,14 @@ fun BudgetCard(
                 return@Column
             }
 
-            Text(stringResource(R.string.home_budget_title), style = MaterialTheme.typography.titleSmall)
+            Text(
+                text = stringResource(R.string.home_budget_title),
+                style = MaterialTheme.typography.titleSmall,
+                modifier = Modifier.semantics { heading() },
+            )
             val statusColor = budgetStatusColor(usedFraction)
+            val percentUsed = (usedFraction * 100).roundToInt()
+            val progressDescription = stringResource(R.string.home_budget_progress_desc, percentUsed)
             Text(
                 text = formatRupiah(remaining),
                 style = MaterialTheme.typography.headlineMedium,
@@ -69,7 +78,11 @@ fun BudgetCard(
             LinearProgressIndicator(
                 progress = { usedFraction.coerceIn(0f, 1f) },
                 color = statusColor,
-                modifier = Modifier.fillMaxWidth().height(8.dp),
+                // Read as "82% anggaran terpakai" instead of a bare percentage; over 100% is otherwise lost.
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(8.dp)
+                    .semantics { stateDescription = progressDescription },
             )
             Text(
                 text = if (remaining < 0) {
@@ -101,7 +114,8 @@ fun CategorySpendingRow(
 ) {
     val share = if (totalSpent > 0) spending.amount.toFloat() / totalSpent else 0f
     Row(
-        modifier = modifier.fillMaxWidth().padding(vertical = 8.dp),
+        // One TalkBack stop per row: "Belanja Harian, Rp1.200.000, 73%".
+        modifier = modifier.fillMaxWidth().padding(vertical = 8.dp).semantics(mergeDescendants = true) {},
         verticalAlignment = Alignment.CenterVertically,
     ) {
         CategoryIcon(spending.category)
@@ -141,7 +155,8 @@ fun TransactionRow(
 ) {
     val transaction = item.transaction
     Row(
-        modifier = modifier.fillMaxWidth().padding(vertical = 8.dp),
+        // One TalkBack stop per row: "Indomaret, 28 Okt 2026 · Belanja Harian, Rp87.500".
+        modifier = modifier.fillMaxWidth().padding(vertical = 8.dp).semantics(mergeDescendants = true) {},
         verticalAlignment = Alignment.CenterVertically,
     ) {
         CategoryIcon(item.category)

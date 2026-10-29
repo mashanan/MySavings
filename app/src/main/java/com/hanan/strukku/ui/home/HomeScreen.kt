@@ -28,9 +28,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.lifecycle.compose.LifecycleResumeEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.hanan.strukku.R
 import com.hanan.strukku.domain.model.Category
@@ -56,6 +59,10 @@ fun HomeRoute(
     viewModel: HomeViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    LifecycleResumeEffect(viewModel) {
+        viewModel.refreshMonth()
+        onPauseOrDispose {}
+    }
     HomeScreen(
         uiState = uiState,
         onScanClick = onScanClick,
@@ -185,7 +192,8 @@ private fun LazyListScope.sectionTitle(titleRes: Int) {
         Text(
             text = stringResource(titleRes),
             style = MaterialTheme.typography.titleMedium,
-            modifier = Modifier.padding(top = 24.dp, bottom = 4.dp),
+            // Marked as a heading so screen-reader users can jump between sections.
+            modifier = Modifier.padding(top = 24.dp, bottom = 4.dp).semantics { heading() },
         )
     }
 }
@@ -205,6 +213,7 @@ private val previewFood = Category(1, "Makan & Minum", "food", "#E57373", emptyL
 private val previewGroceries = Category(2, "Belanja Harian", "groceries", "#4DB6AC", emptyList(), true)
 
 @Preview(showBackground = true)
+@Preview(showBackground = true, name = "Large font", fontScale = 1.5f)
 @Composable
 private fun HomeScreenPreview() {
     val summary = MonthlySummary(
