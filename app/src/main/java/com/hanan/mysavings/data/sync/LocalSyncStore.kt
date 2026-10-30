@@ -56,7 +56,7 @@ class LocalSyncStore @Inject constructor(
      */
     fun markClean(table: SyncTable, uploaded: List<RemoteDoc>) = database.runInTransaction {
         uploaded.forEach {
-            db.execSQL("UPDATE `${table.name}` SET dirty = 0 WHERE uuid = ? AND updatedAt = ?", arrayOf(it.uuid, it.updatedAt))
+            db.execSQL("UPDATE `${table.name}` SET dirty = 0 WHERE uuid = ? AND updatedAt = ?", arrayOf<Any>(it.uuid, it.updatedAt))
         }
     }
 
@@ -71,7 +71,7 @@ class LocalSyncStore @Inject constructor(
             // Same check as markClean: a newer deletion time means it was deleted again meanwhile.
             db.execSQL(
                 "DELETE FROM sync_tombstones WHERE collection = ? AND uuid = ? AND deletedAt = ?",
-                arrayOf(it.collection, it.uuid, it.deletedAt),
+                arrayOf<Any>(it.collection, it.uuid, it.deletedAt),
             )
         }
     }
