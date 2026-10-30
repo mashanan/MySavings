@@ -6,6 +6,7 @@ import androidx.compose.ui.platform.LocalConfiguration
 import java.text.NumberFormat
 import java.time.LocalDate
 import java.time.YearMonth
+import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 import java.util.Locale
 import kotlin.math.abs
@@ -57,6 +58,10 @@ fun formatMonthShort(yearMonth: YearMonth, locale: Locale): String =
 /** 2026-10-29 -> "Thu" (en) / "Kam" (id). */
 fun formatDayOfWeekShort(date: LocalDate, locale: Locale): String =
     DateTimeFormatter.ofPattern("EEE", locale).format(date)
+
+/** 30 Oct 2026 21:30 -> "30 Oct, 21:30" (en) / "30 Okt, 21:30" (id). */
+fun formatDateTime(dateTime: ZonedDateTime, locale: Locale): String =
+    DateTimeFormatter.ofPattern("d MMM, HH:mm", locale).format(dateTime)
 
 /** 2026-10-27 -> "Tue, 27 Oct" (en) / "Sel, 27 Okt" (id). The year is left out: the month on screen gives it. */
 fun formatDayHeader(date: LocalDate, locale: Locale): String =

@@ -92,6 +92,8 @@ Google sign-in uses Firebase. The config file is project-specific and kept out o
 2. Enable **Authentication > Sign-in method > Google**.
 3. Download `google-services.json` **after** step 2 (it must contain an OAuth client of `client_type: 3`) and put it in `app/`.
 
+For sync, create a **Firestore Database** and paste [`firestore.rules`](firestore.rules) into its Rules tab: each account can only read and write `users/{its uid}/...`.
+
 Without the file the build stops at the `google-services` plugin.
 
 ```bash

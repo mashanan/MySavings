@@ -39,14 +39,18 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.hanan.mysavings.R
 import com.hanan.mysavings.domain.model.AccountUser
+import com.hanan.mysavings.domain.model.SyncStatus
 import com.hanan.mysavings.domain.usecase.FinancialSummary
 import com.hanan.mysavings.ui.components.MySavingsTopBar
 import com.hanan.mysavings.ui.settings.AppLanguage
 import com.hanan.mysavings.ui.settings.SettingsViewModel
 import com.hanan.mysavings.ui.settings.labelRes
 import com.hanan.mysavings.ui.theme.MySavingsTheme
+import com.hanan.mysavings.ui.util.currentLocale
+import com.hanan.mysavings.ui.util.formatDateTime
 import com.hanan.mysavings.ui.util.formatRupiah
 import kotlinx.coroutines.launch
+import java.time.ZoneId
 
 /**
  * Profile tab. The chosen language comes from SettingsViewModel, so that state is not kept
@@ -79,7 +83,23 @@ fun ProfileRoute(
                 viewModel.onSignOut()
             }
         },
+        onSyncNow = viewModel::onSyncNow,
     )
+}
+
+/** "Syncing…", "Sync failed, will retry", "Last synced 30 Oct 21:30" or "Not synced yet". */
+@Composable
+private fun SyncStatusLine(status: SyncStatus) {
+    val (text, color) = when {
+        status.isSyncing -> stringResource(R.string.sync_running) to MaterialTheme.colorScheme.onSurfaceVariant
+        status.lastAttemptFailed -> stringResource(R.string.sync_failed) to MaterialTheme.colorScheme.error
+        status.lastSyncedAt != null -> stringResource(
+            R.string.sync_last,
+            formatDateTime(status.lastSyncedAt.atZone(ZoneId.systemDefault()), currentLocale()),
+        ) to MaterialTheme.colorScheme.onSurfaceVariant
+        else -> stringResource(R.string.sync_never) to MaterialTheme.colorScheme.onSurfaceVariant
+    }
+    Text(text, style = MaterialTheme.typography.bodySmall, color = color)
 }
 
 @Composable
@@ -91,6 +111,7 @@ fun ProfileScreen(
     modifier: Modifier = Modifier,
     onSignIn: () -> Unit = {},
     onSignOut: () -> Unit = {},
+    onSyncNow: () -> Unit = {},
 ) {
     Scaffold(
         modifier = modifier,
@@ -107,6 +128,8 @@ fun ProfileScreen(
                 error = uiState.signInError,
                 onSignIn = onSignIn,
                 onSignOut = onSignOut,
+                syncStatus = uiState.syncStatus,
+                onSyncNow = onSyncNow,
                 modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 12.dp),
             )
             HorizontalDivider(Modifier.padding(top = 24.dp))
@@ -130,6 +153,8 @@ private fun AccountCard(
     error: SignInError?,
     onSignIn: () -> Unit,
     onSignOut: () -> Unit,
+    syncStatus: SyncStatus?,
+    onSyncNow: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Card(modifier.fillMaxWidth()) {
@@ -163,14 +188,12 @@ private fun AccountCard(
                     style = MaterialTheme.typography.bodyMedium,
                     fontWeight = FontWeight.Medium,
                 )
-                // Honest about what signing in does today: sync arrives in the next update (phase 11b).
-                Text(
-                    text = stringResource(R.string.account_sync_pending),
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-                TextButton(onClick = onSignOut, modifier = Modifier.align(Alignment.End)) {
-                    Text(stringResource(R.string.account_sign_out))
+                syncStatus?.let { SyncStatusLine(it) }
+                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
+                    TextButton(onClick = onSignOut) { Text(stringResource(R.string.account_sign_out)) }
+                    TextButton(onClick = onSyncNow, enabled = syncStatus?.isSyncing != true) {
+                        Text(stringResource(R.string.sync_now))
+                    }
                 }
             }
         }

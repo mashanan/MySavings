@@ -210,7 +210,7 @@ MySavings diperluas dari pencatat pengeluaran menjadi aplikasi keuangan pribadi.
 | **9. Hutang** | Kalender jatuh tempo, daftar hutang terdekat, tandai lunas/cicil, notifikasi jatuh tempo (WorkManager). | Hutang tersimpan dan tampil di kalender; logika jatuh tempo punya unit test. |
 | **10. Profil lokal** | Nama dan foto pengguna disimpan di perangkat. | Profil tersimpan dan tampil. |
 | **11a. Login Google** | Firebase Auth + Credential Manager; kartu akun di Profil (masuk/keluar, email); nama dan foto Google mengisi profil yang masih kosong. Izin `INTERNET` pertama kali. | Bisa masuk dan keluar; data lokal tidak berubah. |
-| **11b. Sinkron data** | Migrasi v6 (uuid, updatedAt, deleted di semua tabel yang disinkron), Firestore `users/{uid}/...`, SyncWorker push/pull, konflik: perubahan terakhir menang. | Data sama di dua HP dengan akun yang sama. |
+| **11b. Sinkron data** | Migrasi v6 (11b-1: uuid, updatedAt, dirty, tabel `sync_tombstones`); Firestore `users/{uid}/{tabel}/{uuid}` dengan `serverUpdatedAt` dari server sebagai penanda unduhan; SyncWorker: unduh dulu lalu unggah, perubahan terbaru menang; dipicu saat login, saat app dibuka, ~10 detik setelah perubahan, tiap 6 jam, dan tombol "Sinkronkan sekarang". Kategori tidak disinkron (dirujuk lewat iconKey); notifikasi terkirim tetap per HP; foto profil di 11c. | Data sama di dua HP dengan akun yang sama. |
 | **11c. Foto, logout & akun** | Foto profil di dokumen Firestore (tanpa Storage berbayar), pilihan saat logout (simpan/hapus data di HP), hapus akun. | Semua alur akun lengkap. |
 
 Catatan: fase 11 mengubah prinsip di bagian 1 ("data tidak pernah meninggalkan perangkat"). Sampai fase itu dikerjakan, prinsip tersebut tetap berlaku.

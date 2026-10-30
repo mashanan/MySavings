@@ -19,7 +19,7 @@ Product spec, data model and phase plan: see [SPEC.md](SPEC.md).
 - Hilt for DI, KSP for annotation processing (no kapt)
 - Room for local storage; Coroutines + Flow
 - WorkManager (background budget checks)
-- Firebase Auth + Credential Manager for Google sign-in (phase 11a); Firestore sync follows in 11b. Room stays the source of truth: the app works fully offline. `app/google-services.json` is not in git (see README)
+- Firebase Auth + Credential Manager for Google sign-in (phase 11a); Firestore sync (11b): rows carry uuid/updatedAt/dirty (SyncColumns), deletes leave tombstones, newest change wins. Room stays the source of truth: the app works fully offline. `app/google-services.json` is not in git (see README)
 - CameraX + ML Kit Text Recognition, **bundled** model (`com.google.mlkit:text-recognition`) so OCR works offline from first install
 - Tests: JUnit 4, MockK, kotlinx-coroutines-test, Turbine
 
@@ -34,6 +34,9 @@ com.hanan.mysavings
 │  ├─ local/        Room entities, DAOs, MySavingsDatabase, default category seed
 │  ├─ repository/   repository implementations + entity <-> domain mappers
 │  ├─ ocr/          ML Kit text recognizer wrapper
+│  ├─ auth/         Firebase Auth repository
+│  ├─ sync/         Room <-> Firestore sync: SyncTables spec, LocalSyncStore, SyncEngine, SyncWorker, SyncTrigger
+│  ├─ profile/      profile photo file store
 │  └─ di/           Hilt modules
 ├─ notification/  budget alerts: WorkManager worker, scheduler, notifier (Android plumbing for a domain use case)
 ├─ export/        PDF report: page layout (pure Kotlin) and PdfDocument writer

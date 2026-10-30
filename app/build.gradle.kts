@@ -107,8 +107,10 @@ dependencies {
     implementation(libs.mlkit.text.recognition)
     implementation(libs.kotlinx.coroutines.play.services)
     // Sign-in: Firebase Auth, with Credential Manager showing the Google account picker.
+    // Sync: Firestore as the cloud copy; Room stays the source of truth.
     implementation(platform(libs.firebase.bom))
     implementation(libs.firebase.auth)
+    implementation(libs.firebase.firestore)
     implementation(libs.androidx.credentials)
     implementation(libs.androidx.credentials.play.services.auth)
     implementation(libs.googleid)

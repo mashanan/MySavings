@@ -4,10 +4,13 @@ import androidx.compose.ui.graphics.ImageBitmap
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.hanan.mysavings.domain.model.AccountUser
+import com.hanan.mysavings.domain.model.SyncStatus
 import com.hanan.mysavings.domain.usecase.FinancialSummary
 import com.hanan.mysavings.domain.usecase.ObserveAccountUseCase
 import com.hanan.mysavings.domain.usecase.ObserveFinancialSummaryUseCase
 import com.hanan.mysavings.domain.usecase.ObserveProfileUseCase
+import com.hanan.mysavings.domain.usecase.ObserveSyncStatusUseCase
+import com.hanan.mysavings.domain.usecase.RequestSyncUseCase
 import com.hanan.mysavings.domain.usecase.SignInWithGoogleUseCase
 import com.hanan.mysavings.domain.usecase.SignOutUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -24,6 +27,8 @@ class ProfileViewModel @Inject constructor(
     observeProfile: ObserveProfileUseCase,
     observeFinancialSummary: ObserveFinancialSummaryUseCase,
     observeAccount: ObserveAccountUseCase,
+    observeSyncStatus: ObserveSyncStatusUseCase,
+    private val requestSync: RequestSyncUseCase,
     private val signInWithGoogle: SignInWithGoogleUseCase,
     private val signOut: SignOutUseCase,
     private val photoDecoder: ProfilePhotoDecoder,
@@ -36,8 +41,9 @@ class ProfileViewModel @Inject constructor(
         observeProfile(),
         observeFinancialSummary(),
         observeAccount(),
+        observeSyncStatus(),
         signIn,
-    ) { profile, summary, account, signIn ->
+    ) { profile, summary, account, syncStatus, signIn ->
         ProfileUiState(
             name = profile.name,
             initials = initialsOf(profile.name),
@@ -46,6 +52,7 @@ class ProfileViewModel @Inject constructor(
             account = account,
             isSigningIn = signIn.isBusy,
             signInError = signIn.error,
+            syncStatus = syncStatus.takeIf { account != null },
         )
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), ProfileUiState())
 
@@ -67,6 +74,8 @@ class ProfileViewModel @Inject constructor(
         }
     }
 
+    fun onSyncNow() = requestSync()
+
     fun onSignOut() {
         viewModelScope.launch { signOut() }
     }
@@ -86,4 +95,6 @@ data class ProfileUiState(
     val account: AccountUser? = null,
     val isSigningIn: Boolean = false,
     val signInError: SignInError? = null,
+    /** `null` when signed out. */
+    val syncStatus: SyncStatus? = null,
 )

@@ -3,6 +3,7 @@ package com.hanan.mysavings
 import android.app.Application
 import androidx.hilt.work.HiltWorkerFactory
 import androidx.work.Configuration
+import com.hanan.mysavings.data.sync.SyncTrigger
 import com.hanan.mysavings.notification.DebtReminderScheduler
 import com.hanan.mysavings.notification.WorkManagerBudgetCheckScheduler
 import dagger.hilt.android.HiltAndroidApp
@@ -24,6 +25,8 @@ class MySavingsApp : Application(), Configuration.Provider {
 
     @Inject lateinit var debtReminderScheduler: DebtReminderScheduler
 
+    @Inject lateinit var syncTrigger: SyncTrigger
+
     override val workManagerConfiguration: Configuration
         get() = Configuration.Builder().setWorkerFactory(workerFactory).build()
 
@@ -31,5 +34,6 @@ class MySavingsApp : Application(), Configuration.Provider {
         super.onCreate()
         budgetCheckScheduler.scheduleDailyCheck()
         debtReminderScheduler.scheduleDailyCheck()
+        syncTrigger.start()
     }
 }

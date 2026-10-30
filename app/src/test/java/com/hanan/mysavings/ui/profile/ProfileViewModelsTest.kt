@@ -4,13 +4,16 @@ import app.cash.turbine.test
 import androidx.compose.ui.graphics.ImageBitmap
 import com.hanan.mysavings.domain.model.AccountUser
 import com.hanan.mysavings.domain.model.ProfilePhoto
+import com.hanan.mysavings.domain.model.SyncStatus
 import com.hanan.mysavings.domain.model.UserProfile
 import com.hanan.mysavings.domain.usecase.ChangeProfilePhotoUseCase
 import com.hanan.mysavings.domain.usecase.ObserveAccountUseCase
 import com.hanan.mysavings.domain.usecase.FinancialSummary
 import com.hanan.mysavings.domain.usecase.ObserveFinancialSummaryUseCase
 import com.hanan.mysavings.domain.usecase.ObserveProfileUseCase
+import com.hanan.mysavings.domain.usecase.ObserveSyncStatusUseCase
 import com.hanan.mysavings.domain.usecase.RemoveProfilePhotoUseCase
+import com.hanan.mysavings.domain.usecase.RequestSyncUseCase
 import com.hanan.mysavings.domain.usecase.SignInWithGoogleUseCase
 import com.hanan.mysavings.domain.usecase.SignOutUseCase
 import com.hanan.mysavings.domain.usecase.UpdateProfileNameUseCase
@@ -21,6 +24,7 @@ import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk
 import io.mockk.runs
+import io.mockk.verify
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.runTest
@@ -55,11 +59,14 @@ class ProfileViewModelsTest {
 
     private val account = MutableStateFlow<AccountUser?>(null)
     private val observeAccount = mockk<ObserveAccountUseCase> { every { this@mockk.invoke() } returns account }
+    private val syncStatus = SyncStatus(lastSyncedAt = Instant.ofEpochSecond(100), isSyncing = false, lastAttemptFailed = false)
+    private val observeSyncStatus = mockk<ObserveSyncStatusUseCase> { every { this@mockk.invoke() } returns flowOf(syncStatus) }
+    private val requestSync = mockk<RequestSyncUseCase> { every { this@mockk.invoke() } just runs }
     private val signInWithGoogle = mockk<SignInWithGoogleUseCase>()
     private val signOut = mockk<SignOutUseCase> { coEvery { this@mockk.invoke() } just runs }
 
     private fun profileViewModel() =
-        ProfileViewModel(observeProfile, observeSummary, observeAccount, signInWithGoogle, signOut, decoder)
+        ProfileViewModel(observeProfile, observeSummary, observeAccount, observeSyncStatus, requestSync, signInWithGoogle, signOut, decoder)
 
     private fun editViewModel() = EditProfileViewModel(observeProfile, updateName, changePhoto, removePhoto, decoder)
 
@@ -115,6 +122,20 @@ class ProfileViewModelsTest {
             assertNull(state.signInError)
             assertFalse(state.isSigningIn)
         }
+    }
+
+    @Test
+    fun `sync status shows only while signed in, and sync now asks for a sync`() = runTest {
+        val viewModel = profileViewModel()
+
+        viewModel.uiState.test {
+            assertNull(expectMostRecentItem().syncStatus)
+
+            account.value = AccountUser("uid", "louise@example.com", "Louise", null)
+            assertEquals(syncStatus, expectMostRecentItem().syncStatus)
+        }
+        viewModel.onSyncNow()
+        verify { requestSync() }
     }
 
     @Test

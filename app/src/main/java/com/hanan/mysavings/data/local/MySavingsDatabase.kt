@@ -12,6 +12,7 @@ import com.hanan.mysavings.data.local.dao.CategoryDao
 import com.hanan.mysavings.data.local.dao.DebtDao
 import com.hanan.mysavings.data.local.dao.ProfileDao
 import com.hanan.mysavings.data.local.dao.SavingsDao
+import com.hanan.mysavings.data.local.dao.SyncDao
 import com.hanan.mysavings.data.local.dao.TransactionDao
 import com.hanan.mysavings.data.local.entity.BudgetAlertEntity
 import com.hanan.mysavings.data.local.entity.BudgetEntity
@@ -63,6 +64,7 @@ abstract class MySavingsDatabase : RoomDatabase() {
     abstract fun savingsDao(): SavingsDao
     abstract fun debtDao(): DebtDao
     abstract fun profileDao(): ProfileDao
+    abstract fun syncDao(): SyncDao
 
     /**
      * Seeds the default categories once, when the database file is first created.

@@ -7,6 +7,8 @@ import org.junit.Assert.assertTrue
 import org.junit.Test
 import java.time.LocalDate
 import java.time.YearMonth
+import java.time.ZoneOffset
+import java.time.ZonedDateTime
 import java.util.Locale
 
 class FormattersTest {
@@ -69,6 +71,14 @@ class FormattersTest {
 
         assertEquals("Thu", formatDayOfWeekShort(thursday, english))
         assertEquals("Kam", formatDayOfWeekShort(thursday, indonesian))
+    }
+
+    @Test
+    fun `date with time uses a 24-hour clock in both languages`() {
+        val time = ZonedDateTime.of(2026, 10, 30, 21, 5, 0, 0, ZoneOffset.UTC)
+
+        assertEquals("30 Oct, 21:05", formatDateTime(time, english))
+        assertEquals("30 Okt, 21:05", formatDateTime(time, indonesian))
     }
 
     @Test
