@@ -124,7 +124,13 @@
     <string name="tab_profile">Profil</string>
     <string name="profile_settings_language">Bahasa: %1$s</string>
     <string name="profile_account">Akun dan sinkron</string>
-    <string name="profile_account_soon">Segera hadir: masuk untuk memakai datamu di perangkat lain</string>
+    <string name="account_signed_out_body">Masuk dengan akun Google sebagai persiapan memakai datamu di perangkat lain. Datamu tetap tersimpan di HP ini.</string>
+    <string name="account_sign_in_google">Masuk dengan Google</string>
+    <string name="account_signed_in_as">Masuk sebagai %1$s</string>
+    <string name="account_sync_pending">Sinkron data antar perangkat hadir di pembaruan berikutnya.</string>
+    <string name="account_sign_out">Keluar</string>
+    <string name="account_error_no_account">Belum ada akun Google di HP ini. Tambahkan dulu di pengaturan HP.</string>
+    <string name="account_error_failed">Gagal masuk. Periksa koneksi internet lalu coba lagi.</string>
     <string name="profile_add_name">Tambahkan nama</string>
     <string name="profile_local_note">Tersimpan hanya di perangkat ini</string>
     <string name="profile_edit">Ubah profil</string>

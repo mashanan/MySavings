@@ -13,3 +13,6 @@
 .externalNativeBuild
 .cxx
 local.properties
+
+# Firebase config: project-specific, so every clone uses its own (see README, "Firebase setup").
+app/google-services.json

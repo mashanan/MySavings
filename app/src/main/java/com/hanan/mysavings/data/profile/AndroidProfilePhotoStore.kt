@@ -12,6 +12,9 @@ import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.withContext
 import java.io.File
+import java.net.HttpURLConnection
+import java.net.URL
+import java.nio.ByteBuffer
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlin.math.min
@@ -19,6 +22,7 @@ import kotlin.math.roundToInt
 
 /**
  * Stores the profile photo as a small square JPEG in the app's private files.
+ * The source is an image from the photo picker or, after signing in, the Google account photo.
  *
  * Keeping our own copy (instead of the picked image's address) means the photo survives
  * the original being deleted from the gallery, and needs no storage permission: the
@@ -63,7 +67,12 @@ class AndroidProfilePhotoStore @Inject constructor(
      * EXIF rotation, so photos taken in portrait are not shown sideways.
      */
     private fun decodeSquare(uri: Uri): Bitmap {
-        val source = ImageDecoder.createSource(context.contentResolver, uri)
+        val source = when (uri.scheme) {
+            // The Google account photo after signing in.
+            "https" -> ImageDecoder.createSource(ByteBuffer.wrap(download(uri)))
+            // An image from the photo picker.
+            else -> ImageDecoder.createSource(context.contentResolver, uri)
+        }
         val bitmap = ImageDecoder.decodeBitmap(source) { decoder, info, _ ->
             val scale = SIZE.toFloat() / min(info.size.width, info.size.height)
             if (scale < 1f) {
@@ -76,7 +85,21 @@ class AndroidProfilePhotoStore @Inject constructor(
         return Bitmap.createBitmap(bitmap, (bitmap.width - side) / 2, (bitmap.height - side) / 2, side, side)
     }
 
+    /** Small file, called on the IO dispatcher: a plain connection is enough, no HTTP library needed. */
+    private fun download(uri: Uri): ByteArray {
+        val connection = URL(uri.toString()).openConnection() as HttpURLConnection
+        connection.connectTimeout = TIMEOUT_MS
+        connection.readTimeout = TIMEOUT_MS
+        try {
+            return connection.inputStream.use { it.readBytes() }
+        } finally {
+            connection.disconnect()
+        }
+    }
+
     private companion object {
+        const val TIMEOUT_MS = 10_000
+
         /** Plenty for a profile picture, and only tens of kilobytes as JPEG. */
         const val SIZE = 512
         const val JPEG_QUALITY = 85

@@ -7,6 +7,8 @@
         android:name="android.hardware.camera.any"
         android:required="false" />
 
+    <!-- Google sign-in (and, from phase 11b, sync). Everything else keeps working offline. -->
+    <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 

@@ -84,6 +84,16 @@ app/src/main/java/com/hanan/mysavings/
 
 Requires Android Studio (bundled JDK) and an Android 10+ device or emulator.
 
+### Firebase setup
+
+Google sign-in uses Firebase. The config file is project-specific and kept out of git, so a fresh clone needs its own:
+
+1. Create a project in the [Firebase console](https://console.firebase.google.com) and add an Android app with package `com.hanan.mysavings` and your debug SHA-1 (`./gradlew signingReport`).
+2. Enable **Authentication > Sign-in method > Google**.
+3. Download `google-services.json` **after** step 2 (it must contain an OAuth client of `client_type: 3`) and put it in `app/`.
+
+Without the file the build stops at the `google-services` plugin.
+
 ```bash
 ./gradlew assembleDebug                 # build the APK
 ./gradlew testDebugUnitTest             # JVM unit tests (parser, use cases, ViewModels)

@@ -7,9 +7,12 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.Button
 import androidx.compose.material3.Card
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.ListItem
@@ -17,11 +20,13 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.heading
@@ -33,6 +38,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.hanan.mysavings.R
+import com.hanan.mysavings.domain.model.AccountUser
 import com.hanan.mysavings.domain.usecase.FinancialSummary
 import com.hanan.mysavings.ui.components.MySavingsTopBar
 import com.hanan.mysavings.ui.settings.AppLanguage
@@ -40,6 +46,7 @@ import com.hanan.mysavings.ui.settings.SettingsViewModel
 import com.hanan.mysavings.ui.settings.labelRes
 import com.hanan.mysavings.ui.theme.MySavingsTheme
 import com.hanan.mysavings.ui.util.formatRupiah
+import kotlinx.coroutines.launch
 
 /**
  * Profile tab. The chosen language comes from SettingsViewModel, so that state is not kept
@@ -54,7 +61,25 @@ fun ProfileRoute(
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val language by settingsViewModel.language.collectAsStateWithLifecycle()
-    ProfileScreen(uiState = uiState, language = language, onEditProfile = onEditProfile, onSettingsClick = onSettingsClick)
+    // The account picker needs the Activity, which LocalContext is inside setContent.
+    val context = LocalContext.current
+    val scope = rememberCoroutineScope()
+    ProfileScreen(
+        uiState = uiState,
+        language = language,
+        onEditProfile = onEditProfile,
+        onSettingsClick = onSettingsClick,
+        onSignIn = {
+            viewModel.onSignInStarted()
+            scope.launch { viewModel.onGoogleSignInOutcome(requestGoogleIdToken(context)) }
+        },
+        onSignOut = {
+            scope.launch {
+                clearGoogleCredential(context)
+                viewModel.onSignOut()
+            }
+        },
+    )
 }
 
 @Composable
@@ -64,6 +89,8 @@ fun ProfileScreen(
     onEditProfile: () -> Unit,
     onSettingsClick: () -> Unit,
     modifier: Modifier = Modifier,
+    onSignIn: () -> Unit = {},
+    onSignOut: () -> Unit = {},
 ) {
     Scaffold(
         modifier = modifier,
@@ -74,6 +101,14 @@ fun ProfileScreen(
         ) {
             ProfileHeader(uiState, onEditProfile)
             uiState.summary?.let { SummaryCard(it, Modifier.padding(horizontal = 16.dp)) }
+            AccountCard(
+                account = uiState.account,
+                isSigningIn = uiState.isSigningIn,
+                error = uiState.signInError,
+                onSignIn = onSignIn,
+                onSignOut = onSignOut,
+                modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 12.dp),
+            )
             HorizontalDivider(Modifier.padding(top = 24.dp))
             ListItem(
                 headlineContent = { Text(stringResource(R.string.settings_title)) },
@@ -83,13 +118,61 @@ fun ProfileScreen(
                 leadingContent = { Icon(painterResource(R.drawable.ic_settings), contentDescription = null) },
                 modifier = Modifier.clickable(onClick = onSettingsClick),
             )
-            // Not clickable yet; dimmed so it reads as "planned", not as a broken button.
-            ListItem(
-                headlineContent = { Text(stringResource(R.string.profile_account)) },
-                supportingContent = { Text(stringResource(R.string.profile_account_soon)) },
-                leadingContent = { Icon(painterResource(R.drawable.ic_tab_profile), contentDescription = null) },
-                modifier = Modifier.alpha(0.6f),
+        }
+    }
+}
+
+/** Signed out: why and how to sign in. Signed in: which account, and a way out. */
+@Composable
+private fun AccountCard(
+    account: AccountUser?,
+    isSigningIn: Boolean,
+    error: SignInError?,
+    onSignIn: () -> Unit,
+    onSignOut: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Card(modifier.fillMaxWidth()) {
+        Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            Text(
+                text = stringResource(R.string.profile_account),
+                style = MaterialTheme.typography.titleMedium,
+                modifier = Modifier.semantics { heading() },
             )
+            if (account == null) {
+                Text(stringResource(R.string.account_signed_out_body), style = MaterialTheme.typography.bodyMedium)
+                error?.let {
+                    Text(
+                        text = stringResource(
+                            if (it == SignInError.NO_ACCOUNT) R.string.account_error_no_account else R.string.account_error_failed,
+                        ),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.error,
+                    )
+                }
+                Button(onClick = onSignIn, enabled = !isSigningIn, modifier = Modifier.fillMaxWidth()) {
+                    if (isSigningIn) {
+                        CircularProgressIndicator(strokeWidth = 2.dp, modifier = Modifier.size(20.dp))
+                    } else {
+                        Text(stringResource(R.string.account_sign_in_google))
+                    }
+                }
+            } else {
+                Text(
+                    text = stringResource(R.string.account_signed_in_as, account.email ?: account.displayName.orEmpty()),
+                    style = MaterialTheme.typography.bodyMedium,
+                    fontWeight = FontWeight.Medium,
+                )
+                // Honest about what signing in does today: sync arrives in the next update (phase 11b).
+                Text(
+                    text = stringResource(R.string.account_sync_pending),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+                TextButton(onClick = onSignOut, modifier = Modifier.align(Alignment.End)) {
+                    Text(stringResource(R.string.account_sign_out))
+                }
+            }
         }
     }
 }

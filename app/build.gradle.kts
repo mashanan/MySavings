@@ -5,6 +5,8 @@ plugins {
     alias(libs.plugins.ksp)
     alias(libs.plugins.hilt)
     alias(libs.plugins.room)
+    // Reads app/google-services.json (not in git) into resources such as default_web_client_id.
+    alias(libs.plugins.google.services)
 }
 
 android {
@@ -104,6 +106,12 @@ dependencies {
     // Bundled model: ships inside the APK so OCR works offline from the first launch.
     implementation(libs.mlkit.text.recognition)
     implementation(libs.kotlinx.coroutines.play.services)
+    // Sign-in: Firebase Auth, with Credential Manager showing the Google account picker.
+    implementation(platform(libs.firebase.bom))
+    implementation(libs.firebase.auth)
+    implementation(libs.androidx.credentials)
+    implementation(libs.androidx.credentials.play.services.auth)
+    implementation(libs.googleid)
 
     implementation(libs.androidx.work.runtime)
     implementation(libs.androidx.hilt.work)

@@ -19,6 +19,7 @@ Product spec, data model and phase plan: see [SPEC.md](SPEC.md).
 - Hilt for DI, KSP for annotation processing (no kapt)
 - Room for local storage; Coroutines + Flow
 - WorkManager (background budget checks)
+- Firebase Auth + Credential Manager for Google sign-in (phase 11a); Firestore sync follows in 11b. Room stays the source of truth: the app works fully offline. `app/google-services.json` is not in git (see README)
 - CameraX + ML Kit Text Recognition, **bundled** model (`com.google.mlkit:text-recognition`) so OCR works offline from first install
 - Tests: JUnit 4, MockK, kotlinx-coroutines-test, Turbine
 
