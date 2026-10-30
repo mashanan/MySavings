@@ -1,5 +1,7 @@
 [versions]
-agp = "9.5.0"
+# Capped by the installed Android Studio (2026.2.1 syncs up to AGP 9.4.x); the command line
+# builds newer ones, but the IDE then refuses to sync. Raise it together with Android Studio.
+agp = "9.4.1"
 coreKtx = "1.19.1"
 junit = "4.13.2"
 junitVersion = "1.3.0"
