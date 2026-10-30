@@ -99,6 +99,22 @@ class LocalSyncStore @Inject constructor(
         }
     }
 
+    /** The profile row's photo version, `null` without a photo (or without a profile). */
+    fun profilePhotoVersion(): Long? =
+        db.query("SELECT photoUpdatedAt FROM user_profile").use { if (it.moveToFirst() && !it.isNull(0)) it.getLong(0) else null }
+
+    /**
+     * Removes the account's data from this phone (sign-out with "erase"). Plain deletes, no
+     * tombstones: this is not the user deleting their data, only this phone forgetting it, so
+     * nothing must be deleted in the cloud or on other phones. Categories stay; the phone-only
+     * notification records go too, they belonged to the erased data.
+     */
+    fun eraseAll() = database.runInTransaction {
+        // The sync order reversed: children before their parents.
+        (SyncTables.ALL.map { it.name }.reversed() + listOf("sync_tombstones", "budget_alerts", "debt_reminders_sent"))
+            .forEach { db.execSQL("DELETE FROM `$it`") }
+    }
+
     /** Every synced row back to "not uploaded", e.g. when a different account signs in. */
     fun markAllDirty() = database.runInTransaction {
         SyncTables.ALL.forEach { db.execSQL("UPDATE `${it.name}` SET dirty = 1") }

@@ -65,11 +65,10 @@ object SyncTables {
             columns = listOf("amount", "date", "note", "createdAt"),
             parent = ParentRef("debtId", "debtUuid", SyncCollection.DEBTS, "uuid"),
         ),
-        // Only the name for now: the photo follows in phase 11c, and sending photoUpdatedAt
-        // without the photo would make other phones look for a file they do not have.
+        // photoUpdatedAt is the photo's version; the photo itself travels separately (PhotoSyncRules).
         SyncTable(
             name = SyncCollection.PROFILE,
-            columns = listOf("name"),
+            columns = listOf("name", "photoUpdatedAt"),
             fixedId = 1,
         ),
     )

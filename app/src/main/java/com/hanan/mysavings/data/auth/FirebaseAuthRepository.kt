@@ -35,6 +35,29 @@ class FirebaseAuthRepository @Inject constructor(
 
     override suspend fun signOut() = auth.signOut()
 
+    // A token of another Google account fails here ("user mismatch"), so nobody can confirm
+    // the deletion of an account that is not theirs.
+    override suspend fun reauthenticateWithGoogle(idToken: String): Boolean = runCatchingTask {
+        val user = auth.currentUser ?: return@runCatchingTask false
+        user.reauthenticate(GoogleAuthProvider.getCredential(idToken, null)).await()
+        true
+    }
+
+    override suspend fun deleteAccount(): Boolean = runCatchingTask {
+        val user = auth.currentUser ?: return@runCatchingTask false
+        user.delete().await()
+        true
+    }
+
+    /** Firebase reports failures as exceptions; here they become `false`, cancellation still propagates. */
+    private inline fun runCatchingTask(block: () -> Boolean): Boolean = try {
+        block()
+    } catch (e: CancellationException) {
+        throw e
+    } catch (e: Exception) {
+        false
+    }
+
     private fun FirebaseUser.toAccountUser() = AccountUser(
         uid = uid,
         email = email,

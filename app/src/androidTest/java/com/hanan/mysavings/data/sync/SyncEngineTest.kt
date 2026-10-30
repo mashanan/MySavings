@@ -5,6 +5,7 @@ import androidx.room.Room
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.hanan.mysavings.data.local.MySavingsDatabase
+import com.hanan.mysavings.data.profile.AndroidProfilePhotoStore
 import com.hanan.mysavings.data.repository.RoomBudgetRepository
 import com.hanan.mysavings.data.repository.RoomSavingsRepository
 import com.hanan.mysavings.data.repository.RoomTransactionRepository
@@ -18,11 +19,14 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runTest
 import org.junit.After
+import org.junit.Assert.assertArrayEquals
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import org.junit.runner.RunWith
+import java.io.File
 import java.time.Clock
 import java.time.Instant
 import java.time.LocalDate
@@ -123,6 +127,55 @@ class SyncEngineTest {
         assertEquals(1, cloud.count("account-2", "savings_goals"))
     }
 
+    @Test
+    fun theProfilePhotoTravelsAndItsRemovalToo() = runTest {
+        val jpeg = byteArrayOf(1, 2, 3, 4)
+        phoneA.photos.write(jpeg, version = 77)
+        phoneA.db.profileDao().update { it.copy(photoUpdatedAt = 77, sync = it.sync.touched(77)) }
+
+        phoneA.sync()
+        phoneB.sync()
+
+        assertEquals(77L, phoneB.db.profileDao().observe().first()?.photoUpdatedAt)
+        assertArrayEquals(jpeg, phoneB.photos.load(Instant.ofEpochMilli(77)))
+
+        // Removed on B: gone from the cloud and, after its next sync, from A.
+        phoneB.db.profileDao().update { it.copy(photoUpdatedAt = null, sync = it.sync.touched(200)) }
+        phoneB.sync()
+        phoneA.sync()
+
+        assertFalse(cloud.hasPhoto("account-1"))
+        assertNull(phoneA.photos.load(Instant.ofEpochMilli(77)))
+    }
+
+    @Test
+    fun erasingAPhoneLeavesTheCloudAloneAndTheNextSignInBringsEverythingBack() = runTest {
+        phoneA.savings(at = 10).saveGoal(goal("Laptop"))
+        phoneA.sync()
+
+        phoneA.local.eraseAll()
+        phoneA.state.clear()
+        assertTrue(phoneA.db.savingsDao().observeGoalsWithSaved().first().isEmpty())
+        assertEquals(1, cloud.count("account-1", "savings_goals")) // no tombstone went up
+
+        phoneA.sync()
+
+        assertEquals("Laptop", phoneA.db.savingsDao().observeGoalsWithSaved().first().single().goal.name)
+    }
+
+    @Test
+    fun deletingTheCloudDataOfOneAccountKeepsOtherAccounts() = runTest {
+        phoneA.savings(at = 10).saveGoal(goal("Laptop"))
+        phoneA.sync(uid = "account-1")
+        phoneB.savings(at = 10).saveGoal(goal("Motor"))
+        phoneB.sync(uid = "account-2")
+
+        cloud.deleteAll("account-1")
+
+        assertEquals(0, cloud.count("account-1", "savings_goals"))
+        assertEquals(1, cloud.count("account-2", "savings_goals"))
+    }
+
     private fun clockAt(millis: Long) = Clock.fixed(Instant.ofEpochMilli(millis), ZoneOffset.UTC)
 
     private fun goal(name: String, id: Long = 0) =
@@ -144,8 +197,12 @@ class SyncEngineTest {
             .allowMainThreadQueries()
             .build()
         private val prefsName = "sync-test-$name"
-        private val prefs = context.getSharedPreferences(prefsName, Context.MODE_PRIVATE).apply { edit().clear().commit() }
-        private val engine = SyncEngine(LocalSyncStore(db), cloud, SyncStateStore(prefs), Dispatchers.IO)
+        val prefs = context.getSharedPreferences(prefsName, Context.MODE_PRIVATE).apply { edit().clear().commit() }
+        private val photoDir = File(context.cacheDir, "sync-test-photos-$name").apply { deleteRecursively() }
+        val photos = AndroidProfilePhotoStore(context, photoDir, Dispatchers.IO)
+        val local = LocalSyncStore(db)
+        val state = SyncStateStore(prefs)
+        private val engine = SyncEngine(local, cloud, state, photos, Dispatchers.IO)
 
         fun savings(at: Long) = RoomSavingsRepository(db.savingsDao(), clockAt(at))
 
@@ -156,7 +213,10 @@ class SyncEngineTest {
         // The test runs inside the app's process: remove its files so none are left in the real app's data.
         fun close() {
             db.close()
+            // commit() waits for every earlier apply() of SyncStateStore, so none can recreate the file afterwards.
+            prefs.edit().clear().commit()
             context.deleteSharedPreferences(prefsName)
+            photoDir.deleteRecursively()
         }
     }
 }
@@ -165,6 +225,7 @@ class SyncEngineTest {
 private class FakeRemoteStore : RemoteStore {
     private var serverClock = 1_000L
     private val docs = mutableMapOf<Triple<String, String, String>, RemoteDoc>()
+    private val photos = mutableMapOf<String, RemotePhoto>()
 
     override suspend fun push(uid: String, collection: String, docs: List<RemoteDoc>) {
         docs.forEach { this.docs[Triple(uid, collection, it.uuid)] = it.copy(serverTime = ++serverClock) }
@@ -175,5 +236,22 @@ private class FakeRemoteStore : RemoteStore {
             .filter { it.serverTime!! >= sinceServerTime }
             .sortedBy { it.serverTime }
 
+    override suspend fun uploadPhoto(uid: String, version: Long, bytes: ByteArray) {
+        photos[uid] = RemotePhoto(version, bytes)
+    }
+
+    override suspend fun downloadPhoto(uid: String): RemotePhoto? = photos[uid]
+
+    override suspend fun deletePhoto(uid: String) {
+        photos.remove(uid)
+    }
+
+    override suspend fun deleteAll(uid: String) {
+        docs.keys.removeAll { it.first == uid }
+        photos.remove(uid)
+    }
+
     fun count(uid: String, collection: String) = docs.keys.count { it.first == uid && it.second == collection }
+
+    fun hasPhoto(uid: String) = uid in photos
 }

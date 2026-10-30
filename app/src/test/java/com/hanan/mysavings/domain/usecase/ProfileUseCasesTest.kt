@@ -29,6 +29,7 @@ class ProfileUseCasesTest {
     private val now = Instant.parse("2026-10-29T03:00:00Z")
     private val record = MutableStateFlow(ProfileRecord(name = null, photoUpdatedAt = null))
     private val jpeg = byteArrayOf(1, 2, 3)
+    private val fileVersion = MutableStateFlow<Instant?>(null)
 
     private val repository = mockk<ProfileRepository> {
         every { observe() } returns record
@@ -36,8 +37,9 @@ class ProfileUseCasesTest {
         coEvery { savePhotoUpdatedAt(any()) } just runs
     }
     private val photoStore = mockk<ProfilePhotoStore> {
-        coEvery { load() } returns jpeg
+        coEvery { load(any()) } returns jpeg
         coEvery { delete() } just runs
+        every { observeStoredVersion() } returns fileVersion
     }
 
     @Test
@@ -55,7 +57,22 @@ class ProfileUseCasesTest {
             assertArrayEquals(jpeg, withPhoto.photo!!.bytes)
             cancelAndIgnoreRemainingEvents()
         }
-        coVerify(exactly = 1) { photoStore.load() }
+        coVerify(exactly = 1) { photoStore.load(now) }
+    }
+
+    @Test
+    fun `a photo that arrives after its row is picked up`() = runTest {
+        coEvery { photoStore.load(now) } returnsMany listOf(null, jpeg) // sync stores the row first, the file a moment later
+        record.value = ProfileRecord(name = "Louise", photoUpdatedAt = now)
+
+        ObserveProfileUseCase(repository, photoStore)().test {
+            assertNull(awaitItem().photo)
+
+            fileVersion.value = now
+
+            assertArrayEquals(jpeg, awaitItem().photo!!.bytes)
+            cancelAndIgnoreRemainingEvents()
+        }
     }
 
     @Test
@@ -75,15 +92,16 @@ class ProfileUseCasesTest {
 
     @Test
     fun `a usable photo is stored and stamped with the current time`() = runTest {
-        coEvery { photoStore.import("content://picked") } returns true
+        coEvery { photoStore.import("content://picked", now) } returns true
 
         assertTrue(ChangeProfilePhotoUseCase(photoStore, repository, MutableClock(now))("content://picked"))
+        // The same time names the file and becomes the photo's version in the row.
         coVerify { repository.savePhotoUpdatedAt(now) }
     }
 
     @Test
     fun `an unusable photo changes nothing`() = runTest {
-        coEvery { photoStore.import(any()) } returns false
+        coEvery { photoStore.import(any(), any()) } returns false
 
         assertFalse(ChangeProfilePhotoUseCase(photoStore, repository, MutableClock(now))("content://broken"))
         coVerify(exactly = 0) { repository.savePhotoUpdatedAt(any()) }

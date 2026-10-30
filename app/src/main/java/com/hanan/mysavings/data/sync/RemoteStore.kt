@@ -27,4 +27,17 @@ interface RemoteStore {
 
     /** Documents the server received at or after [sinceServerTime], oldest first. */
     suspend fun pull(uid: String, collection: String, sinceServerTime: Long): List<RemoteDoc>
+
+    /** Replaces the account's profile photo in the cloud. */
+    suspend fun uploadPhoto(uid: String, version: Long, bytes: ByteArray)
+
+    /** The account's profile photo in the cloud, or `null` if there is none. */
+    suspend fun downloadPhoto(uid: String): RemotePhoto?
+
+    suspend fun deletePhoto(uid: String)
+
+    /** Removes everything stored for the account (when the account is deleted). */
+    suspend fun deleteAll(uid: String)
 }
+
+class RemotePhoto(val version: Long, val bytes: ByteArray)

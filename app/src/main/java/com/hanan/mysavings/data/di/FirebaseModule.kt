@@ -7,7 +7,9 @@ import com.google.firebase.firestore.memoryCacheSettings
 import com.hanan.mysavings.data.auth.FirebaseAuthRepository
 import com.hanan.mysavings.data.sync.FirestoreRemoteStore
 import com.hanan.mysavings.data.sync.RemoteStore
+import com.hanan.mysavings.data.sync.SyncAccountDataManager
 import com.hanan.mysavings.data.sync.WorkManagerSyncController
+import com.hanan.mysavings.domain.repository.AccountDataManager
 import com.hanan.mysavings.domain.repository.AuthRepository
 import com.hanan.mysavings.domain.repository.SyncController
 import dagger.Binds
@@ -28,6 +30,9 @@ abstract class FirebaseModule {
 
     @Binds
     abstract fun bindSyncController(impl: WorkManagerSyncController): SyncController
+
+    @Binds
+    abstract fun bindAccountDataManager(impl: SyncAccountDataManager): AccountDataManager
 
     companion object {
         // Provided rather than called inside classes, so tests never touch the real Firebase.

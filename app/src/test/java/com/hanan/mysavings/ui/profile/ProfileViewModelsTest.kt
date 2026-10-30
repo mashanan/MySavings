@@ -7,6 +7,8 @@ import com.hanan.mysavings.domain.model.ProfilePhoto
 import com.hanan.mysavings.domain.model.SyncStatus
 import com.hanan.mysavings.domain.model.UserProfile
 import com.hanan.mysavings.domain.usecase.ChangeProfilePhotoUseCase
+import com.hanan.mysavings.domain.usecase.DeleteAccountResult
+import com.hanan.mysavings.domain.usecase.DeleteAccountUseCase
 import com.hanan.mysavings.domain.usecase.ObserveAccountUseCase
 import com.hanan.mysavings.domain.usecase.FinancialSummary
 import com.hanan.mysavings.domain.usecase.ObserveFinancialSummaryUseCase
@@ -16,6 +18,7 @@ import com.hanan.mysavings.domain.usecase.RemoveProfilePhotoUseCase
 import com.hanan.mysavings.domain.usecase.RequestSyncUseCase
 import com.hanan.mysavings.domain.usecase.SignInWithGoogleUseCase
 import com.hanan.mysavings.domain.usecase.SignOutUseCase
+import com.hanan.mysavings.domain.usecase.SyncBeforeEraseUseCase
 import com.hanan.mysavings.domain.usecase.UpdateProfileNameUseCase
 import com.hanan.mysavings.testutil.MainDispatcherRule
 import io.mockk.coEvery
@@ -63,10 +66,14 @@ class ProfileViewModelsTest {
     private val observeSyncStatus = mockk<ObserveSyncStatusUseCase> { every { this@mockk.invoke() } returns flowOf(syncStatus) }
     private val requestSync = mockk<RequestSyncUseCase> { every { this@mockk.invoke() } just runs }
     private val signInWithGoogle = mockk<SignInWithGoogleUseCase>()
-    private val signOut = mockk<SignOutUseCase> { coEvery { this@mockk.invoke() } just runs }
+    private val signOut = mockk<SignOutUseCase> { coEvery { this@mockk.invoke(any()) } just runs }
+    private val syncBeforeErase = mockk<SyncBeforeEraseUseCase>()
+    private val deleteAccount = mockk<DeleteAccountUseCase>()
 
-    private fun profileViewModel() =
-        ProfileViewModel(observeProfile, observeSummary, observeAccount, observeSyncStatus, requestSync, signInWithGoogle, signOut, decoder)
+    private fun profileViewModel() = ProfileViewModel(
+        observeProfile, observeSummary, observeAccount, observeSyncStatus, requestSync,
+        signInWithGoogle, signOut, syncBeforeErase, deleteAccount, decoder,
+    )
 
     private fun editViewModel() = EditProfileViewModel(observeProfile, updateName, changePhoto, removePhoto, decoder)
 
@@ -139,10 +146,67 @@ class ProfileViewModelsTest {
     }
 
     @Test
-    fun `signing out calls the use case`() = runTest {
-        profileViewModel().onSignOut()
+    fun `signing out asks first, keeping the data needs nothing more`() = runTest {
+        val viewModel = profileViewModel()
+        viewModel.uiState.test {
+            awaitItem()
+            viewModel.onSignOutClick()
+            assertEquals(AccountDialog.SignOutChoice, expectMostRecentItem().accountDialog)
 
-        coVerify { signOut() }
+            viewModel.onSignOutKeepData()
+            assertNull(expectMostRecentItem().accountDialog)
+        }
+        coVerify { signOut(eraseLocalData = false) }
+    }
+
+    @Test
+    fun `erasing syncs first and erases right away when nothing would be lost`() = runTest {
+        coEvery { syncBeforeErase() } returns 0
+
+        profileViewModel().onSignOutEraseData()
+
+        coVerify { signOut(eraseLocalData = true) }
+    }
+
+    @Test
+    fun `erasing warns about changes that could not be uploaded and waits for a yes`() = runTest {
+        coEvery { syncBeforeErase() } returns 3
+        val viewModel = profileViewModel()
+
+        viewModel.uiState.test {
+            awaitItem()
+            viewModel.onSignOutEraseData()
+            assertEquals(AccountDialog.EraseWarning(3), expectMostRecentItem().accountDialog)
+            coVerify(exactly = 0) { signOut(any()) }
+
+            viewModel.onConfirmErase()
+            assertNull(expectMostRecentItem().accountDialog)
+        }
+        coVerify { signOut(eraseLocalData = true) }
+    }
+
+    @Test
+    fun `deleting the account reports each outcome, a closed picker just cancels`() = runTest {
+        coEvery { deleteAccount("token") } returns DeleteAccountResult.DELETED
+        coEvery { deleteAccount("other") } returns DeleteAccountResult.NOT_CONFIRMED
+        val viewModel = profileViewModel()
+
+        viewModel.uiState.test {
+            awaitItem()
+            viewModel.onDeleteAccountConfirmed()
+            assertTrue(expectMostRecentItem().isAccountBusy)
+
+            viewModel.onDeleteAccountReauth(GoogleSignInOutcome.Token("token"))
+            assertEquals(AccountMessage.ACCOUNT_DELETED, expectMostRecentItem().accountMessage)
+
+            viewModel.onDeleteAccountReauth(GoogleSignInOutcome.Token("other"))
+            assertEquals(AccountMessage.DELETE_NOT_CONFIRMED, expectMostRecentItem().accountMessage)
+
+            viewModel.onDeleteAccountReauth(GoogleSignInOutcome.Cancelled)
+            val state = expectMostRecentItem()
+            assertNull(state.accountMessage)
+            assertFalse(state.isAccountBusy)
+        }
     }
 
     @Test

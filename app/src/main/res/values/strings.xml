@@ -138,6 +138,23 @@
     <string name="sync_failed">Sync failed. It will try again when there is a connection.</string>
     <string name="sync_last">Last synced %1$s</string>
     <string name="sync_never">Not synced yet</string>
+    <string name="account_working">Just a moment…</string>
+    <string name="account_sign_out_title">Sign out</string>
+    <string name="account_sign_out_body">Your data is safe in the cloud. What should happen to the copy on this phone?</string>
+    <string name="account_keep_data">Keep it here</string>
+    <string name="account_erase_data">Erase from this phone</string>
+    <string name="account_erase_warning_title">Not everything is in the cloud yet</string>
+    <plurals name="account_erase_warning_body">
+        <item quantity="one">%1$d change could not be uploaded (no connection?). Erasing now loses it.</item>
+        <item quantity="other">%1$d changes could not be uploaded (no connection?). Erasing now loses them.</item>
+    </plurals>
+    <string name="account_erase_anyway">Erase anyway</string>
+    <string name="account_delete">Delete account</string>
+    <string name="account_delete_title">Delete your account?</string>
+    <string name="account_delete_body">Your account and everything stored for it in the cloud are deleted for good, on every device. The data on this phone stays and the app keeps working offline. To confirm, choose your Google account once more.</string>
+    <string name="account_deleted">Account deleted. Your data stays on this phone.</string>
+    <string name="account_delete_not_confirmed">Not confirmed with the same Google account, so nothing was deleted.</string>
+    <string name="account_delete_failed">Could not delete the account. Check your connection and try again.</string>
     <string name="account_sign_out">Sign out</string>
     <string name="account_error_no_account">There is no Google account on this phone. Add one in the phone\'s settings first.</string>
     <string name="account_error_failed">Could not sign in. Check your internet connection and try again.</string>

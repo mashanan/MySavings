@@ -10,11 +10,17 @@ import com.hanan.mysavings.domain.repository.ProfilePhotoStore
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.withContext
 import java.io.File
+import java.io.OutputStream
 import java.net.HttpURLConnection
 import java.net.URL
 import java.nio.ByteBuffer
+import java.time.Instant
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlin.math.min
@@ -27,24 +33,32 @@ import kotlin.math.roundToInt
  * Keeping our own copy (instead of the picked image's address) means the photo survives
  * the original being deleted from the gallery, and needs no storage permission: the
  * system photo picker grants one-time access, which is all the import needs.
+ *
+ * The file is named after its version ("avatar-1793375485883.jpg"), so the store always
+ * knows which photo it holds without keeping that anywhere else.
  */
 @Singleton
-class AndroidProfilePhotoStore @Inject constructor(
-    @param:ApplicationContext private val context: Context,
-    @param:IoDispatcher private val ioDispatcher: CoroutineDispatcher,
+class AndroidProfilePhotoStore(
+    private val context: Context,
+    private val directory: File,
+    private val ioDispatcher: CoroutineDispatcher,
 ) : ProfilePhotoStore {
 
-    private val file get() = File(context.filesDir, "profile/avatar.jpg")
+    // Tests give each fake phone its own directory.
+    @Inject
+    constructor(
+        @ApplicationContext context: Context,
+        @IoDispatcher ioDispatcher: CoroutineDispatcher,
+    ) : this(context, File(context.filesDir, "profile"), ioDispatcher)
 
-    override suspend fun import(sourceUri: String): Boolean = withContext(ioDispatcher) {
+    /** Millis of the photo on disk; `null` = none, or not looked yet. */
+    private val storedVersion = MutableStateFlow<Long?>(null)
+
+    override suspend fun import(sourceUri: String, version: Instant): Boolean = withContext(ioDispatcher) {
         try {
             val square = decodeSquare(sourceUri.toUri())
-            val target = file
-            target.parentFile?.mkdirs()
-            // Write next to the old photo and swap, so a failed write never leaves half a file.
-            val temp = File(target.parentFile, "avatar.tmp")
-            temp.outputStream().use { square.compress(Bitmap.CompressFormat.JPEG, JPEG_QUALITY, it) }
-            temp.renameTo(target)
+            writeFile(version.toEpochMilli()) { square.compress(Bitmap.CompressFormat.JPEG, JPEG_QUALITY, it) }
+            true
         } catch (e: CancellationException) {
             throw e
         } catch (e: Exception) {
@@ -53,12 +67,58 @@ class AndroidProfilePhotoStore @Inject constructor(
         }
     }
 
-    override suspend fun load(): ByteArray? = withContext(ioDispatcher) {
-        file.takeIf { it.exists() }?.readBytes()
+    override suspend fun load(version: Instant): ByteArray? = withContext(ioDispatcher) {
+        adoptLegacyFile(version.toEpochMilli())
+        fileFor(version.toEpochMilli()).takeIf { it.exists() }?.readBytes()
     }
 
     override suspend fun delete() {
-        withContext(ioDispatcher) { file.delete() }
+        withContext(ioDispatcher) {
+            directory.listFiles()?.forEach { it.delete() }
+            storedVersion.value = null
+        }
+    }
+
+    override fun observeStoredVersion(): Flow<Instant?> = storedVersion
+        .onStart { withContext(ioDispatcher) { storedVersion.value = scanVersion() } }
+        .map { millis -> millis?.let(Instant::ofEpochMilli) }
+
+    /**
+     * For sync: the version on disk. A photo from before versioned names (phase 10) has no
+     * version in its name; it is the photo the profile row describes, so it takes that version.
+     */
+    suspend fun storedVersion(rowVersion: Long?): Long? = withContext(ioDispatcher) {
+        rowVersion?.let(::adoptLegacyFile)
+        scanVersion().also { storedVersion.value = it }
+    }
+
+    /** For sync: stores a downloaded photo as it is (it was already cropped on the other phone). */
+    suspend fun write(bytes: ByteArray, version: Long) = withContext(ioDispatcher) {
+        writeFile(version) { it.write(bytes) }
+    }
+
+    /**
+     * Writes next to the old photo, then swaps and removes the rest, so a failed write never
+     * leaves half a file and there is never more than one photo.
+     */
+    private fun writeFile(version: Long, write: (OutputStream) -> Unit) {
+        directory.mkdirs()
+        val temp = File(directory, "avatar.tmp")
+        temp.outputStream().use(write)
+        val target = fileFor(version)
+        temp.renameTo(target)
+        directory.listFiles()?.filter { it != target }?.forEach { it.delete() }
+        storedVersion.value = version
+    }
+
+    private fun fileFor(version: Long) = File(directory, "avatar-$version.jpg")
+
+    private fun scanVersion(): Long? = directory.listFiles()
+        ?.firstNotNullOfOrNull { VERSIONED_NAME.matchEntire(it.name)?.groupValues?.get(1)?.toLong() }
+
+    private fun adoptLegacyFile(version: Long) {
+        val legacy = File(directory, LEGACY_NAME)
+        if (legacy.exists() && !fileFor(version).exists()) legacy.renameTo(fileFor(version))
     }
 
     /**
@@ -99,6 +159,8 @@ class AndroidProfilePhotoStore @Inject constructor(
 
     private companion object {
         const val TIMEOUT_MS = 10_000
+        const val LEGACY_NAME = "avatar.jpg"
+        val VERSIONED_NAME = Regex("avatar-(\\d+)\\.jpg")
 
         /** Plenty for a profile picture, and only tens of kilobytes as JPEG. */
         const val SIZE = 512

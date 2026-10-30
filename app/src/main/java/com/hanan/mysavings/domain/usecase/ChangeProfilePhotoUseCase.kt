@@ -14,9 +14,11 @@ class ChangeProfilePhotoUseCase @Inject constructor(
 ) {
     /** @return `false` if the picked file could not be used; nothing changes then. */
     suspend operator fun invoke(sourceUri: String): Boolean {
-        if (!photoStore.import(sourceUri)) return false
-        // A new timestamp is the photo's new version, which makes every screen reload it.
-        profileRepository.savePhotoUpdatedAt(Instant.now(clock))
+        // One timestamp for both: it names the file and becomes the profile's photo version,
+        // which makes every screen (and, through sync, every phone) load this photo.
+        val version = Instant.now(clock)
+        if (!photoStore.import(sourceUri, version)) return false
+        profileRepository.savePhotoUpdatedAt(version)
         return true
     }
 }

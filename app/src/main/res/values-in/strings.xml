@@ -132,6 +132,22 @@
     <string name="sync_failed">Sinkron gagal. Akan dicoba lagi saat ada koneksi.</string>
     <string name="sync_last">Terakhir sinkron %1$s</string>
     <string name="sync_never">Belum pernah sinkron</string>
+    <string name="account_working">Sebentar…</string>
+    <string name="account_sign_out_title">Keluar dari akun</string>
+    <string name="account_sign_out_body">Datamu aman di cloud. Bagaimana dengan salinan di HP ini?</string>
+    <string name="account_keep_data">Simpan di HP ini</string>
+    <string name="account_erase_data">Hapus dari HP ini</string>
+    <string name="account_erase_warning_title">Belum semuanya tersimpan di cloud</string>
+    <plurals name="account_erase_warning_body">
+        <item quantity="other">%1$d perubahan belum bisa dikirim (tidak ada koneksi?). Jika dihapus sekarang, perubahan itu akan hilang.</item>
+    </plurals>
+    <string name="account_erase_anyway">Tetap hapus</string>
+    <string name="account_delete">Hapus akun</string>
+    <string name="account_delete_title">Hapus akunmu?</string>
+    <string name="account_delete_body">Akun beserta semua datanya di cloud akan dihapus permanen, di semua perangkat. Data di HP ini tetap ada dan aplikasi tetap bisa dipakai tanpa internet. Untuk konfirmasi, pilih akun Google-mu sekali lagi.</string>
+    <string name="account_deleted">Akun dihapus. Datamu tetap ada di HP ini.</string>
+    <string name="account_delete_not_confirmed">Tidak dikonfirmasi dengan akun Google yang sama, jadi tidak ada yang dihapus.</string>
+    <string name="account_delete_failed">Gagal menghapus akun. Periksa koneksi lalu coba lagi.</string>
     <string name="account_sign_out">Keluar</string>
     <string name="account_error_no_account">Belum ada akun Google di HP ini. Tambahkan dulu di pengaturan HP.</string>
     <string name="account_error_failed">Gagal masuk. Periksa koneksi internet lalu coba lagi.</string>

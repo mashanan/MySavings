@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
@@ -28,6 +29,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
@@ -38,7 +40,6 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.hanan.mysavings.R
-import com.hanan.mysavings.domain.model.AccountUser
 import com.hanan.mysavings.domain.model.SyncStatus
 import com.hanan.mysavings.domain.usecase.FinancialSummary
 import com.hanan.mysavings.ui.components.MySavingsTopBar
@@ -68,24 +69,55 @@ fun ProfileRoute(
     // The account picker needs the Activity, which LocalContext is inside setContent.
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
+    // Leaving the account also forgets the account chosen in the picker, so the next sign-in asks again.
+    val forgetPickedAccount = { scope.launch { clearGoogleCredential(context) } }
     ProfileScreen(
         uiState = uiState,
         language = language,
         onEditProfile = onEditProfile,
         onSettingsClick = onSettingsClick,
-        onSignIn = {
-            viewModel.onSignInStarted()
-            scope.launch { viewModel.onGoogleSignInOutcome(requestGoogleIdToken(context)) }
-        },
-        onSignOut = {
-            scope.launch {
-                clearGoogleCredential(context)
-                viewModel.onSignOut()
-            }
-        },
-        onSyncNow = viewModel::onSyncNow,
+        account = AccountCallbacks(
+            onSignIn = {
+                viewModel.onSignInStarted()
+                scope.launch { viewModel.onGoogleSignInOutcome(requestGoogleIdToken(context)) }
+            },
+            onSyncNow = viewModel::onSyncNow,
+            onSignOutClick = viewModel::onSignOutClick,
+            onKeepData = {
+                forgetPickedAccount()
+                viewModel.onSignOutKeepData()
+            },
+            onEraseData = {
+                forgetPickedAccount()
+                viewModel.onSignOutEraseData()
+            },
+            onConfirmErase = viewModel::onConfirmErase,
+            onDeleteAccountClick = viewModel::onDeleteAccountClick,
+            onDeleteConfirmed = {
+                viewModel.onDeleteAccountConfirmed()
+                // Firebase only deletes an account right after its owner signed in again.
+                scope.launch {
+                    viewModel.onDeleteAccountReauth(requestGoogleIdToken(context))
+                    forgetPickedAccount()
+                }
+            },
+            onDismissDialog = viewModel::onDismissDialog,
+        ),
     )
 }
+
+/** Everything the account card and its dialogs can ask for, bundled to keep ProfileScreen readable. */
+data class AccountCallbacks(
+    val onSignIn: () -> Unit = {},
+    val onSyncNow: () -> Unit = {},
+    val onSignOutClick: () -> Unit = {},
+    val onKeepData: () -> Unit = {},
+    val onEraseData: () -> Unit = {},
+    val onConfirmErase: () -> Unit = {},
+    val onDeleteAccountClick: () -> Unit = {},
+    val onDeleteConfirmed: () -> Unit = {},
+    val onDismissDialog: () -> Unit = {},
+)
 
 /** "Syncing…", "Sync failed, will retry", "Last synced 30 Oct 21:30" or "Not synced yet". */
 @Composable
@@ -109,9 +141,7 @@ fun ProfileScreen(
     onEditProfile: () -> Unit,
     onSettingsClick: () -> Unit,
     modifier: Modifier = Modifier,
-    onSignIn: () -> Unit = {},
-    onSignOut: () -> Unit = {},
-    onSyncNow: () -> Unit = {},
+    account: AccountCallbacks = AccountCallbacks(),
 ) {
     Scaffold(
         modifier = modifier,
@@ -123,13 +153,8 @@ fun ProfileScreen(
             ProfileHeader(uiState, onEditProfile)
             uiState.summary?.let { SummaryCard(it, Modifier.padding(horizontal = 16.dp)) }
             AccountCard(
-                account = uiState.account,
-                isSigningIn = uiState.isSigningIn,
-                error = uiState.signInError,
-                onSignIn = onSignIn,
-                onSignOut = onSignOut,
-                syncStatus = uiState.syncStatus,
-                onSyncNow = onSyncNow,
+                uiState = uiState,
+                callbacks = account,
                 modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 12.dp),
             )
             HorizontalDivider(Modifier.padding(top = 24.dp))
@@ -143,20 +168,20 @@ fun ProfileScreen(
             )
         }
     }
+
+    uiState.accountDialog?.let { AccountDialogs(it, account) }
 }
 
-/** Signed out: why and how to sign in. Signed in: which account, and a way out. */
+/** Signed out: why and how to sign in. Signed in: which account, sync, and the ways out. */
 @Composable
 private fun AccountCard(
-    account: AccountUser?,
-    isSigningIn: Boolean,
-    error: SignInError?,
-    onSignIn: () -> Unit,
-    onSignOut: () -> Unit,
-    syncStatus: SyncStatus?,
-    onSyncNow: () -> Unit,
+    uiState: ProfileUiState,
+    callbacks: AccountCallbacks,
     modifier: Modifier = Modifier,
 ) {
+    val account = uiState.account
+    val syncStatus = uiState.syncStatus
+    val error = uiState.signInError
     Card(modifier.fillMaxWidth()) {
         Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
             Text(
@@ -164,7 +189,24 @@ private fun AccountCard(
                 style = MaterialTheme.typography.titleMedium,
                 modifier = Modifier.semantics { heading() },
             )
+            uiState.accountMessage?.let { message ->
+                Text(
+                    text = stringResource(message.textRes()),
+                    style = MaterialTheme.typography.bodyMedium,
+                    fontWeight = FontWeight.Medium,
+                    color = if (message == AccountMessage.ACCOUNT_DELETED) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.error,
+                )
+            }
+            if (uiState.isAccountBusy) {
+                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                    CircularProgressIndicator(strokeWidth = 2.dp, modifier = Modifier.size(20.dp))
+                    Text(stringResource(R.string.account_working), style = MaterialTheme.typography.bodyMedium)
+                }
+                return@Column
+            }
             if (account == null) {
+                val onSignIn = callbacks.onSignIn
+                val isSigningIn = uiState.isSigningIn
                 Text(stringResource(R.string.account_signed_out_body), style = MaterialTheme.typography.bodyMedium)
                 error?.let {
                     Text(
@@ -190,13 +232,65 @@ private fun AccountCard(
                 )
                 syncStatus?.let { SyncStatusLine(it) }
                 Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
-                    TextButton(onClick = onSignOut) { Text(stringResource(R.string.account_sign_out)) }
-                    TextButton(onClick = onSyncNow, enabled = syncStatus?.isSyncing != true) {
+                    TextButton(onClick = callbacks.onSignOutClick) { Text(stringResource(R.string.account_sign_out)) }
+                    TextButton(onClick = callbacks.onSyncNow, enabled = syncStatus?.isSyncing != true) {
                         Text(stringResource(R.string.sync_now))
                     }
                 }
+                // Out of the way and in the error color: it cannot be undone.
+                TextButton(onClick = callbacks.onDeleteAccountClick, modifier = Modifier.align(Alignment.End)) {
+                    Text(stringResource(R.string.account_delete), color = MaterialTheme.colorScheme.error)
+                }
             }
         }
+    }
+}
+
+private fun AccountMessage.textRes(): Int = when (this) {
+    AccountMessage.ACCOUNT_DELETED -> R.string.account_deleted
+    AccountMessage.DELETE_NOT_CONFIRMED -> R.string.account_delete_not_confirmed
+    AccountMessage.DELETE_FAILED -> R.string.account_delete_failed
+}
+
+@Composable
+private fun AccountDialogs(dialog: AccountDialog, callbacks: AccountCallbacks) {
+    when (dialog) {
+        AccountDialog.SignOutChoice -> AlertDialog(
+            onDismissRequest = callbacks.onDismissDialog,
+            title = { Text(stringResource(R.string.account_sign_out_title)) },
+            text = { Text(stringResource(R.string.account_sign_out_body)) },
+            // Keeping is the safe default, so it is the main button; erasing is the other one.
+            confirmButton = { TextButton(onClick = callbacks.onKeepData) { Text(stringResource(R.string.account_keep_data)) } },
+            dismissButton = {
+                TextButton(onClick = callbacks.onEraseData) {
+                    Text(stringResource(R.string.account_erase_data), color = MaterialTheme.colorScheme.error)
+                }
+            },
+        )
+
+        is AccountDialog.EraseWarning -> AlertDialog(
+            onDismissRequest = callbacks.onDismissDialog,
+            title = { Text(stringResource(R.string.account_erase_warning_title)) },
+            text = { Text(pluralStringResource(R.plurals.account_erase_warning_body, dialog.unsynced, dialog.unsynced)) },
+            confirmButton = {
+                TextButton(onClick = callbacks.onConfirmErase) {
+                    Text(stringResource(R.string.account_erase_anyway), color = MaterialTheme.colorScheme.error)
+                }
+            },
+            dismissButton = { TextButton(onClick = callbacks.onDismissDialog) { Text(stringResource(R.string.action_cancel)) } },
+        )
+
+        AccountDialog.DeleteConfirm -> AlertDialog(
+            onDismissRequest = callbacks.onDismissDialog,
+            title = { Text(stringResource(R.string.account_delete_title)) },
+            text = { Text(stringResource(R.string.account_delete_body)) },
+            confirmButton = {
+                TextButton(onClick = callbacks.onDeleteConfirmed) {
+                    Text(stringResource(R.string.account_delete), color = MaterialTheme.colorScheme.error)
+                }
+            },
+            dismissButton = { TextButton(onClick = callbacks.onDismissDialog) { Text(stringResource(R.string.action_cancel)) } },
+        )
     }
 }
 

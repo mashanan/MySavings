@@ -15,4 +15,13 @@ interface AuthRepository {
     suspend fun signInWithGoogle(idToken: String): AccountUser?
 
     suspend fun signOut()
+
+    /**
+     * Proves again that the account owner is here, with a fresh token from the account picker.
+     * Firebase requires a recent sign-in before an account can be deleted.
+     */
+    suspend fun reauthenticateWithGoogle(idToken: String): Boolean
+
+    /** Deletes the signed-in account; it is signed out afterwards. */
+    suspend fun deleteAccount(): Boolean
 }

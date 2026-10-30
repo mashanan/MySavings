@@ -32,7 +32,19 @@ class SyncStateStore(private val prefs: SharedPreferences) {
     /** A different account starts from scratch: nothing of the old one was downloaded for it. */
     fun switchTo(uid: String) = prefs.edit {
         prefs.all.keys.filter { it.startsWith(KEY_CURSOR) }.forEach { remove(it) }
+        remove(KEY_PHOTO)
         putString(KEY_UID, uid)
+    }
+
+    /** Version of the profile photo this phone knows is in the cloud; `null` if none. */
+    var photoCloudVersion: Long?
+        get() = prefs.getLong(KEY_PHOTO, -1).takeIf { it >= 0 }
+        set(value) = prefs.edit { if (value == null) remove(KEY_PHOTO) else putLong(KEY_PHOTO, value) }
+
+    /** Forgets everything, e.g. when the phone's data is erased on sign-out. */
+    fun clear() {
+        prefs.edit { clear() }
+        _lastResult.value = readResult()
     }
 
     /** Server time of the newest document downloaded for [collection]; 0 before the first sync. */
@@ -64,6 +76,7 @@ class SyncStateStore(private val prefs: SharedPreferences) {
         const val KEY_CURSOR = "cursor_"
         const val KEY_LAST_SYNC = "last_sync"
         const val KEY_FAILED = "last_failed"
+        const val KEY_PHOTO = "photo_cloud_version"
     }
 }
 

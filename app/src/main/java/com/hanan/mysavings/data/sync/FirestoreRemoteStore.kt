@@ -1,6 +1,7 @@
 package com.hanan.mysavings.data.sync
 
 import com.google.firebase.Timestamp
+import com.google.firebase.firestore.Blob
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.Source
@@ -58,8 +59,46 @@ class FirestoreRemoteStore @Inject constructor(
         }
     }
 
+    // One document, apart from the profile row: about 50 KB that only moves when the photo changes.
+    private fun photoDocument(uid: String) =
+        firestore.collection("users").document(uid).collection(PHOTO_COLLECTION).document(PHOTO_DOCUMENT)
+
+    override suspend fun uploadPhoto(uid: String, version: Long, bytes: ByteArray) {
+        photoDocument(uid).set(mapOf(FIELD_VERSION to version, FIELD_DATA to Blob.fromBytes(bytes))).await()
+    }
+
+    override suspend fun downloadPhoto(uid: String): RemotePhoto? {
+        val document = photoDocument(uid).get(Source.SERVER).await()
+        val version = (document.get(FIELD_VERSION) as? Number)?.toLong() ?: return null
+        val data = document.getBlob(FIELD_DATA) ?: return null
+        return RemotePhoto(version, data.toBytes())
+    }
+
+    override suspend fun deletePhoto(uid: String) {
+        photoDocument(uid).delete().await()
+    }
+
+    /**
+     * Deletes every document of the account, collection by collection. The users/{uid}
+     * document itself never exists (only its sub-collections do), so nothing else is left.
+     */
+    override suspend fun deleteAll(uid: String) {
+        (SyncTables.ALL.map { it.name } + PHOTO_COLLECTION).forEach { name ->
+            val documents = collection(uid, name).get(Source.SERVER).await().documents
+            documents.chunked(BATCH_SIZE).forEach { chunk ->
+                val batch = firestore.batch()
+                chunk.forEach { batch.delete(it.reference) }
+                batch.commit().await()
+            }
+        }
+    }
+
     private companion object {
         const val BATCH_SIZE = 400
+        const val PHOTO_COLLECTION = "profile_photo"
+        const val PHOTO_DOCUMENT = "current"
+        const val FIELD_VERSION = "version"
+        const val FIELD_DATA = "data"
         const val FIELD_UPDATED_AT = "updatedAt"
         const val FIELD_DELETED = "deleted"
         const val FIELD_SERVER_TIME = "serverUpdatedAt"
