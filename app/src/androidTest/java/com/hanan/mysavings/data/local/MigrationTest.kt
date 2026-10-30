@@ -3,6 +3,7 @@ package com.hanan.mysavings.data.local
 import androidx.room.testing.MigrationTestHelper
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
+import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
@@ -20,6 +21,12 @@ class MigrationTest {
 
     @get:Rule
     val helper = MigrationTestHelper(InstrumentationRegistry.getInstrumentation(), MySavingsDatabase::class.java)
+
+    // The test runs inside the app's process: remove its database so none is left in the real app's data.
+    @After
+    fun tearDown() {
+        InstrumentationRegistry.getInstrumentation().targetContext.deleteDatabase(TEST_DB)
+    }
 
     @Test
     fun migrate1To2KeepsExistingDataAndAddsAlertsTable() {
