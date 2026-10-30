@@ -143,7 +143,8 @@ class SyncEngineTest {
             .addCallback(MySavingsDatabase.SeedCallback)
             .allowMainThreadQueries()
             .build()
-        private val prefs = context.getSharedPreferences("sync-test-$name", Context.MODE_PRIVATE).apply { edit().clear().commit() }
+        private val prefsName = "sync-test-$name"
+        private val prefs = context.getSharedPreferences(prefsName, Context.MODE_PRIVATE).apply { edit().clear().commit() }
         private val engine = SyncEngine(LocalSyncStore(db), cloud, SyncStateStore(prefs), Dispatchers.IO)
 
         fun savings(at: Long) = RoomSavingsRepository(db.savingsDao(), clockAt(at))
@@ -152,7 +153,11 @@ class SyncEngineTest {
 
         suspend fun sync(uid: String = "account-1") = engine.sync(uid)
 
-        fun close() = db.close()
+        // The test runs inside the app's process: remove its files so none are left in the real app's data.
+        fun close() {
+            db.close()
+            context.deleteSharedPreferences(prefsName)
+        }
     }
 }
 
