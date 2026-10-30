@@ -5,6 +5,8 @@ import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.hanan.mysavings.data.local.entity.BudgetAlertEntity
 import com.hanan.mysavings.data.local.entity.BudgetEntity
+import com.hanan.mysavings.data.local.entity.SyncColumns
+import com.hanan.mysavings.data.local.entity.budgetUuid
 import com.hanan.mysavings.data.local.entity.TransactionEntity
 import com.hanan.mysavings.domain.model.Category
 import kotlinx.coroutines.flow.first
@@ -138,8 +140,8 @@ class DatabaseTest {
     @Test
     fun upsertReplacesOverallBudgetInsteadOfDuplicatingIt() = runTest {
         val dao = db.budgetDao()
-        dao.upsert(BudgetEntity(yearMonth = 202610, categoryId = null, limitAmount = 1_000_000))
-        dao.upsert(BudgetEntity(yearMonth = 202610, categoryId = null, limitAmount = 2_000_000))
+        dao.upsert(budget(202610, null, 1_000_000))
+        dao.upsert(budget(202610, null, 2_000_000))
 
         val budgets = dao.observeForMonth(202610).first()
 
@@ -150,10 +152,10 @@ class DatabaseTest {
     @Test
     fun budgetsAreSeparatePerCategoryAndPerMonth() = runTest {
         val dao = db.budgetDao()
-        dao.upsert(BudgetEntity(yearMonth = 202610, categoryId = null, limitAmount = 3_000_000))
-        dao.upsert(BudgetEntity(yearMonth = 202610, categoryId = 1, limitAmount = 800_000))
-        dao.upsert(BudgetEntity(yearMonth = 202610, categoryId = 1, limitAmount = 900_000))
-        dao.upsert(BudgetEntity(yearMonth = 202611, categoryId = null, limitAmount = 2_500_000))
+        dao.upsert(budget(202610, null, 3_000_000))
+        dao.upsert(budget(202610, 1, 800_000))
+        dao.upsert(budget(202610, 1, 900_000))
+        dao.upsert(budget(202611, null, 2_500_000))
 
         val october = dao.observeForMonth(202610).first().associate { it.categoryId to it.limitAmount }
 
@@ -188,5 +190,13 @@ class DatabaseTest {
         categoryId = categoryId,
         source = "MANUAL",
         createdAt = createdAt,
+    )
+
+    /** Budgets need their sync uuid, which is derived from month and category in the app too. */
+    private fun budget(yearMonth: Int, categoryId: Long?, limitAmount: Long) = BudgetEntity(
+        yearMonth = yearMonth,
+        categoryId = categoryId,
+        limitAmount = limitAmount,
+        sync = SyncColumns(uuid = budgetUuid(yearMonth, categoryId?.toString()), updatedAt = 0),
     )
 }

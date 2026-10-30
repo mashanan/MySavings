@@ -19,8 +19,13 @@ interface BudgetDao {
     @Insert
     suspend fun insert(budget: BudgetEntity): Long
 
-    @Query("UPDATE budgets SET limitAmount = :limitAmount WHERE id = :id")
-    suspend fun updateLimit(id: Long, limitAmount: Long)
+    // A changed limit is a change to sync: newer time, waiting for upload.
+    @Query("UPDATE budgets SET limitAmount = :limitAmount, updatedAt = :updatedAt, dirty = 1 WHERE id = :id")
+    suspend fun updateLimit(id: Long, limitAmount: Long, updatedAt: Long)
+
+    /** The category's icon key ("food"), which is the same on every phone; used for the budget's uuid. */
+    @Query("SELECT iconKey FROM categories WHERE id = :categoryId")
+    suspend fun categoryKey(categoryId: Long): String?
 
     /**
      * Manual upsert instead of `@Upsert`: the unique index cannot detect a duplicate overall
@@ -30,6 +35,6 @@ interface BudgetDao {
     @Transaction
     suspend fun upsert(budget: BudgetEntity) {
         val existingId = findId(budget.yearMonth, budget.categoryId)
-        if (existingId == null) insert(budget) else updateLimit(existingId, budget.limitAmount)
+        if (existingId == null) insert(budget) else updateLimit(existingId, budget.limitAmount, budget.sync.updatedAt)
     }
 }

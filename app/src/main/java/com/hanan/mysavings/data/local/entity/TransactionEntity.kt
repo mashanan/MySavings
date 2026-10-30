@@ -1,5 +1,6 @@
 package com.hanan.mysavings.data.local.entity
 
+import androidx.room.Embedded
 import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.Index
@@ -17,7 +18,7 @@ import androidx.room.PrimaryKey
         ),
     ],
     // categoryId: required for foreign keys to stay fast; date: monthly range queries.
-    indices = [Index("categoryId"), Index("date")],
+    indices = [Index("categoryId"), Index("date"), Index(value = ["uuid"], unique = true)],
 )
 data class TransactionEntity(
     @PrimaryKey(autoGenerate = true) val id: Long = 0,
@@ -32,4 +33,5 @@ data class TransactionEntity(
     val source: String,
     /** Epoch millis. */
     val createdAt: Long,
+    @Embedded val sync: SyncColumns = SyncColumns(updatedAt = createdAt),
 )

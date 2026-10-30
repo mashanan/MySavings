@@ -21,6 +21,7 @@ import com.hanan.mysavings.data.local.entity.DebtPaymentEntity
 import com.hanan.mysavings.data.local.entity.DebtReminderEntity
 import com.hanan.mysavings.data.local.entity.SavingsDepositEntity
 import com.hanan.mysavings.data.local.entity.SavingsGoalEntity
+import com.hanan.mysavings.data.local.entity.SyncTombstoneEntity
 import com.hanan.mysavings.data.local.entity.TransactionEntity
 import com.hanan.mysavings.data.local.entity.UserProfileEntity
 
@@ -30,6 +31,7 @@ import com.hanan.mysavings.data.local.entity.UserProfileEntity
 // 3: savings_goals and savings_deposits (phase 8). New tables only, generated again.
 // 4: debts, debt_payments and debt_reminders_sent (phase 9). New tables only, generated again.
 // 5: user_profile (phase 10). A new table only.
+// 6: sync columns (uuid, updatedAt, dirty) and sync_tombstones (phase 11b). Hand-written: MIGRATION_5_6.
 @Database(
     entities = [
         CategoryEntity::class,
@@ -42,8 +44,9 @@ import com.hanan.mysavings.data.local.entity.UserProfileEntity
         DebtPaymentEntity::class,
         DebtReminderEntity::class,
         UserProfileEntity::class,
+        SyncTombstoneEntity::class,
     ],
-    version = 5,
+    version = 6,
     exportSchema = true,
     autoMigrations = [
         AutoMigration(from = 1, to = 2),

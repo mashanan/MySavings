@@ -2,6 +2,7 @@ package com.hanan.mysavings.data.di
 
 import android.content.Context
 import androidx.room.Room
+import com.hanan.mysavings.data.local.MIGRATION_5_6
 import com.hanan.mysavings.data.local.MySavingsDatabase
 import com.hanan.mysavings.data.local.dao.BudgetAlertDao
 import com.hanan.mysavings.data.local.dao.BudgetDao
@@ -28,6 +29,8 @@ object DatabaseModule {
     fun provideDatabase(@ApplicationContext context: Context): MySavingsDatabase =
         Room.databaseBuilder(context, MySavingsDatabase::class.java, MySavingsDatabase.NAME)
             .addCallback(MySavingsDatabase.SeedCallback)
+            // Versions 1-5 migrate automatically (AutoMigration); 5 -> 6 is written by hand.
+            .addMigrations(MIGRATION_5_6)
             .build()
 
     @Provides

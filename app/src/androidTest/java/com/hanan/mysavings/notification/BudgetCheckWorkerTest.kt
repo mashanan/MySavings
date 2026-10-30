@@ -10,6 +10,8 @@ import androidx.work.WorkerParameters
 import androidx.work.testing.TestListenableWorkerBuilder
 import com.hanan.mysavings.data.local.MySavingsDatabase
 import com.hanan.mysavings.data.local.entity.BudgetEntity
+import com.hanan.mysavings.data.local.entity.SyncColumns
+import com.hanan.mysavings.data.local.entity.budgetUuid
 import com.hanan.mysavings.data.local.entity.TransactionEntity
 import com.hanan.mysavings.data.repository.RoomBudgetAlertRepository
 import com.hanan.mysavings.data.repository.RoomBudgetRepository
@@ -54,7 +56,7 @@ class BudgetCheckWorkerTest {
     private fun worker(): BudgetCheckWorker {
         val checkAlert = CheckBudgetAlertUseCase(
             RoomTransactionRepository(db.transactionDao()),
-            RoomBudgetRepository(db.budgetDao()),
+            RoomBudgetRepository(db.budgetDao(), clock),
             RoomBudgetAlertRepository(db.budgetAlertDao(), clock),
         )
         return TestListenableWorkerBuilder<BudgetCheckWorker>(context)
@@ -81,7 +83,7 @@ class BudgetCheckWorkerTest {
 
     @Test
     fun notifiesOncePerThresholdAcrossRuns() = runTest {
-        db.budgetDao().upsert(BudgetEntity(yearMonth = 202610, categoryId = null, limitAmount = 1_000_000))
+        db.budgetDao().upsert(budget(202610, null, 1_000_000))
         spend(850_000)
 
         assertEquals(ListenableWorker.Result.success(), worker().doWork())
@@ -103,4 +105,12 @@ class BudgetCheckWorkerTest {
         assertEquals(ListenableWorker.Result.success(), worker().doWork())
         assertEquals(emptyList<BudgetAlert>(), shown)
     }
+
+    /** Budgets need their sync uuid, which is derived from month and category in the app too. */
+    private fun budget(yearMonth: Int, categoryId: Long?, limitAmount: Long) = BudgetEntity(
+        yearMonth = yearMonth,
+        categoryId = categoryId,
+        limitAmount = limitAmount,
+        sync = SyncColumns(uuid = budgetUuid(yearMonth, categoryId?.toString()), updatedAt = 0),
+    )
 }

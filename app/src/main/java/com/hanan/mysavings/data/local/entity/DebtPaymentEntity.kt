@@ -1,5 +1,6 @@
 package com.hanan.mysavings.data.local.entity
 
+import androidx.room.Embedded
 import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.Index
@@ -16,7 +17,7 @@ import androidx.room.PrimaryKey
             onDelete = ForeignKey.CASCADE,
         ),
     ],
-    indices = [Index("debtId")],
+    indices = [Index("debtId"), Index(value = ["uuid"], unique = true)],
 )
 data class DebtPaymentEntity(
     @PrimaryKey(autoGenerate = true) val id: Long = 0,
@@ -28,4 +29,5 @@ data class DebtPaymentEntity(
     val note: String?,
     /** Epoch millis. */
     val createdAt: Long,
+    @Embedded val sync: SyncColumns = SyncColumns(updatedAt = createdAt),
 )

@@ -2,6 +2,7 @@ package com.hanan.mysavings.data.repository
 
 import com.hanan.mysavings.data.local.entity.BudgetEntity
 import com.hanan.mysavings.data.local.entity.CategoryEntity
+import com.hanan.mysavings.data.local.entity.SyncColumns
 import com.hanan.mysavings.data.local.entity.UserProfileEntity
 import com.hanan.mysavings.domain.model.Debt
 import com.hanan.mysavings.domain.model.DebtPayment
@@ -53,7 +54,7 @@ class MappersTest {
     fun `yearMonth is stored as yyyyMM`() {
         assertEquals(202610, YearMonth.of(2026, 10).toInt())
         assertEquals(YearMonth.of(2027, 1), 202701.toYearMonth())
-        assertEquals(YearMonth.of(2026, 10), BudgetEntity(1, 202610, null, 1).toDomain().yearMonth)
+        assertEquals(YearMonth.of(2026, 10), BudgetEntity(1, 202610, null, 1, SyncColumns(updatedAt = 0)).toDomain().yearMonth)
     }
 
     @Test

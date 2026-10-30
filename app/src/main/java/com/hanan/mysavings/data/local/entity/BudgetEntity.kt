@@ -1,5 +1,6 @@
 package com.hanan.mysavings.data.local.entity
 
+import androidx.room.Embedded
 import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.Index
@@ -17,7 +18,11 @@ import androidx.room.PrimaryKey
     ],
     // Note: SQLite treats NULLs as distinct in UNIQUE indexes, so this does not stop two
     // overall (categoryId = NULL) budgets in one month. BudgetDao.upsert guards that case.
-    indices = [Index(value = ["yearMonth", "categoryId"], unique = true), Index("categoryId")],
+    indices = [
+        Index(value = ["yearMonth", "categoryId"], unique = true),
+        Index("categoryId"),
+        Index(value = ["uuid"], unique = true),
+    ],
 )
 data class BudgetEntity(
     @PrimaryKey(autoGenerate = true) val id: Long = 0,
@@ -26,4 +31,6 @@ data class BudgetEntity(
     /** `null` means the overall monthly budget. */
     val categoryId: Long?,
     val limitAmount: Long,
+    // No default: the uuid comes from budgetUuid(), see there.
+    @Embedded val sync: SyncColumns,
 )

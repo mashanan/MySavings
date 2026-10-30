@@ -1,9 +1,11 @@
 package com.hanan.mysavings.data.local.entity
 
+import androidx.room.Embedded
 import androidx.room.Entity
+import androidx.room.Index
 import androidx.room.PrimaryKey
 
-@Entity(tableName = "debts")
+@Entity(tableName = "debts", indices = [Index(value = ["uuid"], unique = true)])
 data class DebtEntity(
     @PrimaryKey(autoGenerate = true) val id: Long = 0,
     val creditor: String,
@@ -16,4 +18,5 @@ data class DebtEntity(
     val note: String?,
     /** Epoch millis. */
     val createdAt: Long,
+    @Embedded val sync: SyncColumns = SyncColumns(updatedAt = createdAt),
 )

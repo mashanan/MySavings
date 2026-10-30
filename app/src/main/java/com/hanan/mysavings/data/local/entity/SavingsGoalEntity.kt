@@ -1,9 +1,11 @@
 package com.hanan.mysavings.data.local.entity
 
+import androidx.room.Embedded
 import androidx.room.Entity
+import androidx.room.Index
 import androidx.room.PrimaryKey
 
-@Entity(tableName = "savings_goals")
+@Entity(tableName = "savings_goals", indices = [Index(value = ["uuid"], unique = true)])
 data class SavingsGoalEntity(
     @PrimaryKey(autoGenerate = true) val id: Long = 0,
     val name: String,
@@ -15,4 +17,5 @@ data class SavingsGoalEntity(
     val targetDate: Long?,
     /** Epoch millis. */
     val createdAt: Long,
+    @Embedded val sync: SyncColumns = SyncColumns(updatedAt = createdAt),
 )

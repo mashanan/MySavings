@@ -6,6 +6,7 @@ import com.hanan.mysavings.data.local.entity.DebtEntity
 import com.hanan.mysavings.data.local.entity.DebtPaymentEntity
 import com.hanan.mysavings.data.local.entity.SavingsDepositEntity
 import com.hanan.mysavings.data.local.entity.SavingsGoalEntity
+import com.hanan.mysavings.data.local.entity.SyncColumns
 import com.hanan.mysavings.data.local.entity.TransactionEntity
 import com.hanan.mysavings.data.local.entity.UserProfileEntity
 import com.hanan.mysavings.domain.model.Budget
@@ -62,11 +63,13 @@ fun BudgetEntity.toDomain() = Budget(
     limitAmount = limitAmount,
 )
 
-fun Budget.toEntity() = BudgetEntity(
+/** [sync] comes from the repository: a budget's uuid is derived from its month and category. */
+fun Budget.toEntity(sync: SyncColumns) = BudgetEntity(
     id = id,
     yearMonth = yearMonth.toInt(),
     categoryId = categoryId,
     limitAmount = limitAmount,
+    sync = sync,
 )
 
 fun SavingsGoalEntity.toDomain() = SavingsGoal(

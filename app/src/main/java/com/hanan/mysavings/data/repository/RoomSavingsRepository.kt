@@ -7,10 +7,12 @@ import com.hanan.mysavings.domain.model.SavingsGoalWithSaved
 import com.hanan.mysavings.domain.repository.SavingsRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
+import java.time.Clock
 import javax.inject.Inject
 
 class RoomSavingsRepository @Inject constructor(
     private val dao: SavingsDao,
+    private val clock: Clock,
 ) : SavingsRepository {
 
     override fun observeGoalsWithSaved(): Flow<List<SavingsGoalWithSaved>> =
@@ -31,13 +33,15 @@ class RoomSavingsRepository @Inject constructor(
         if (goal.id == 0L) {
             dao.insertGoal(goal.toEntity())
         } else {
-            dao.updateGoal(goal.toEntity())
+            // Keep the row's uuid: it is how other phones and the cloud know this goal.
+            val existing = checkNotNull(dao.getGoal(goal.id)) { "Goal ${goal.id} not found" }
+            dao.updateGoal(goal.toEntity().copy(sync = existing.sync.touched(clock.millis())))
             goal.id
         }
 
     override suspend fun addDeposit(deposit: SavingsDeposit): Long = dao.insertDeposit(deposit.toEntity())
 
-    override suspend fun deleteGoal(id: Long) = dao.deleteGoal(id)
+    override suspend fun deleteGoal(id: Long) = dao.deleteGoalTracked(id, clock.millis())
 
-    override suspend fun deleteDeposit(id: Long) = dao.deleteDeposit(id)
+    override suspend fun deleteDeposit(id: Long) = dao.deleteDepositTracked(id, clock.millis())
 }
