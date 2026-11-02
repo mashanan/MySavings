@@ -15,6 +15,7 @@ import com.hanan.mysavings.ui.debts.DebtDetailRoute
 import com.hanan.mysavings.ui.debts.DebtFormRoute
 import com.hanan.mysavings.ui.debts.DebtsRoute
 import com.hanan.mysavings.ui.home.HomeRoute
+import com.hanan.mysavings.ui.home.TransactionChange
 import com.hanan.mysavings.ui.profile.EditProfileRoute
 import com.hanan.mysavings.ui.profile.ProfileRoute
 import com.hanan.mysavings.ui.savings.GoalDetailRoute
@@ -24,8 +25,8 @@ import com.hanan.mysavings.ui.scan.ScanRoute
 import com.hanan.mysavings.ui.settings.SettingsRoute
 import com.hanan.mysavings.ui.stats.StatsRoute
 
-/** SavedStateHandle key Confirm sets on Home's back stack entry after a successful save. */
-private const val KEY_TRANSACTION_SAVED = "transaction_saved"
+/** SavedStateHandle key Confirm sets on Home's back stack entry after a save or delete. */
+private const val KEY_TRANSACTION_CHANGE = "transaction_change"
 
 /**
  * The app's navigation graph. Screens never touch [NavHostController] directly; they
@@ -43,16 +44,18 @@ fun MySavingsNavHost(
         modifier = modifier,
     ) {
         composable<Destination.Home> { entry ->
-            // Result passed back from Confirm. SavedStateHandle survives rotation and process death.
-            val transactionSaved by entry.savedStateHandle
-                .getStateFlow(KEY_TRANSACTION_SAVED, false)
+            // Result passed back from Confirm. SavedStateHandle survives rotation and process death;
+            // an enum is Serializable, so it can be stored there as is.
+            val transactionChange by entry.savedStateHandle
+                .getStateFlow<TransactionChange?>(KEY_TRANSACTION_CHANGE, null)
                 .collectAsStateWithLifecycle()
             HomeRoute(
                 onScanClick = { navController.navigate(Destination.Scan) },
                 onManualEntryClick = { navController.navigate(Destination.Confirm()) },
                 onStatsClick = { navController.navigate(Destination.Stats) },
-                showSavedMessage = transactionSaved,
-                onSavedMessageShown = { entry.savedStateHandle[KEY_TRANSACTION_SAVED] = false },
+                transactionChange = transactionChange,
+                onTransactionChangeShown = { entry.savedStateHandle[KEY_TRANSACTION_CHANGE] = null },
+                onTransactionClick = { id -> navController.navigate(Destination.Confirm(transactionId = id)) },
             )
         }
         composable<Destination.Savings> {
@@ -129,15 +132,17 @@ fun MySavingsNavHost(
         }
         composable<Destination.Confirm>(typeMap = Destination.Confirm.typeMap) { entry ->
             val route = entry.toRoute<Destination.Confirm>()
+            fun returnHome(change: TransactionChange) {
+                navController.getBackStackEntry<Destination.Home>().savedStateHandle[KEY_TRANSACTION_CHANGE] = change
+                // Return to Home and drop Scan/Confirm from the back stack.
+                navController.popBackStack(Destination.Home, inclusive = false)
+            }
             ConfirmRoute(
                 prefill = route.prefill,
+                transactionId = route.transactionId,
                 onBack = { navController.popBackStack() },
-                onSaved = {
-                    navController.getBackStackEntry<Destination.Home>()
-                        .savedStateHandle[KEY_TRANSACTION_SAVED] = true
-                    // Return to Home and drop Scan/Confirm from the back stack.
-                    navController.popBackStack(Destination.Home, inclusive = false)
-                },
+                onSaved = { returnHome(TransactionChange.SAVED) },
+                onDeleted = { returnHome(TransactionChange.DELETED) },
             )
         }
     }

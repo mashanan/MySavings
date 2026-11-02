@@ -2,7 +2,12 @@ package com.hanan.mysavings.data.local.dao
 
 import androidx.room.Dao
 import androidx.room.Insert
+import androidx.room.OnConflictStrategy
 import androidx.room.Query
+import androidx.room.Transaction
+import androidx.room.Update
+import com.hanan.mysavings.data.local.entity.SyncCollection
+import com.hanan.mysavings.data.local.entity.SyncTombstoneEntity
 import com.hanan.mysavings.data.local.entity.TransactionEntity
 import kotlinx.coroutines.flow.Flow
 
@@ -10,6 +15,30 @@ import kotlinx.coroutines.flow.Flow
 interface TransactionDao {
     @Insert
     suspend fun insert(transaction: TransactionEntity): Long
+
+    @Query("SELECT * FROM transactions WHERE id = :id")
+    suspend fun getById(id: Long): TransactionEntity?
+
+    @Update
+    suspend fun update(transaction: TransactionEntity)
+
+    @Query("DELETE FROM transactions WHERE id = :id")
+    suspend fun delete(id: Long)
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertTombstone(tombstone: SyncTombstoneEntity)
+
+    /**
+     * Deletes a transaction and remembers its uuid, so sync deletes it on other phones and in
+     * the cloud too (same idea as DebtDao.deleteDebtTracked). One database transaction: a crash
+     * in between never leaves a tombstone without the delete, or the other way round.
+     */
+    @Transaction
+    suspend fun deleteTracked(id: Long, now: Long) {
+        val transaction = getById(id) ?: return
+        insertTombstone(SyncTombstoneEntity(SyncCollection.TRANSACTIONS, transaction.sync.uuid, now))
+        delete(id)
+    }
 
     /** Sums per category in SQL, so only a few rows reach Kotlin no matter how many transactions exist. */
     @Query(

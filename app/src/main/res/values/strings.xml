@@ -35,6 +35,7 @@
     <string name="home_empty_current_body">Scan your first receipt or add a transaction by hand. Your overview will show up here.</string>
     <string name="home_empty_past_title">No transactions in %1$s</string>
     <string name="home_transaction_saved">Transaction saved</string>
+    <string name="home_transaction_deleted">Transaction deleted</string>
     <string name="home_add_sheet_title">Add transaction</string>
     <string name="home_add_scan_desc">Photograph a receipt and the details fill in automatically</string>
     <string name="home_add_manual_desc">Type in the amount and category yourself</string>
@@ -99,6 +100,11 @@
     <!-- Confirm -->
     <string name="confirm_title_manual">Add transaction</string>
     <string name="confirm_title_scan">Confirm scanned receipt</string>
+    <string name="confirm_title_edit">Edit transaction</string>
+    <string name="transaction_edit_action">edit</string>
+    <string name="transaction_delete">Delete transaction</string>
+    <string name="transaction_delete_title">Delete this transaction?</string>
+    <string name="transaction_delete_body">Budgets and charts will update right away. This cannot be undone.</string>
     <string name="confirm_discard_title">Discard changes?</string>
     <string name="confirm_discard_body">What you entered hasn\'t been saved and will be lost.</string>
     <string name="confirm_discard_action">Discard</string>

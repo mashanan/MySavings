@@ -30,6 +30,7 @@
     <string name="home_empty_current_body">Scan struk pertamamu atau catat transaksi secara manual. Ringkasannya akan muncul di sini.</string>
     <string name="home_empty_past_title">Tidak ada transaksi di %1$s</string>
     <string name="home_transaction_saved">Transaksi tersimpan</string>
+    <string name="home_transaction_deleted">Transaksi dihapus</string>
     <string name="home_add_sheet_title">Tambah transaksi</string>
     <string name="home_add_scan_desc">Foto struk, data terisi otomatis</string>
     <string name="home_add_manual_desc">Isi sendiri nominal dan kategorinya</string>
@@ -93,6 +94,11 @@
     <!-- Confirm -->
     <string name="confirm_title_manual">Tambah transaksi</string>
     <string name="confirm_title_scan">Konfirmasi hasil scan</string>
+    <string name="confirm_title_edit">Edit transaksi</string>
+    <string name="transaction_edit_action">ubah</string>
+    <string name="transaction_delete">Hapus transaksi</string>
+    <string name="transaction_delete_title">Hapus transaksi ini?</string>
+    <string name="transaction_delete_body">Anggaran dan grafik langsung ikut diperbarui. Tindakan ini tidak bisa dibatalkan.</string>
     <string name="confirm_discard_title">Buang perubahan?</string>
     <string name="confirm_discard_body">Data yang sudah diisi belum disimpan dan akan hilang.</string>
     <string name="confirm_discard_action">Buang</string>

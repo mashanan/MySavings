@@ -21,6 +21,8 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuAnchorType
 import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExposedDropdownMenuDefaults
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
@@ -34,6 +36,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
@@ -57,16 +60,26 @@ import java.time.LocalDate
 @Composable
 fun ConfirmRoute(
     prefill: ConfirmPrefill,
+    transactionId: Long?,
     onBack: () -> Unit,
     onSaved: () -> Unit,
-    viewModel: ConfirmViewModel = hiltViewModel<ConfirmViewModel, ConfirmViewModel.Factory> { it.create(prefill) },
+    onDeleted: () -> Unit,
+    viewModel: ConfirmViewModel = hiltViewModel<ConfirmViewModel, ConfirmViewModel.Factory> {
+        it.create(prefill, transactionId)
+    },
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
-    // Saving is modelled as state (isSaved) rather than a one-off event, so it cannot be
-    // lost if the screen is not collecting at the exact moment the save completes.
-    LaunchedEffect(uiState.form.isSaved) {
-        if (uiState.form.isSaved) onSaved()
+    // Saving and deleting are modelled as state (isSaved, isDeleted) rather than one-off events,
+    // so they cannot be lost if the screen is not collecting at the exact moment they complete.
+    val form = uiState.form
+    LaunchedEffect(form.isSaved, form.isDeleted, form.isNotFound) {
+        when {
+            form.isSaved -> onSaved()
+            form.isDeleted -> onDeleted()
+            // Nothing left to edit (deleted elsewhere): just close the screen.
+            form.isNotFound -> onBack()
+        }
     }
 
     ConfirmScreen(
@@ -78,6 +91,7 @@ fun ConfirmRoute(
         onCategoryChange = viewModel::onCategoryChange,
         onNoteChange = viewModel::onNoteChange,
         onSave = viewModel::onSave,
+        onDelete = viewModel::onDelete,
     )
 }
 
@@ -92,24 +106,34 @@ fun ConfirmScreen(
     onNoteChange: (String) -> Unit,
     onSave: () -> Unit,
     modifier: Modifier = Modifier,
+    onDelete: () -> Unit = {},
 ) {
     val form = uiState.form
     var showDatePicker by rememberSaveable { mutableStateOf(false) }
     var showDiscardDialog by rememberSaveable { mutableStateOf(false) }
+    var showDeleteDialog by rememberSaveable { mutableStateOf(false) }
     val checkHint = stringResource(R.string.scan_needs_check)
     fun hintFor(field: ReceiptField) = checkHint.takeIf { field in form.needsCheck }
 
     // Every way out of the form (system back, top bar arrow, Batal) asks first if it would lose input.
     val requestLeave = { if (uiState.hasChanges) showDiscardDialog = true else onBack() }
-    BackHandler(enabled = uiState.hasChanges && !form.isSaved) { showDiscardDialog = true }
+    BackHandler(enabled = uiState.hasChanges && !form.isBusy) { showDiscardDialog = true }
 
+    val title = when {
+        uiState.isEditing -> R.string.confirm_title_edit
+        uiState.isFromScan -> R.string.confirm_title_scan
+        else -> R.string.confirm_title_manual
+    }
     Scaffold(
         modifier = modifier,
         topBar = {
-            MySavingsTopBar(
-                title = stringResource(if (uiState.isFromScan) R.string.confirm_title_scan else R.string.confirm_title_manual),
-                onBack = requestLeave,
-            )
+            MySavingsTopBar(title = stringResource(title), onBack = requestLeave) {
+                if (uiState.isEditing) {
+                    IconButton(onClick = { showDeleteDialog = true }, enabled = !uiState.isLoading && !form.isBusy) {
+                        Icon(painterResource(R.drawable.ic_delete), stringResource(R.string.transaction_delete))
+                    }
+                }
+            }
         },
     ) { innerPadding ->
         Column(
@@ -170,7 +194,7 @@ fun ConfirmScreen(
                     Text(stringResource(R.string.action_cancel))
                 }
                 Spacer(Modifier.width(12.dp))
-                Button(onClick = onSave, enabled = !form.isSaving, modifier = Modifier.weight(1f)) {
+                Button(onClick = onSave, enabled = !uiState.isLoading && !form.isBusy, modifier = Modifier.weight(1f)) {
                     if (form.isSaving) {
                         CircularProgressIndicator(strokeWidth = 2.dp, modifier = Modifier.padding(2.dp))
                     } else {
@@ -206,6 +230,23 @@ fun ConfirmScreen(
             },
             dismissButton = {
                 TextButton(onClick = { showDiscardDialog = false }) { Text(stringResource(R.string.confirm_keep_editing)) }
+            },
+        )
+    }
+
+    if (showDeleteDialog) {
+        AlertDialog(
+            onDismissRequest = { showDeleteDialog = false },
+            title = { Text(stringResource(R.string.transaction_delete_title)) },
+            text = { Text(stringResource(R.string.transaction_delete_body)) },
+            confirmButton = {
+                TextButton(onClick = {
+                    showDeleteDialog = false
+                    onDelete()
+                }) { Text(stringResource(R.string.action_delete)) }
+            },
+            dismissButton = {
+                TextButton(onClick = { showDeleteDialog = false }) { Text(stringResource(R.string.action_cancel)) }
             },
         )
     }

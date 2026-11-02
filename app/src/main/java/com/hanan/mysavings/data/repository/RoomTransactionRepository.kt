@@ -5,15 +5,27 @@ import com.hanan.mysavings.domain.model.Transaction
 import com.hanan.mysavings.domain.repository.TransactionRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
+import java.time.Clock
 import java.time.LocalDate
 import java.time.YearMonth
 import javax.inject.Inject
 
 class RoomTransactionRepository @Inject constructor(
     private val dao: TransactionDao,
+    private val clock: Clock,
 ) : TransactionRepository {
 
     override suspend fun add(transaction: Transaction): Long = dao.insert(transaction.toEntity())
+
+    override suspend fun get(id: Long): Transaction? = dao.getById(id)?.toDomain()
+
+    override suspend fun update(transaction: Transaction) {
+        // Keep the row's uuid: it is how other phones and the cloud know this transaction.
+        val existing = checkNotNull(dao.getById(transaction.id)) { "Transaction ${transaction.id} not found" }
+        dao.update(transaction.toEntity().copy(sync = existing.sync.touched(clock.millis())))
+    }
+
+    override suspend fun delete(id: Long) = dao.deleteTracked(id, clock.millis())
 
     override fun observeSpendingByCategory(from: LocalDate, to: LocalDate): Flow<Map<Long, Long>> =
         dao.observeTotalsByCategory(from.toEpochDay(), to.toEpochDay())

@@ -206,7 +206,7 @@ class SyncEngineTest {
 
         fun savings(at: Long) = RoomSavingsRepository(db.savingsDao(), clockAt(at))
 
-        fun transactions() = RoomTransactionRepository(db.transactionDao())
+        fun transactions() = RoomTransactionRepository(db.transactionDao(), Clock.systemUTC())
 
         suspend fun sync(uid: String = "account-1") = engine.sync(uid)
 

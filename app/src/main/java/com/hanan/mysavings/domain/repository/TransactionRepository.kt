@@ -9,6 +9,15 @@ interface TransactionRepository {
     /** Saves a new transaction and returns its generated id. */
     suspend fun add(transaction: Transaction): Long
 
+    /** The transaction with this id, or null if it does not exist (anymore). */
+    suspend fun get(id: Long): Transaction?
+
+    /** Overwrites an existing transaction, matched by [Transaction.id]. */
+    suspend fun update(transaction: Transaction)
+
+    /** Deletes a transaction; does nothing if it is already gone. */
+    suspend fun delete(id: Long)
+
     /** Total spent per category id between [from] and [to], both inclusive. */
     fun observeSpendingByCategory(from: LocalDate, to: LocalDate): Flow<Map<Long, Long>>
 

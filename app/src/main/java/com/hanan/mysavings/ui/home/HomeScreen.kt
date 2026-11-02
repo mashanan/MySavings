@@ -61,14 +61,18 @@ import java.time.Instant
 import java.time.LocalDate
 import java.time.YearMonth
 
+/** What another screen just did to a transaction; Home confirms it with a snackbar. */
+enum class TransactionChange { SAVED, DELETED }
+
 /** Connects [HomeScreen] to its ViewModel. Kept separate so the screen itself stays previewable. */
 @Composable
 fun HomeRoute(
     onScanClick: () -> Unit,
     onManualEntryClick: () -> Unit,
     onStatsClick: () -> Unit,
-    showSavedMessage: Boolean,
-    onSavedMessageShown: () -> Unit,
+    transactionChange: TransactionChange?,
+    onTransactionChangeShown: () -> Unit,
+    onTransactionClick: (Long) -> Unit,
     viewModel: HomeViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -102,8 +106,9 @@ fun HomeRoute(
         },
         onPreviousMonth = viewModel::onPreviousMonth,
         onNextMonth = viewModel::onNextMonth,
-        showSavedMessage = showSavedMessage,
-        onSavedMessageShown = onSavedMessageShown,
+        transactionChange = transactionChange,
+        onTransactionChangeShown = onTransactionChangeShown,
+        onTransactionClick = onTransactionClick,
     )
 }
 
@@ -117,21 +122,27 @@ fun HomeScreen(
     modifier: Modifier = Modifier,
     onPreviousMonth: () -> Unit = {},
     onNextMonth: () -> Unit = {},
-    showSavedMessage: Boolean = false,
-    onSavedMessageShown: () -> Unit = {},
+    transactionChange: TransactionChange? = null,
+    onTransactionChangeShown: () -> Unit = {},
+    onTransactionClick: (Long) -> Unit = {},
 ) {
     var showAddSheet by rememberSaveable { mutableStateOf(false) }
     var showBudgetSheet by rememberSaveable { mutableStateOf(false) }
     val snackbarHostState = remember { SnackbarHostState() }
 
     val savedMessage = stringResource(R.string.home_transaction_saved)
+    val deletedMessage = stringResource(R.string.home_transaction_deleted)
     val scope = rememberCoroutineScope()
-    LaunchedEffect(showSavedMessage) {
-        if (showSavedMessage) {
-            // Launched in a separate scope: clearing the flag restarts this effect, which
+    LaunchedEffect(transactionChange) {
+        if (transactionChange != null) {
+            val message = when (transactionChange) {
+                TransactionChange.SAVED -> savedMessage
+                TransactionChange.DELETED -> deletedMessage
+            }
+            // Launched in a separate scope: clearing the value restarts this effect, which
             // would otherwise cancel the snackbar while it is still on screen.
-            scope.launch { snackbarHostState.showSnackbar(savedMessage) }
-            onSavedMessageShown()
+            scope.launch { snackbarHostState.showSnackbar(message) }
+            onTransactionChangeShown()
         }
     }
 
@@ -166,6 +177,7 @@ fun HomeScreen(
                 onEditBudget = { showBudgetSheet = true },
                 onScanClick = onScanClick,
                 onManualEntryClick = onManualEntryClick,
+                onTransactionClick = onTransactionClick,
                 contentPadding = innerPadding,
             )
         }
@@ -206,6 +218,7 @@ private fun HomeContent(
     onEditBudget: () -> Unit,
     onScanClick: () -> Unit,
     onManualEntryClick: () -> Unit,
+    onTransactionClick: (Long) -> Unit,
     contentPadding: PaddingValues,
 ) {
     // One LazyColumn for the whole page so only visible rows are composed.
@@ -273,7 +286,7 @@ private fun HomeContent(
                 DayHeader(day = day, today = state.today)
             }
             items(day.transactions, key = { "transaction-${it.transaction.id}" }) {
-                TransactionRow(item = it)
+                TransactionRow(item = it, onClick = { onTransactionClick(it.transaction.id) })
             }
         }
     }

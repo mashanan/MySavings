@@ -42,7 +42,7 @@ class AddTransactionUseCaseTest {
             source = TransactionSource.SCAN,
         )
 
-        assertEquals(AddTransactionResult.Success(42L), result)
+        assertEquals(SaveTransactionResult.Success(42L), result)
         with(saved.captured) {
             assertEquals(25_000L, amount)
             assertEquals(today, date)
@@ -59,7 +59,7 @@ class AddTransactionUseCaseTest {
     fun `zero or negative amount is rejected and nothing is saved`() = runTest {
         listOf(0L, -5_000L).forEach { amount ->
             val result = addTransaction(amount, today, "Toko", null, 1, TransactionSource.MANUAL)
-            assertEquals(AddTransactionResult.Invalid(TransactionError.AMOUNT_NOT_POSITIVE), result)
+            assertEquals(SaveTransactionResult.Invalid(TransactionError.AMOUNT_NOT_POSITIVE), result)
         }
         coVerify(exactly = 0) { repository.add(any()) }
         verify(exactly = 0) { scheduler.requestCheck() }
@@ -69,7 +69,7 @@ class AddTransactionUseCaseTest {
     fun `future date is rejected`() = runTest {
         val result = addTransaction(10_000, today.plusDays(1), null, null, 1, TransactionSource.MANUAL)
 
-        assertEquals(AddTransactionResult.Invalid(TransactionError.DATE_IN_FUTURE), result)
+        assertEquals(SaveTransactionResult.Invalid(TransactionError.DATE_IN_FUTURE), result)
         coVerify(exactly = 0) { repository.add(any()) }
     }
 
@@ -79,6 +79,6 @@ class AddTransactionUseCaseTest {
 
         val result = addTransaction(10_000, today.minusMonths(2), null, null, 1, TransactionSource.MANUAL)
 
-        assertEquals(AddTransactionResult.Success(1L), result)
+        assertEquals(SaveTransactionResult.Success(1L), result)
     }
 }

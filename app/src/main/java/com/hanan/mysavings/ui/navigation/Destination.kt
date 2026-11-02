@@ -48,9 +48,15 @@ sealed interface Destination {
     @Serializable
     data object Settings : Destination
 
-    /** Transaction form; [prefill] is empty for manual entry and holds the draft after a scan. */
+    /**
+     * Transaction form. New transaction: [prefill] is empty for manual entry and holds the draft
+     * after a scan. Edit: [transactionId] is set (like GoalForm and DebtForm) and the form loads it.
+     */
     @Serializable
-    data class Confirm(val prefill: ConfirmPrefill = ConfirmPrefill.Manual) : Destination {
+    data class Confirm(
+        val prefill: ConfirmPrefill = ConfirmPrefill.Manual,
+        val transactionId: Long? = null,
+    ) : Destination {
         companion object {
             /** Tells Navigation how to store the custom [ConfirmPrefill] argument. */
             val typeMap = mapOf(typeOf<ConfirmPrefill>() to serializableNavType<ConfirmPrefill>())

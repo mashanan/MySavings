@@ -1,5 +1,6 @@
 package com.hanan.mysavings.ui.home
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -21,6 +22,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.stateDescription
@@ -170,12 +172,19 @@ fun CategorySpendingRow(
 @Composable
 fun TransactionRow(
     item: TransactionWithCategory,
+    onClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val transaction = item.transaction
     Row(
-        // One TalkBack stop per row: "Indomaret, Belanja Harian, Rp87.500". The date is in the day header above.
-        modifier = modifier.fillMaxWidth().padding(vertical = 8.dp).semantics(mergeDescendants = true) {},
+        // One TalkBack stop per row: "Indomaret, Belanja Harian, Rp87.500, double-tap to edit".
+        // The date is in the day header above. clickable comes before padding so the ripple
+        // covers the whole row height.
+        modifier = modifier
+            .fillMaxWidth()
+            .clickable(onClickLabel = stringResource(R.string.transaction_edit_action), role = Role.Button, onClick = onClick)
+            .padding(vertical = 8.dp)
+            .semantics(mergeDescendants = true) {},
         verticalAlignment = Alignment.CenterVertically,
     ) {
         CategoryIcon(item.category)

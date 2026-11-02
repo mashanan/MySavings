@@ -10,8 +10,8 @@ import java.time.LocalDate
 import javax.inject.Inject
 
 /**
- * Validates and saves a new expense. Validation lives here (not in the ViewModel) so the
- * same rules apply to manual entry and scanned receipts.
+ * Validates and saves a new expense. Validation lives in the domain (not in the ViewModel) so
+ * the same rules apply to manual entry, scanned receipts and edits.
  */
 class AddTransactionUseCase @Inject constructor(
     private val transactionRepository: TransactionRepository,
@@ -26,16 +26,15 @@ class AddTransactionUseCase @Inject constructor(
         note: String?,
         categoryId: Long,
         source: TransactionSource,
-    ): AddTransactionResult {
-        if (amount <= 0) return AddTransactionResult.Invalid(TransactionError.AMOUNT_NOT_POSITIVE)
-        if (date.isAfter(LocalDate.now(clock))) return AddTransactionResult.Invalid(TransactionError.DATE_IN_FUTURE)
+    ): SaveTransactionResult {
+        validateTransaction(amount, date, LocalDate.now(clock))?.let { return SaveTransactionResult.Invalid(it) }
 
         val id = transactionRepository.add(
             Transaction(
                 amount = amount,
                 date = date,
-                merchant = merchant?.trim()?.ifBlank { null },
-                note = note?.trim()?.ifBlank { null },
+                merchant = merchant.cleaned(),
+                note = note.cleaned(),
                 categoryId = categoryId,
                 source = source,
                 createdAt = Instant.now(clock),
@@ -43,14 +42,9 @@ class AddTransactionUseCase @Inject constructor(
         )
         // A new expense may push the month over a budget threshold.
         budgetCheckScheduler.requestCheck()
-        return AddTransactionResult.Success(id)
+        return SaveTransactionResult.Success(id)
     }
 }
 
-sealed interface AddTransactionResult {
-    data class Success(val id: Long) : AddTransactionResult
-    data class Invalid(val error: TransactionError) : AddTransactionResult
-}
-
-// The UI maps each value to an Indonesian message from strings.xml.
-enum class TransactionError { AMOUNT_NOT_POSITIVE, DATE_IN_FUTURE }
+/** Trimmed text, with blank input stored as "no value". Shared with [UpdateTransactionUseCase]. */
+internal fun String?.cleaned(): String? = this?.trim()?.ifBlank { null }

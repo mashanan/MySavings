@@ -7,15 +7,19 @@ import com.hanan.mysavings.data.local.entity.SyncCollection
 import com.hanan.mysavings.data.repository.RoomBudgetRepository
 import com.hanan.mysavings.data.repository.RoomDebtRepository
 import com.hanan.mysavings.data.repository.RoomSavingsRepository
+import com.hanan.mysavings.data.repository.RoomTransactionRepository
 import com.hanan.mysavings.domain.model.Budget
 import com.hanan.mysavings.domain.model.Debt
 import com.hanan.mysavings.domain.model.DebtPayment
 import com.hanan.mysavings.domain.model.GoalCategory
 import com.hanan.mysavings.domain.model.SavingsDeposit
 import com.hanan.mysavings.domain.model.SavingsGoal
+import com.hanan.mysavings.domain.model.Transaction
+import com.hanan.mysavings.domain.model.TransactionSource
 import kotlinx.coroutines.test.runTest
 import org.junit.After
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
@@ -113,5 +117,51 @@ class SyncTrackingTest {
             cursor.moveToNext()
             assertEquals("budget-202610-food", cursor.getString(0))
         }
+    }
+
+    private fun transaction() = Transaction(
+        amount = 25_000,
+        date = LocalDate.of(2026, 10, 1),
+        merchant = "Indomaret",
+        note = null,
+        categoryId = 1, // seeded "food"
+        source = TransactionSource.MANUAL,
+        createdAt = Instant.EPOCH,
+    )
+
+    @Test
+    fun editingATransactionKeepsItsUuidAndCreatedAtAndMarksItForUpload() = runTest {
+        val repository = RoomTransactionRepository(db.transactionDao(), clock)
+        val id = repository.add(transaction())
+        val before = db.transactionDao().getById(id)!!
+        db.openHelper.writableDatabase.execSQL("UPDATE transactions SET dirty = 0") // as if uploaded
+
+        repository.update(repository.get(id)!!.copy(amount = 30_000))
+
+        val after = db.transactionDao().getById(id)!!
+        assertEquals(30_000L, after.amount)
+        assertEquals(before.createdAt, after.createdAt)
+        assertEquals(before.sync.uuid, after.sync.uuid)
+        assertEquals(5_000L, after.sync.updatedAt)
+        assertTrue(after.sync.dirty)
+    }
+
+    @Test
+    fun deletingATransactionRemovesItAndLeavesATombstone() = runTest {
+        val repository = RoomTransactionRepository(db.transactionDao(), clock)
+        val id = repository.add(transaction())
+        val uuid = db.transactionDao().getById(id)!!.sync.uuid
+
+        repository.delete(id)
+
+        assertNull(repository.get(id))
+        assertEquals(setOf(SyncCollection.TRANSACTIONS to uuid), tombstones())
+    }
+
+    @Test
+    fun deletingAMissingTransactionDoesNothing() = runTest {
+        RoomTransactionRepository(db.transactionDao(), clock).delete(999)
+
+        assertEquals(emptySet<Pair<String, String>>(), tombstones())
     }
 }

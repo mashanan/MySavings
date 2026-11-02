@@ -55,7 +55,7 @@ class BudgetCheckWorkerTest {
 
     private fun worker(): BudgetCheckWorker {
         val checkAlert = CheckBudgetAlertUseCase(
-            RoomTransactionRepository(db.transactionDao()),
+            RoomTransactionRepository(db.transactionDao(), Clock.systemUTC()),
             RoomBudgetRepository(db.budgetDao(), clock),
             RoomBudgetAlertRepository(db.budgetAlertDao(), clock),
         )

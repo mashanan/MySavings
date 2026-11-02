@@ -3,11 +3,15 @@ package com.hanan.mysavings.ui.confirm
 import app.cash.turbine.test
 import com.hanan.mysavings.domain.model.Category
 import com.hanan.mysavings.domain.model.ReceiptField
+import com.hanan.mysavings.domain.model.Transaction
 import com.hanan.mysavings.domain.model.TransactionSource
-import com.hanan.mysavings.domain.usecase.AddTransactionResult
 import com.hanan.mysavings.domain.usecase.AddTransactionUseCase
+import com.hanan.mysavings.domain.usecase.DeleteTransactionUseCase
+import com.hanan.mysavings.domain.usecase.GetTransactionUseCase
 import com.hanan.mysavings.domain.usecase.ObserveCategoriesUseCase
+import com.hanan.mysavings.domain.usecase.SaveTransactionResult
 import com.hanan.mysavings.domain.usecase.TransactionError
+import com.hanan.mysavings.domain.usecase.UpdateTransactionUseCase
 import com.hanan.mysavings.testutil.MainDispatcherRule
 import io.mockk.coEvery
 import io.mockk.coVerify
@@ -39,9 +43,21 @@ class ConfirmViewModelTest {
         every { this@mockk.invoke() } returns flowOf(listOf(food))
     }
     private val addTransaction = mockk<AddTransactionUseCase>()
+    private val getTransaction = mockk<GetTransactionUseCase>()
+    private val updateTransaction = mockk<UpdateTransactionUseCase>()
+    private val deleteTransaction = mockk<DeleteTransactionUseCase>(relaxed = true)
 
-    private fun createViewModel(prefill: ConfirmPrefill = ConfirmPrefill.Manual) =
-        ConfirmViewModel(prefill, observeCategories, addTransaction, clock)
+    private fun createViewModel(prefill: ConfirmPrefill = ConfirmPrefill.Manual, transactionId: Long? = null) =
+        ConfirmViewModel(
+            prefill,
+            transactionId,
+            observeCategories,
+            addTransaction,
+            getTransaction,
+            updateTransaction,
+            deleteTransaction,
+            clock,
+        )
 
     @Test
     fun `form starts empty with today's date and loads categories`() = runTest {
@@ -84,7 +100,7 @@ class ConfirmViewModelTest {
 
     @Test
     fun `valid form is saved as a manual transaction`() = runTest {
-        coEvery { addTransaction(any(), any(), any(), any(), any(), any()) } returns AddTransactionResult.Success(1)
+        coEvery { addTransaction(any(), any(), any(), any(), any(), any()) } returns SaveTransactionResult.Success(1)
         val viewModel = createViewModel()
         viewModel.uiState.test {
             viewModel.onMerchantChange("Warung Bu Siti")
@@ -104,7 +120,7 @@ class ConfirmViewModelTest {
     @Test
     fun `date error from the use case is shown on the date field`() = runTest {
         coEvery { addTransaction(any(), any(), any(), any(), any(), any()) } returns
-            AddTransactionResult.Invalid(TransactionError.DATE_IN_FUTURE)
+            SaveTransactionResult.Invalid(TransactionError.DATE_IN_FUTURE)
         val viewModel = createViewModel()
         viewModel.uiState.test {
             viewModel.onAmountChange("10000")
@@ -120,7 +136,7 @@ class ConfirmViewModelTest {
 
     @Test
     fun `pressing save twice while saving only saves once`() = runTest {
-        val pending = CompletableDeferred<AddTransactionResult>()
+        val pending = CompletableDeferred<SaveTransactionResult>()
         coEvery { addTransaction(any(), any(), any(), any(), any(), any()) } coAnswers { pending.await() }
         val viewModel = createViewModel()
         viewModel.uiState.test {
@@ -128,7 +144,7 @@ class ConfirmViewModelTest {
             viewModel.onCategoryChange(food.id)
             viewModel.onSave()
             viewModel.onSave()
-            pending.complete(AddTransactionResult.Success(1))
+            pending.complete(SaveTransactionResult.Success(1))
 
             assertTrue(expectMostRecentItem().form.isSaved)
         }
@@ -193,7 +209,7 @@ class ConfirmViewModelTest {
 
     @Test
     fun `scanned receipt is saved with source SCAN`() = runTest {
-        coEvery { addTransaction(any(), any(), any(), any(), any(), any()) } returns AddTransactionResult.Success(1)
+        coEvery { addTransaction(any(), any(), any(), any(), any(), any()) } returns SaveTransactionResult.Success(1)
         val viewModel = createViewModel(scanned)
         viewModel.uiState.test {
             viewModel.onSave()
@@ -230,5 +246,108 @@ class ConfirmViewModelTest {
             assertTrue(state.form.amountError)
             assertFalse(state.hasChanges)
         }
+    }
+
+    // ---------------------------------------------------------------- Editing a saved transaction
+
+    private val saved = Transaction(
+        id = 7,
+        amount = 87_500,
+        date = LocalDate.of(2026, 10, 12),
+        merchant = "Indomaret",
+        note = null,
+        categoryId = food.id,
+        source = TransactionSource.SCAN,
+        createdAt = Instant.parse("2026-10-12T05:00:00Z"),
+    )
+
+    @Test
+    fun `edit mode loads the saved transaction without counting it as a change`() = runTest {
+        coEvery { getTransaction(7) } returns saved
+
+        createViewModel(transactionId = 7).uiState.test {
+            val state = expectMostRecentItem()
+            assertTrue(state.isEditing)
+            assertFalse(state.isLoading)
+            assertEquals("Indomaret", state.form.merchant)
+            assertEquals("87500", state.form.amountDigits)
+            assertEquals(LocalDate.of(2026, 10, 12), state.form.date)
+            assertEquals("", state.form.note)
+            assertEquals(food, state.selectedCategory)
+            assertFalse(state.hasChanges)
+        }
+    }
+
+    @Test
+    fun `changing a loaded field counts as a change`() = runTest {
+        coEvery { getTransaction(7) } returns saved
+        val viewModel = createViewModel(transactionId = 7)
+        viewModel.uiState.test {
+            viewModel.onAmountChange("90000")
+
+            assertTrue(expectMostRecentItem().hasChanges)
+        }
+    }
+
+    @Test
+    fun `saving in edit mode updates the transaction instead of adding one`() = runTest {
+        coEvery { getTransaction(7) } returns saved
+        coEvery { updateTransaction(any(), any(), any(), any(), any(), any()) } returns SaveTransactionResult.Success(7)
+        val viewModel = createViewModel(transactionId = 7)
+        viewModel.uiState.test {
+            viewModel.onAmountChange("90000")
+            viewModel.onSave()
+
+            assertTrue(expectMostRecentItem().form.isSaved)
+        }
+        coVerify { updateTransaction(7, 90_000, LocalDate.of(2026, 10, 12), "Indomaret", "", food.id) }
+        coVerify(exactly = 0) { addTransaction(any(), any(), any(), any(), any(), any()) }
+    }
+
+    @Test
+    fun `a transaction that no longer exists closes the form`() = runTest {
+        coEvery { getTransaction(7) } returns null
+
+        createViewModel(transactionId = 7).uiState.test {
+            assertTrue(expectMostRecentItem().form.isNotFound)
+        }
+    }
+
+    @Test
+    fun `a transaction deleted elsewhere while editing closes the form on save`() = runTest {
+        coEvery { getTransaction(7) } returns saved
+        coEvery { updateTransaction(any(), any(), any(), any(), any(), any()) } returns
+            SaveTransactionResult.Invalid(TransactionError.NOT_FOUND)
+        val viewModel = createViewModel(transactionId = 7)
+        viewModel.uiState.test {
+            viewModel.onSave()
+
+            val form = expectMostRecentItem().form
+            assertTrue(form.isNotFound)
+            assertFalse(form.isSaved)
+        }
+    }
+
+    @Test
+    fun `delete removes the transaction and marks the form as deleted`() = runTest {
+        coEvery { getTransaction(7) } returns saved
+        val viewModel = createViewModel(transactionId = 7)
+        viewModel.uiState.test {
+            viewModel.onDelete()
+
+            assertTrue(expectMostRecentItem().form.isDeleted)
+        }
+        coVerify(exactly = 1) { deleteTransaction(7) }
+    }
+
+    @Test
+    fun `delete does nothing for a new transaction`() = runTest {
+        val viewModel = createViewModel()
+        viewModel.uiState.test {
+            viewModel.onDelete()
+
+            assertFalse(expectMostRecentItem().form.isDeleted)
+        }
+        coVerify(exactly = 0) { deleteTransaction(any()) }
     }
 }
