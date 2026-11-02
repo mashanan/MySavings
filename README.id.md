@@ -89,7 +89,39 @@ $env:JAVA_HOME = "C:\Program Files\Android\Android Studio\jbr"
 
 ### Build release
 
-Build release dikecilkan dengan R8 dan dipecah per jenis CPU. Mesin OCR ML Kit berupa library native sebesar 7 sampai 11 MB per arsitektur, jadi satu APK per ABI ukurannya sekitar 17 MB, bukan 50 MB. Signing config belum ada di repo, jadi kamu perlu menambahkan keystore sendiri untuk memasang build release.
+Build release dikecilkan dengan R8 dan dipecah per jenis CPU. Mesin OCR ML Kit berupa library native sebesar 7 sampai 11 MB per arsitektur, jadi satu APK per ABI ukurannya 16 sampai 21 MB, bukan satu APK berukuran 50 MB.
+
+```bash
+./gradlew assembleRelease   # app/build/outputs/apk/release/app-arm64-v8a-release.apk, dan seterusnya
+./gradlew bundleRelease     # App Bundle untuk Google Play
+```
+
+### Signing build release
+
+APK release di-sign memakai keystore yang dijelaskan di `keystore.properties` pada root proyek. Kedua file ini tidak masuk git. Kalau file-nya tidak ada, semuanya tetap bisa di-build, tapi APK release-nya tidak ter-sign dan tidak bisa dipasang di Android.
+
+Untuk men-sign build kamu sendiri:
+
+1. Buat keystore sekali saja, misalnya lewat Android Studio (**Build > Generate Signed App Bundle or APK > Create new**) atau dengan `keytool`:
+
+   ```bash
+   keytool -genkeypair -v -keystore mysavings-release.jks -alias mysavings -keyalg RSA -keysize 2048 -validity 10000
+   ```
+
+2. Buat `keystore.properties` di sebelah `settings.gradle.kts`:
+
+   ```properties
+   storeFile=C:/folder/di/luar/repo/mysavings-release.jks
+   storePassword=password-store-kamu
+   keyAlias=mysavings
+   keyPassword=password-key-kamu
+   ```
+
+   Kalau `storeFile` ditulis sebagai path relatif, path itu dibaca dari root proyek. Meski begitu, sebaiknya keystore tetap disimpan di luar repo.
+
+3. Jalankan `./gradlew signingReport`, salin SHA-1 **release** ke pengaturan aplikasi di Firebase, lalu unduh ulang `google-services.json`. Tanpa langkah ini, login Google tetap jalan di build debug tapi gagal di build release.
+
+Simpan cadangan keystore beserta password-nya di tempat yang aman. Kalau hilang, kamu tidak bisa lagi merilis update dengan identitas aplikasi yang sama.
 
 ## Cara kerja kodenya
 
@@ -158,7 +190,6 @@ Semua fase yang direncanakan sudah selesai, mulai dari setup Room pertama sampai
 - Pencatatan pemasukan, supaya Beranda bisa menunjukkan sisa uang yang sebenarnya bulan ini
 - Transaksi berulang untuk tagihan bulanan
 - CI dengan GitHub Actions
-- Build release yang sudah di-sign
 
 ## Privasi
 

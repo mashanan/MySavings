@@ -1,3 +1,6 @@
+// Imported because inside a build script a bare `java.` resolves to Gradle's `java {}` extension.
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose)
@@ -8,6 +11,13 @@ plugins {
     // Reads app/google-services.json (not in git) into resources such as default_web_client_id.
     alias(libs.plugins.google.services)
 }
+
+// Release signing secrets live in keystore.properties at the project root, which is not in git
+// (see README, "Release signing"). The file is optional: without it, a fresh clone still builds,
+// and assembleRelease just produces unsigned APKs.
+val keystoreProperties: Properties? = rootProject.file("keystore.properties")
+    .takeIf { it.exists() }
+    ?.let { file -> Properties().apply { file.inputStream().use { load(it) } } }
 
 android {
     namespace = "com.hanan.mysavings"
@@ -25,8 +35,21 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
+    signingConfigs {
+        if (keystoreProperties != null) {
+            create("release") {
+                // A relative storeFile is read from the project root, like keystore.properties itself.
+                storeFile = rootProject.file(keystoreProperties.getProperty("storeFile"))
+                storePassword = keystoreProperties.getProperty("storePassword")
+                keyAlias = keystoreProperties.getProperty("keyAlias")
+                keyPassword = keystoreProperties.getProperty("keyPassword")
+            }
+        }
+    }
+
     buildTypes {
         release {
+            signingConfig = signingConfigs.findByName("release")
             optimization {
                 // Whole-app R8. The template limited it with packageScope = androidx/kotlin/kotlinx,
                 // which changed class visibility inside Kotlin's stdlib while our classes outside

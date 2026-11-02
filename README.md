@@ -89,7 +89,39 @@ $env:JAVA_HOME = "C:\Program Files\Android\Android Studio\jbr"
 
 ### Release builds
 
-Release builds are shrunk with R8 and split per CPU type. ML Kit's OCR engine is a native library of 7 to 11 MB per architecture, so one APK per ABI is about 17 MB instead of 50 MB. There's no signing config in the repo yet, so you'll need to add your own keystore to install a release build.
+Release builds are shrunk with R8 and split per CPU type. ML Kit's OCR engine is a native library of 7 to 11 MB per architecture, so one APK per ABI is 16 to 21 MB instead of one 50 MB APK.
+
+```bash
+./gradlew assembleRelease   # app/build/outputs/apk/release/app-arm64-v8a-release.apk, and so on
+./gradlew bundleRelease     # App Bundle for Google Play
+```
+
+### Release signing
+
+The build signs release APKs with a keystore described in `keystore.properties` at the project root. Neither file is in git. If the file is missing, everything still builds, but the release APKs come out unsigned and Android won't install them.
+
+To sign your own builds:
+
+1. Create a keystore once, for example with Android Studio (**Build > Generate Signed App Bundle or APK > Create new**) or with `keytool`:
+
+   ```bash
+   keytool -genkeypair -v -keystore mysavings-release.jks -alias mysavings -keyalg RSA -keysize 2048 -validity 10000
+   ```
+
+2. Create `keystore.properties` next to `settings.gradle.kts`:
+
+   ```properties
+   storeFile=C:/path/outside/the/repo/mysavings-release.jks
+   storePassword=your-store-password
+   keyAlias=mysavings
+   keyPassword=your-key-password
+   ```
+
+   A relative `storeFile` is read from the project root. Keep the keystore outside the repo anyway.
+
+3. Run `./gradlew signingReport`, copy the **release** SHA-1 into your Firebase app settings, and download `google-services.json` again. Without that, Google sign-in works in debug builds but fails in release builds.
+
+Back up the keystore and its passwords somewhere safe. If you lose them, you can't ship updates under the same app identity.
 
 ## How it's built
 
@@ -158,7 +190,6 @@ All planned phases are done, from the first Room setup through sync, account del
 - Income tracking, so the home screen can show what's actually left this month
 - Recurring transactions for monthly bills
 - CI with GitHub Actions
-- A signed release build
 
 ## Privacy
 
