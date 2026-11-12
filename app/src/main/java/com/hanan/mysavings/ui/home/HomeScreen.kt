@@ -56,13 +56,32 @@ import com.hanan.mysavings.domain.usecase.DayTotal
 import com.hanan.mysavings.ui.components.MonthSelector
 import com.hanan.mysavings.ui.components.MySavingsTopBar
 import com.hanan.mysavings.ui.theme.MySavingsTheme
+import com.hanan.mysavings.ui.util.currentLocale
+import com.hanan.mysavings.ui.util.formatMonthYear
 import kotlinx.coroutines.launch
+import java.io.Serializable
 import java.time.Instant
 import java.time.LocalDate
 import java.time.YearMonth
 
-/** What another screen just did to a transaction; Home confirms it with a snackbar. */
-enum class TransactionChange { SAVED, DELETED }
+/**
+ * What another screen just did to a transaction; Home confirms it with a snackbar.
+ * Serializable so it can travel through a SavedStateHandle (YearMonth is Serializable too).
+ */
+sealed interface TransactionChange : Serializable {
+    /** [month] is the month of the saved date, which is not always the month Home shows. */
+    data class Saved(val month: YearMonth) : TransactionChange
+
+    data object Deleted : TransactionChange
+}
+
+/**
+ * The month to name in the "saved" snackbar: only when the expense went to a month other than
+ * the one on screen, because then it seems to vanish (and the budget shown does not change).
+ * Null while Home is still loading, since there is nothing to compare with yet.
+ */
+fun TransactionChange.Saved.monthToMention(displayedMonth: YearMonth?): YearMonth? =
+    month.takeIf { displayedMonth != null && it != displayedMonth }
 
 /** Connects [HomeScreen] to its ViewModel. Kept separate so the screen itself stays previewable. */
 @Composable
@@ -130,15 +149,20 @@ fun HomeScreen(
     var showBudgetSheet by rememberSaveable { mutableStateOf(false) }
     val snackbarHostState = remember { SnackbarHostState() }
 
-    val savedMessage = stringResource(R.string.home_transaction_saved)
-    val deletedMessage = stringResource(R.string.home_transaction_deleted)
+    // Resolved during composition (string resources are not available inside the effect).
+    val displayedMonth = (uiState as? HomeUiState.Content)?.summary?.yearMonth
+    val locale = currentLocale()
+    val changeMessage = when (transactionChange) {
+        is TransactionChange.Saved -> transactionChange.monthToMention(displayedMonth)
+            ?.let { stringResource(R.string.home_transaction_saved_in_month, formatMonthYear(it, locale)) }
+            ?: stringResource(R.string.home_transaction_saved)
+        TransactionChange.Deleted -> stringResource(R.string.home_transaction_deleted)
+        null -> null
+    }
     val scope = rememberCoroutineScope()
     LaunchedEffect(transactionChange) {
-        if (transactionChange != null) {
-            val message = when (transactionChange) {
-                TransactionChange.SAVED -> savedMessage
-                TransactionChange.DELETED -> deletedMessage
-            }
+        if (changeMessage != null) {
+            val message = changeMessage
             // Launched in a separate scope: clearing the value restarts this effect, which
             // would otherwise cancel the snackbar while it is still on screen.
             scope.launch { snackbarHostState.showSnackbar(message) }

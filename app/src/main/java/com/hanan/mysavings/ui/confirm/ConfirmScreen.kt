@@ -55,6 +55,8 @@ import com.hanan.mysavings.ui.components.MySavingsTopBar
 import com.hanan.mysavings.ui.components.fieldSupportingText
 import com.hanan.mysavings.ui.theme.MySavingsTheme
 import com.hanan.mysavings.ui.components.displayName
+import com.hanan.mysavings.ui.util.currentLocale
+import com.hanan.mysavings.ui.util.formatMonthYear
 import java.time.LocalDate
 
 @Composable
@@ -62,7 +64,8 @@ fun ConfirmRoute(
     prefill: ConfirmPrefill,
     transactionId: Long?,
     onBack: () -> Unit,
-    onSaved: () -> Unit,
+    /** Receives the saved date, so the caller can tell the user which month it went to. */
+    onSaved: (LocalDate) -> Unit,
     onDeleted: () -> Unit,
     viewModel: ConfirmViewModel = hiltViewModel<ConfirmViewModel, ConfirmViewModel.Factory> {
         it.create(prefill, transactionId)
@@ -75,7 +78,7 @@ fun ConfirmRoute(
     val form = uiState.form
     LaunchedEffect(form.isSaved, form.isDeleted, form.isNotFound) {
         when {
-            form.isSaved -> onSaved()
+            form.isSaved -> onSaved(form.date)
             form.isDeleted -> onDeleted()
             // Nothing left to edit (deleted elsewhere): just close the screen.
             form.isNotFound -> onBack()
@@ -112,6 +115,7 @@ fun ConfirmScreen(
     var showDatePicker by rememberSaveable { mutableStateOf(false) }
     var showDiscardDialog by rememberSaveable { mutableStateOf(false) }
     var showDeleteDialog by rememberSaveable { mutableStateOf(false) }
+    val locale = currentLocale()
     val checkHint = stringResource(R.string.scan_needs_check)
     fun hintFor(field: ReceiptField) = checkHint.takeIf { field in form.needsCheck }
 
@@ -171,7 +175,10 @@ fun ConfirmScreen(
                 label = stringResource(R.string.confirm_date),
                 isError = form.dateError,
                 errorText = stringResource(R.string.confirm_error_date),
-                hintText = hintFor(ReceiptField.DATE),
+                // The other-month note wins over "please check": it says what is worth checking.
+                hintText = uiState.otherBudgetMonth
+                    ?.let { stringResource(R.string.confirm_date_other_month, formatMonthYear(it, locale)) }
+                    ?: hintFor(ReceiptField.DATE),
                 onClick = { showDatePicker = true },
             )
             CategoryDropdown(

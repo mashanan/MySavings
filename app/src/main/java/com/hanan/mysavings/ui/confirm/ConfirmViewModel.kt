@@ -27,6 +27,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.time.Clock
 import java.time.LocalDate
+import java.time.YearMonth
 
 /**
  * Holds the transaction form in one of three modes:
@@ -105,6 +106,7 @@ class ConfirmViewModel @AssistedInject constructor(
         isEditing = isEditing,
         isLoading = baseline == null,
         hasChanges = baseline != null && !form.hasSameContentAs(baseline),
+        otherBudgetMonth = YearMonth.from(form.date).takeIf { it != YearMonth.from(today) },
     )
 
     // Editing a field clears its error and its "check this" hint: the user has looked at it.
@@ -230,6 +232,12 @@ data class ConfirmUiState(
     val isLoading: Boolean = false,
     /** True when leaving now would throw away something the user typed. */
     val hasChanges: Boolean = false,
+    /**
+     * The month of the chosen date, when that is not the current month. Such an expense counts
+     * toward that month's budget, which surprises users when a scan picked up an old or misread
+     * receipt date, so the form says so before saving.
+     */
+    val otherBudgetMonth: YearMonth? = null,
 ) {
     val selectedCategory: Category? get() = categories.firstOrNull { it.id == form.categoryId }
 }

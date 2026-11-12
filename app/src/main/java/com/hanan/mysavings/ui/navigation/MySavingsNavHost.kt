@@ -24,6 +24,7 @@ import com.hanan.mysavings.ui.savings.SavingsRoute
 import com.hanan.mysavings.ui.scan.ScanRoute
 import com.hanan.mysavings.ui.settings.SettingsRoute
 import com.hanan.mysavings.ui.stats.StatsRoute
+import java.time.YearMonth
 
 /** SavedStateHandle key Confirm sets on Home's back stack entry after a save or delete. */
 private const val KEY_TRANSACTION_CHANGE = "transaction_change"
@@ -45,7 +46,7 @@ fun MySavingsNavHost(
     ) {
         composable<Destination.Home> { entry ->
             // Result passed back from Confirm. SavedStateHandle survives rotation and process death;
-            // an enum is Serializable, so it can be stored there as is.
+            // TransactionChange is Serializable, so it can be stored there as is.
             val transactionChange by entry.savedStateHandle
                 .getStateFlow<TransactionChange?>(KEY_TRANSACTION_CHANGE, null)
                 .collectAsStateWithLifecycle()
@@ -141,8 +142,8 @@ fun MySavingsNavHost(
                 prefill = route.prefill,
                 transactionId = route.transactionId,
                 onBack = { navController.popBackStack() },
-                onSaved = { returnHome(TransactionChange.SAVED) },
-                onDeleted = { returnHome(TransactionChange.DELETED) },
+                onSaved = { date -> returnHome(TransactionChange.Saved(YearMonth.from(date))) },
+                onDeleted = { returnHome(TransactionChange.Deleted) },
             )
         }
     }

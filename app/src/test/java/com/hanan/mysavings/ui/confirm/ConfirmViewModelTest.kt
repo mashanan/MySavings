@@ -22,12 +22,14 @@ import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
 import java.time.Clock
 import java.time.Instant
 import java.time.LocalDate
+import java.time.YearMonth
 import java.time.ZoneId
 
 class ConfirmViewModelTest {
@@ -194,6 +196,33 @@ class ConfirmViewModelTest {
 
         createViewModel(future).uiState.test {
             assertEquals(today, expectMostRecentItem().form.date)
+        }
+    }
+
+    @Test
+    fun `a scanned date in this month needs no other-month note`() = runTest {
+        createViewModel(scanned).uiState.test {
+            assertNull(expectMostRecentItem().otherBudgetMonth)
+        }
+    }
+
+    @Test
+    fun `a scanned date from an earlier month names the budget month it counts toward`() = runTest {
+        val lastMonth = scanned.copy(dateEpochDay = LocalDate.of(2026, 9, 30).toEpochDay())
+
+        createViewModel(lastMonth).uiState.test {
+            assertEquals(YearMonth.of(2026, 9), expectMostRecentItem().otherBudgetMonth)
+        }
+    }
+
+    @Test
+    fun `moving the date into this month clears the other-month note`() = runTest {
+        val viewModel = createViewModel(scanned.copy(dateEpochDay = LocalDate.of(2025, 10, 12).toEpochDay()))
+
+        viewModel.uiState.test {
+            assertEquals(YearMonth.of(2025, 10), expectMostRecentItem().otherBudgetMonth)
+            viewModel.onDateChange(today)
+            assertNull(expectMostRecentItem().otherBudgetMonth)
         }
     }
 

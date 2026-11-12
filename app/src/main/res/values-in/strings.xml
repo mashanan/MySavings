@@ -30,6 +30,7 @@
     <string name="home_empty_current_body">Scan struk pertamamu atau catat transaksi secara manual. Ringkasannya akan muncul di sini.</string>
     <string name="home_empty_past_title">Tidak ada transaksi di %1$s</string>
     <string name="home_transaction_saved">Transaksi tersimpan</string>
+    <string name="home_transaction_saved_in_month">Tersimpan di %1$s</string>
     <string name="home_transaction_deleted">Transaksi dihapus</string>
     <string name="home_add_sheet_title">Tambah transaksi</string>
     <string name="home_add_scan_desc">Foto struk, data terisi otomatis</string>
@@ -73,6 +74,7 @@
     <string name="scan_result_note">Anda bisa memperbaiki semua data di langkah berikutnya.</string>
     <string name="scan_not_detected">Tidak terbaca</string>
     <string name="scan_needs_check">Periksa kembali</string>
+    <string name="confirm_date_other_month">Masuk anggaran %1$s, bukan bulan ini</string>
     <string name="scan_retake">Foto ulang</string>
     <string name="scan_continue">Lanjut</string>
 

@@ -35,6 +35,7 @@
     <string name="home_empty_current_body">Scan your first receipt or add a transaction by hand. Your overview will show up here.</string>
     <string name="home_empty_past_title">No transactions in %1$s</string>
     <string name="home_transaction_saved">Transaction saved</string>
+    <string name="home_transaction_saved_in_month">Saved in %1$s</string>
     <string name="home_transaction_deleted">Transaction deleted</string>
     <string name="home_add_sheet_title">Add transaction</string>
     <string name="home_add_scan_desc">Photograph a receipt and the details fill in automatically</string>
@@ -79,6 +80,7 @@
     <string name="scan_result_note">You can correct everything in the next step.</string>
     <string name="scan_not_detected">Not detected</string>
     <string name="scan_needs_check">Please check</string>
+    <string name="confirm_date_other_month">Counts toward the %1$s budget, not this month</string>
     <string name="scan_retake">Retake</string>
     <string name="scan_continue">Continue</string>
 
